@@ -548,8 +548,8 @@
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#FEF3C7;border:1px solid #F59E0B;"></span>비활성 구간</span>
       </div>
 
-      <!-- Area chart SVG -->
-      <svg viewBox="0 0 920 240" class="w-full h-[260px]" preserveAspectRatio="none" style="overflow:visible;">
+      <!-- Area chart SVG (동적 빌드: buildActivityChart) -->
+      <svg id="actChart" viewBox="0 0 920 240" class="w-full h-[260px]" preserveAspectRatio="none" style="overflow:visible;">
         <defs>
           <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.95"/>
@@ -627,9 +627,9 @@
       </svg>
 
       <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
-        <span class="font-mono">평균 키/분 64.0 · 최고 95(38분)</span>
+        <span class="font-mono" id="actChartStats">—</span>
         <span>·</span>
-        <span>P 마커 클릭 시 붙여넣기 로그로 이동</span>
+        <span>P/A 마커는 외부 유입 시점</span>
       </div>
     </div>
   </div>
@@ -848,9 +848,9 @@
         <p class="text-sm text-slate-500 mt-1">시간에 따른 WPM 변화와 전체 분포</p>
       </div>
       <div class="flex items-center gap-3 text-xs">
-        <span class="px-2.5 py-1 rounded-full bg-slate-100 font-mono">평균 41 WPM</span>
-        <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono">중앙값 38 WPM</span>
-        <span class="px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-mono">p95 78 WPM</span>
+        <span id="chipAvgWpm" class="px-2.5 py-1 rounded-full bg-slate-100 font-mono">평균 — 타/분</span>
+        <span id="chipMedianWpm" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono">중앙값 — 타/분</span>
+        <span id="chipP95Wpm" class="px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-mono">p95 — 타/분</span>
       </div>
     </div>
 
@@ -861,21 +861,7 @@
           <div class="text-sm font-semibold text-slate-700">WPM 추이</div>
           <div class="text-[10px] text-slate-400">시간(분) / WPM</div>
         </div>
-        <svg viewBox="0 0 360 200" class="w-full h-[200px]" preserveAspectRatio="none">
-          <g stroke="#F1F5F9"><line x1="30" y1="20" x2="350" y2="20"/><line x1="30" y1="60" x2="350" y2="60"/><line x1="30" y1="100" x2="350" y2="100"/><line x1="30" y1="140" x2="350" y2="140"/></g>
-          <g font-size="9" fill="#94A3B8"><text x="26" y="22" text-anchor="end">100</text><text x="26" y="62" text-anchor="end">75</text><text x="26" y="102" text-anchor="end">50</text><text x="26" y="142" text-anchor="end">25</text><text x="26" y="172" text-anchor="end">0</text></g>
-          <!-- median line -->
-          <line x1="30" y1="100" x2="350" y2="100" stroke="#10B981" stroke-width="1" stroke-dasharray="4 3"/>
-          <text x="350" y="98" text-anchor="end" font-size="9" fill="#10B981" font-weight="600">중앙값 38</text>
-          <!-- avg line -->
-          <line x1="30" y1="95" x2="350" y2="95" stroke="#EF4444" stroke-width="1" stroke-dasharray="4 3"/>
-          <text x="30" y="92" font-size="9" fill="#EF4444" font-weight="600">평균 41</text>
-          <!-- wpm line -->
-          <path d="M 30 130 L 60 105 L 90 75 L 120 80 L 150 55 L 180 45 L 210 70 L 240 50 L 270 65 L 300 85 L 330 95 L 350 105" stroke="#6366F1" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <g fill="#6366F1"><circle cx="60" cy="105" r="2.4"/><circle cx="120" cy="80" r="2.4"/><circle cx="180" cy="45" r="3"/><circle cx="240" cy="50" r="2.4"/><circle cx="300" cy="85" r="2.4"/></g>
-          <line x1="30" y1="170" x2="350" y2="170" stroke="#E2E8F0"/>
-          <g font-size="9" fill="#94A3B8" text-anchor="middle"><text x="30" y="184">0분</text><text x="120" y="184">30</text><text x="240" y="184">60</text><text x="350" y="184">120</text></g>
-        </svg>
+        <svg id="wpmLineChart" viewBox="0 0 360 200" class="w-full h-[200px]" preserveAspectRatio="none"></svg>
       </div>
 
       <!-- 히스토그램 -->
@@ -884,34 +870,12 @@
           <div class="text-sm font-semibold text-slate-700">WPM 분포 (히스토그램)</div>
           <div class="text-[10px] text-slate-400">구간 / 분 수</div>
         </div>
-        <svg viewBox="0 0 360 200" class="w-full h-[200px]" preserveAspectRatio="none">
-          <g stroke="#F1F5F9"><line x1="30" y1="20" x2="350" y2="20"/><line x1="30" y1="60" x2="350" y2="60"/><line x1="30" y1="100" x2="350" y2="100"/><line x1="30" y1="140" x2="350" y2="140"/></g>
-          <g fill="#A5B4FC">
-            <rect x="40" y="140" width="38" height="30" rx="2"/>
-            <rect x="84" y="100" width="38" height="70" rx="2"/>
-            <rect x="128" y="55" width="38" height="115" rx="2"/>
-            <rect x="172" y="40" width="38" height="130" rx="2" fill="#6366F1"/>
-            <rect x="216" y="75" width="38" height="95" rx="2"/>
-            <rect x="260" y="115" width="38" height="55" rx="2"/>
-            <rect x="304" y="150" width="38" height="20" rx="2"/>
-          </g>
-          <g font-size="9" fill="#94A3B8" text-anchor="middle">
-            <text x="59" y="184">0–20</text>
-            <text x="103" y="184">20–40</text>
-            <text x="147" y="184">40–60</text>
-            <text x="191" y="184">60–80</text>
-            <text x="235" y="184">80–100</text>
-            <text x="279" y="184">100+</text>
-            <text x="323" y="184">peak</text>
-          </g>
-          <line x1="30" y1="170" x2="350" y2="170" stroke="#E2E8F0"/>
-          <text x="191" y="34" text-anchor="middle" font-size="9" fill="#6366F1" font-weight="700">최빈 구간</text>
-        </svg>
+        <svg id="wpmHistChart" viewBox="0 0 360 200" class="w-full h-[200px]" preserveAspectRatio="none"></svg>
       </div>
     </div>
 
-    <p class="mt-4 text-[12.5px] text-slate-500 leading-relaxed">
-      <span class="font-semibold text-slate-700">해석</span> · 평균 41 WPM은 일반적 한국어 글쓰기 속도(평균 35–45 WPM) 범위 내. 분포가 정규 형태로, 기계적 일정 속도(자동 입력)의 흔적은 관찰되지 않습니다.
+    <p class="mt-4 text-[12.5px] text-slate-500 leading-relaxed" id="wpmInterpretation">
+      <span class="font-semibold text-slate-700">해석</span> · —
     </p>
   </div>
 </section>
@@ -970,32 +934,10 @@
       </div>
     </div>
 
-    <!-- 자주 되돌아간 단락 TOP 3 (다이어그램 제거됨) -->
+    <!-- 자주 되돌아간 단락 TOP 3 -->
     <div class="rounded-xl border border-slate-200 p-5">
       <div class="text-sm font-semibold text-slate-700 mb-3">자주 되돌아간 단락 TOP 3</div>
-      <ol class="space-y-2.5">
-        <li class="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-100">
-          <div class="w-9 h-9 rounded-full bg-red-500 text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
-          <div class="flex-1 min-w-0">
-            <div class="text-[13px] font-semibold text-red-900">P3 — "좋은 글은 흔적이…"</div>
-            <div class="text-[11.5px] text-slate-500">되돌아온 횟수 12회 / 머문 시간 14분</div>
-          </div>
-        </li>
-        <li class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <div class="w-9 h-9 rounded-full bg-slate-400 text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
-          <div class="flex-1 min-w-0">
-            <div class="text-[13px] font-semibold text-slate-800">P5 — "우리가 제안하는…"</div>
-            <div class="text-[11.5px] text-slate-500">9회 / 8분</div>
-          </div>
-        </li>
-        <li class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <div class="w-9 h-9 rounded-full bg-slate-300 text-slate-700 text-sm font-bold flex items-center justify-center shrink-0">3</div>
-          <div class="flex-1 min-w-0">
-            <div class="text-[13px] font-semibold text-slate-800">P2 — "실제로 글을 쓰는…"</div>
-            <div class="text-[11.5px] text-slate-500">6회 / 4분</div>
-          </div>
-        </li>
-      </ol>
+      <ol id="navTop3" class="space-y-2.5"></ol>
     </div>
   </div>
 </section>
@@ -1016,20 +958,10 @@
 
     <!-- timeline overlay -->
     <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4">
-      <div class="text-[11px] text-slate-500 mb-2">전체 세션 타임라인 (120분) — 노란 구간이 비활성</div>
-      <div class="relative h-12 rounded-md bg-slate-50 border border-slate-200 overflow-hidden">
-        <!-- idle blocks -->
-        <div class="absolute top-0 bottom-0" style="left:5%;width:2.5%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:22%;width:1.2%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:37%;width:6%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:52%;width:2%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:60%;width:8%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:75%;width:1.5%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:82%;width:4%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-        <div class="absolute top-0 bottom-0" style="left:93%;width:3%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;"></div>
-      </div>
-      <div class="flex justify-between text-[10px] text-slate-400 mt-1.5">
-        <span>0분</span><span>30분</span><span>60분</span><span>90분</span><span>120분</span>
+      <div id="idleTimelineLabel" class="text-[11px] text-slate-500 mb-2">전체 세션 타임라인 — 노란 구간이 비활성</div>
+      <div id="idleTimeline" class="relative h-12 rounded-md bg-slate-50 border border-slate-200 overflow-hidden"></div>
+      <div id="idleTimelineTicks" class="flex justify-between text-[10px] text-slate-400 mt-1.5">
+        <span>0분</span><span>—</span><span>—</span><span>—</span><span>—</span>
       </div>
     </div>
 
@@ -1045,43 +977,7 @@
             <th class="px-4 py-3 font-semibold text-[12px] text-right">시각</th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">1</td>
-            <td class="px-4 py-2.5 font-mono text-[12px]">06:00 → 06:32</td>
-            <td class="px-4 py-2.5 font-semibold">00:32</td>
-            <td class="px-4 py-2.5 text-slate-600">P1 — “생성형 AI가 학습…”</td>
-            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
-          </tr>
-          <tr class="border-t border-slate-100 bg-slate-50/30">
-            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">2</td>
-            <td class="px-4 py-2.5 font-mono text-[12px]">45:12 → 52:26</td>
-            <td class="px-4 py-2.5 font-semibold text-amber-700">07:14</td>
-            <td class="px-4 py-2.5 text-slate-600">P3 — “좋은 글은 흔적이…”</td>
-            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">3</td>
-            <td class="px-4 py-2.5 font-mono text-[12px]">62:30 → 72:18</td>
-            <td class="px-4 py-2.5 font-semibold text-amber-700">09:48</td>
-            <td class="px-4 py-2.5 text-slate-600">P4 — “먼저 우리는 학생의…”</td>
-            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">4</td>
-            <td class="px-4 py-2.5 font-mono text-[12px]">98:42 → 1:03:16</td>
-            <td class="px-4 py-2.5 font-semibold">04:34</td>
-            <td class="px-4 py-2.5 text-slate-600">P5 — “우리가 제안하는…”</td>
-            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">5</td>
-            <td class="px-4 py-2.5 font-mono text-[12px]">1:51:30 → 1:55:08</td>
-            <td class="px-4 py-2.5 font-semibold">03:38</td>
-            <td class="px-4 py-2.5 text-slate-600">P6 — “우리는 ‘무엇을 썼는가…”</td>
-            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
-          </tr>
-        </tbody>
+        <tbody id="idleTableRows"></tbody>
       </table>
     </div>
     <p class="mt-3 text-[12px] text-slate-500">15초 미만의 짧은 멈춤은 Idle로 집계하지 않습니다.</p>
@@ -1178,7 +1074,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="text-xl font-bold text-slate-900">버전 스냅샷 타임라인</h2>
-        <p class="text-sm text-slate-500 mt-1">5분 간격 문서 상태 저장본 (총 28개)</p>
+        <p class="text-sm text-slate-500 mt-1" id="snapshotCount">스냅샷 준비 중…</p>
       </div>
       <div class="flex items-center gap-1 text-xs bg-white border border-slate-200 rounded-lg p-0.5">
         <button class="px-2.5 py-1 rounded-md bg-slate-900 text-white font-medium">5분</button>
@@ -1187,104 +1083,8 @@
       </div>
     </div>
 
-    <ol class="relative pl-8">
+    <ol id="snapshotList" class="relative pl-8">
       <span class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200"></span>
-
-      <li class="relative pb-5">
-        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-blue-50"></span>
-        <details open class="rounded-lg bg-white border border-slate-200 overflow-hidden">
-          <summary class="px-4 py-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-[12px] text-slate-500">09:42</span>
-              <span class="font-semibold text-slate-800">v01 — 첫 저장</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">초안</span>
-            </div>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="font-mono text-slate-500">428자</span>
-              <span class="text-emerald-600 font-mono">+428</span>
-              <span class="chev text-slate-400">▾</span>
-            </div>
-          </summary>
-          <div class="px-4 py-3 border-t border-slate-100 text-[13px] text-slate-600 leading-relaxed">
-            “생성형 AI가 학습 도구로 일상화된 지금, 기존의 표절 검사 도구로는 더 이상…”
-          </div>
-        </details>
-      </li>
-
-      <li class="relative pb-5">
-        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full bg-blue-500"></span>
-        <details class="rounded-lg bg-white border border-slate-200">
-          <summary class="px-4 py-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-[12px] text-slate-500">10:30</span>
-              <span class="font-semibold text-slate-800">v07 — AI 호출 후</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700">AI 삽입</span>
-            </div>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="font-mono text-slate-500">1,624자</span>
-              <span class="text-emerald-600 font-mono">+520</span>
-              <span class="chev text-slate-400">▾</span>
-            </div>
-          </summary>
-        </details>
-      </li>
-
-      <li class="relative pb-5">
-        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full bg-blue-500"></span>
-        <details class="rounded-lg bg-white border border-slate-200">
-          <summary class="px-4 py-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-[12px] text-slate-500">11:25</span>
-              <span class="font-semibold text-slate-800">v14 — 본문 절반</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700">대규모 수정</span>
-            </div>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="font-mono text-slate-500">2,150자</span>
-              <span class="text-emerald-600 font-mono">+820</span>
-              <span class="text-red-600 font-mono">−294</span>
-              <span class="chev text-slate-400">▾</span>
-            </div>
-          </summary>
-        </details>
-      </li>
-
-      <li class="relative pb-5">
-        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full bg-blue-500"></span>
-        <details class="rounded-lg bg-white border border-slate-200">
-          <summary class="px-4 py-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-[12px] text-slate-500">13:18</span>
-              <span class="font-semibold text-slate-800">v22 — 결론 추가</span>
-            </div>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="font-mono text-slate-500">3,288자</span>
-              <span class="text-emerald-600 font-mono">+346</span>
-              <span class="chev text-slate-400">▾</span>
-            </div>
-          </summary>
-        </details>
-      </li>
-
-      <li class="relative">
-        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full bg-emerald-600 ring-4 ring-emerald-50"></span>
-        <details open class="rounded-lg bg-white border border-emerald-200">
-          <summary class="px-4 py-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-[12px] text-slate-500">14:08</span>
-              <span class="font-semibold text-slate-800">v28 — 최종본</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">완성</span>
-            </div>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="font-mono text-slate-500">3,420자</span>
-              <span class="text-emerald-600 font-mono">+132</span>
-              <span class="chev text-slate-400">▾</span>
-            </div>
-          </summary>
-          <div class="px-4 py-3 border-t border-emerald-100 text-[13px] text-slate-600 leading-relaxed">
-            최종 미리보기 · 모든 단락 퇴고 완료. 자율성 지수 74점.
-          </div>
-        </details>
-      </li>
     </ol>
   </div>
 </section>
@@ -3168,7 +2968,364 @@ async function buildReportFromSession(){
   if(navChips[0]) navChips[0].textContent='역방향 '+navBwd+'회';
   if(navChips[1]) navChips[1].textContent='순방향 '+navFwd+'회';
   if(navChips[2]) navChips[2].textContent='총 '+(navFwd+navBwd)+'회';
+
+  // ---- 추가 동적 빌더: SEC-03 / SEC-06 / SEC-08 TOP3 / SEC-09 / SEC-15 ----
+  buildActivityChart(idlePeriods);
+  buildTypingSpeed();
+  buildNavTop3();
+  buildIdleSection(idlePeriods, idleRatio);
+  buildSnapshots();
 }
+
+/* ---------- SEC-03 활동 타임라인 ---------- */
+function buildActivityChart(idlePeriods){
+  const svg = document.getElementById('actChart');
+  const stEl = document.getElementById('actChartStats');
+  if(!svg) return;
+  if(!stats.firstTs || !stats.lastTs || stats.lastTs<=stats.firstTs){
+    svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#94A3B8" font-size="11">활동 기록 없음</text>';
+    if(stEl) stEl.textContent='—';
+    return;
+  }
+  const W=920, H=240, LEFT=40, RIGHT=900, TOP=20, BOT=220;
+  const totalMs = stats.lastTs - stats.firstTs;
+  const totalMin = Math.max(1, Math.ceil(totalMs/60000));
+  // 분 단위 버킷: 키스트로크/분
+  const buckets = new Array(totalMin).fill(0).map(()=>({ks:0}));
+  events.forEach(e=>{
+    if(e.type!=='typing') return;
+    const m = Math.floor((e.ts - stats.firstTs)/60000);
+    if(m>=0 && m<totalMin) buckets[m].ks += e.n;
+  });
+  // 누적 글자수
+  const sorted = [...events].sort((a,b)=>a.ts-b.ts);
+  const cumByMin = new Array(totalMin).fill(0);
+  let cum=0, cursor=0;
+  sorted.forEach(e=>{
+    if(e.isInsert) cum += e.n;
+    else if(e.type==='delete') cum -= e.n;
+    const m = Math.min(totalMin-1, Math.floor((e.ts - stats.firstTs)/60000));
+    while(cursor<=m){ cumByMin[cursor++] = cum; }
+  });
+  while(cursor<totalMin){ cumByMin[cursor++] = cum; }
+  const maxKs = Math.max(1, ...buckets.map(b=>b.ks));
+  const maxCum = Math.max(1, cumByMin[totalMin-1]||1);
+  const xAt = i => LEFT + (totalMin<=1 ? (RIGHT-LEFT)/2 : (i/(totalMin-1))*(RIGHT-LEFT));
+  const yKs = v => BOT - (v/maxKs)*(BOT-TOP);
+  const yCum = v => BOT - (v/maxCum)*(BOT-TOP);
+  // 경로 빌드
+  let cumPath='', ksPath='';
+  for(let i=0;i<totalMin;i++){
+    const x = xAt(i);
+    cumPath += `${i===0?'M':'L'} ${x.toFixed(1)} ${yCum(cumByMin[i]).toFixed(1)} `;
+    ksPath  += `${i===0?'M':'L'} ${x.toFixed(1)} ${yKs(buckets[i].ks).toFixed(1)} `;
+  }
+  const lastX = xAt(totalMin-1);
+  const areaPath = cumPath + ` L ${lastX} ${BOT} L ${LEFT} ${BOT} Z`;
+  // idle 음영
+  const idleRects = (idlePeriods||[]).map(p=>{
+    const x1 = LEFT + (p.startMs/totalMs)*(RIGHT-LEFT);
+    const x2 = LEFT + (p.endMs/totalMs)*(RIGHT-LEFT);
+    const w = Math.max(2, x2-x1);
+    return `<rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="#FEF3C7" opacity="0.55"/><rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="none" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4 3"/>`;
+  }).join('');
+  // paste/ai 마커
+  const markers = events.filter(e=>e.type==='paste'||e.type==='ai').map(e=>{
+    const x = LEFT + ((e.ts-stats.firstTs)/totalMs)*(RIGHT-LEFT);
+    const isAi = e.type==='ai';
+    const color = isAi ? '#7C3AED' : '#EF4444';
+    const letter = isAi ? 'A' : 'P';
+    return `<g><line x1="${x.toFixed(1)}" y1="${TOP}" x2="${x.toFixed(1)}" y2="${BOT}" stroke="${color}" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.7"/><circle cx="${x.toFixed(1)}" cy="${TOP}" r="6" fill="${color}"/><text x="${x.toFixed(1)}" y="${TOP+3}" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">${letter}</text></g>`;
+  }).join('');
+  // x축 tick
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map(p=>{
+    const x = LEFT + p*(RIGHT-LEFT);
+    const min = Math.round((totalMin-1)*p);
+    return `<text x="${x.toFixed(1)}" y="${BOT+14}" text-anchor="middle">${min}분</text>`;
+  }).join('');
+  // y grid
+  const yGrid = [0.25, 0.5, 0.75].map(p=>{
+    const y = BOT - p*(BOT-TOP);
+    return `<line x1="${LEFT}" y1="${y}" x2="${RIGHT}" y2="${y}" stroke="#F1F5F9"/>`;
+  }).join('');
+  svg.innerHTML = `
+    <defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.95"/><stop offset="100%" stop-color="#DBEAFE" stop-opacity="0.2"/></linearGradient></defs>
+    ${yGrid}
+    ${idleRects}
+    <path d="${areaPath}" fill="url(#areaFill)"/>
+    <path d="${cumPath}" stroke="#A5B4FC" stroke-width="2" fill="none"/>
+    <path d="${ksPath}" stroke="#2563EB" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    ${markers}
+    <line x1="${LEFT}" y1="${BOT}" x2="${RIGHT}" y2="${BOT}" stroke="#E2E8F0"/>
+    <g font-size="9" fill="#94A3B8" text-anchor="middle">${ticks}</g>
+  `;
+  // 통계 텍스트
+  const avgKs = buckets.length>0 ? buckets.reduce((s,b)=>s+b.ks,0)/buckets.length : 0;
+  const maxBucketIdx = buckets.findIndex(b=>b.ks===maxKs);
+  if(stEl) stEl.textContent = `평균 키/분 ${avgKs.toFixed(1)} · 최고 ${maxKs}(${maxBucketIdx}분)`;
+}
+
+/* ---------- SEC-06 타이핑 속도 분포 ---------- */
+function buildTypingSpeed(){
+  const lineSvg = document.getElementById('wpmLineChart');
+  const histSvg = document.getElementById('wpmHistChart');
+  const elAvg = document.getElementById('chipAvgWpm');
+  const elMed = document.getElementById('chipMedianWpm');
+  const elP95 = document.getElementById('chipP95Wpm');
+  const elIntr = document.getElementById('wpmInterpretation');
+  if(!lineSvg || !histSvg) return;
+  if(!stats.firstTs || !stats.lastTs){
+    const empty = '<text x="50%" y="50%" text-anchor="middle" fill="#94A3B8" font-size="11">데이터 없음</text>';
+    lineSvg.innerHTML = empty;
+    histSvg.innerHTML = empty;
+    if(elAvg) elAvg.textContent = '평균 — 타/분';
+    if(elMed) elMed.textContent = '중앙값 — 타/분';
+    if(elP95) elP95.textContent = 'p95 — 타/분';
+    if(elIntr) elIntr.innerHTML = '<span class="font-semibold text-slate-700">해석</span> · 타이핑 데이터가 충분하지 않습니다.';
+    return;
+  }
+  const totalMs = stats.lastTs - stats.firstTs;
+  const totalMin = Math.max(1, Math.ceil(totalMs/60000));
+  const wpmByMin = new Array(totalMin).fill(0);
+  events.forEach(e=>{
+    if(e.type!=='typing') return;
+    const m = Math.floor((e.ts-stats.firstTs)/60000);
+    if(m>=0 && m<totalMin) wpmByMin[m] += e.n;
+  });
+  const nonZero = wpmByMin.filter(v=>v>0).slice().sort((a,b)=>a-b);
+  const avg = nonZero.length ? Math.round(nonZero.reduce((s,v)=>s+v,0)/nonZero.length) : 0;
+  const median = nonZero.length ? nonZero[Math.floor(nonZero.length/2)] : 0;
+  const p95 = nonZero.length ? nonZero[Math.min(nonZero.length-1, Math.floor(nonZero.length*0.95))] : 0;
+  if(elAvg) elAvg.textContent = `평균 ${avg} 타/분`;
+  if(elMed) elMed.textContent = `중앙값 ${median} 타/분`;
+  if(elP95) elP95.textContent = `p95 ${p95} 타/분`;
+  // line chart
+  const L=30, R=350, T=20, B=170;
+  const maxW = Math.max(50, ...wpmByMin);
+  const xAt = i => L + (totalMin<=1 ? (R-L)/2 : (i/(totalMin-1))*(R-L));
+  const yAt = v => B - (v/maxW)*(B-T);
+  let linePath='';
+  for(let i=0;i<totalMin;i++){
+    linePath += `${i===0?'M':'L'} ${xAt(i).toFixed(1)} ${yAt(wpmByMin[i]).toFixed(1)} `;
+  }
+  const avgY = yAt(avg), medY = yAt(median);
+  const grid = [0.25,0.5,0.75].map(p=>`<line x1="${L}" y1="${(T+(B-T)*p).toFixed(1)}" x2="${R}" y2="${(T+(B-T)*p).toFixed(1)}" stroke="#F1F5F9"/>`).join('');
+  lineSvg.innerHTML = `
+    ${grid}
+    <line x1="${L}" y1="${medY}" x2="${R}" y2="${medY}" stroke="#10B981" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="${R}" y="${(medY-2).toFixed(1)}" text-anchor="end" font-size="9" fill="#10B981" font-weight="600">중앙값 ${median}</text>
+    <line x1="${L}" y1="${avgY}" x2="${R}" y2="${avgY}" stroke="#EF4444" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="${L}" y="${(avgY-2).toFixed(1)}" font-size="9" fill="#EF4444" font-weight="600">평균 ${avg}</text>
+    <path d="${linePath}" stroke="#6366F1" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#E2E8F0"/>
+    <g font-size="9" fill="#94A3B8" text-anchor="middle">
+      <text x="${xAt(0)}" y="${B+14}">0분</text>
+      <text x="${xAt(Math.floor((totalMin-1)/2))}" y="${B+14}">${Math.floor((totalMin-1)/2)}분</text>
+      <text x="${xAt(totalMin-1)}" y="${B+14}">${totalMin-1}분</text>
+    </g>
+  `;
+  // histogram
+  const bins=[0,0,0,0,0,0];
+  const labels=['0-20','20-40','40-60','60-80','80-100','100+'];
+  nonZero.forEach(v=>{ const i=Math.min(5, Math.floor(v/20)); bins[i]++; });
+  const maxBin = Math.max(1, ...bins);
+  const peakIdx = bins.indexOf(maxBin);
+  const slotW = (R-L)/6;
+  let bars='';
+  bins.forEach((b,i)=>{
+    const x = L + i*slotW + 4;
+    const w = slotW - 8;
+    const h = (b/maxBin)*(B-T-10);
+    const y = B - h;
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${i===peakIdx?'#6366F1':'#A5B4FC'}"/>`;
+    bars += `<text x="${(x+w/2).toFixed(1)}" y="${B+14}" text-anchor="middle" font-size="9" fill="#94A3B8">${labels[i]}</text>`;
+  });
+  histSvg.innerHTML = `${grid}${bars}<line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#E2E8F0"/>`;
+  // 해석
+  if(elIntr){
+    const intr = avg>=35 && avg<=80
+      ? '일반적 한국어 글쓰기 속도(35–80 타/분) 범위 내. 기계적 일정 속도(자동 입력)의 흔적은 관찰되지 않습니다.'
+      : avg>120 ? '평균 속도가 매우 빠릅니다. 자동 입력 가능성도 함께 점검하세요.'
+      : avg===0 ? '직접 타이핑 데이터가 부족합니다.'
+      : '일반 범위보다 다소 낮은 속도입니다. 신중한 작성 흐름으로 볼 수 있습니다.';
+    elIntr.innerHTML = `<span class="font-semibold text-slate-700">해석</span> · 평균 ${avg} 타/분 — ${intr}`;
+  }
+}
+
+/* ---------- SEC-08 비선형 커서 이동 TOP3 ---------- */
+function buildNavTop3(){
+  const ol = document.getElementById('navTop3');
+  if(!ol) return;
+  const navCounts = {};
+  events.forEach(e=>{
+    if(e.type!=='nav') return;
+    const to = e.meta?.to;
+    if(typeof to !== 'number') return;
+    if(!navCounts[to]) navCounts[to]={count:0};
+    navCounts[to].count++;
+  });
+  const sorted = Object.entries(navCounts).sort((a,b)=>b[1].count-a[1].count).slice(0,3);
+  if(sorted.length===0){
+    ol.innerHTML = '<li class="text-[13px] text-slate-400 p-3 text-center rounded-lg bg-slate-50 border border-slate-100">기록된 비선형 이동 없음 — 순차 작성됨</li>';
+    return;
+  }
+  const editorEl = document.getElementById('editor');
+  const paragraphs = (editorEl?.textContent||'').split('\n').filter(p=>p.trim().length>0);
+  const palette = [
+    {bg:'bg-red-50',  border:'border-red-100',  circle:'bg-red-500 text-white', label:'text-red-900'},
+    {bg:'bg-slate-50',border:'border-slate-100',circle:'bg-slate-400 text-white',label:'text-slate-800'},
+    {bg:'bg-slate-50',border:'border-slate-100',circle:'bg-slate-300 text-slate-700',label:'text-slate-800'},
+  ];
+  ol.innerHTML = sorted.map((entry,i)=>{
+    const [pIdx, info] = entry;
+    const idx = parseInt(pIdx,10);
+    const preview = paragraphs[idx]
+      ? `"${paragraphs[idx].slice(0,18).replace(/</g,'&lt;')}${paragraphs[idx].length>18?'…':''}"`
+      : `단락 ${idx+1}`;
+    const c = palette[i]||palette[2];
+    return `
+      <li class="flex items-center gap-3 p-3 rounded-lg ${c.bg} border ${c.border}">
+        <div class="w-9 h-9 rounded-full ${c.circle} text-sm font-bold flex items-center justify-center shrink-0">${i+1}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[13px] font-semibold ${c.label}">P${idx+1} — ${preview}</div>
+          <div class="text-[11.5px] text-slate-500">되돌아온 횟수 ${info.count}회</div>
+        </div>
+      </li>
+    `;
+  }).join('');
+}
+
+/* ---------- SEC-09 비활성 구간 ---------- */
+function buildIdleSection(idlePeriods, idleRatio){
+  const tbody = document.getElementById('idleTableRows');
+  const tl = document.getElementById('idleTimeline');
+  const lbl = document.getElementById('idleTimelineLabel');
+  const ticksEl = document.getElementById('idleTimelineTicks');
+  const fmtMSS = ms=>{
+    const sec = Math.max(0, Math.floor(ms/1000));
+    const m = Math.floor(sec/60), s = sec%60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  // 직전 단락 찾기 (idle start 시점 기준)
+  const findPrecedingPara = (idleStartTs) => {
+    // 모델에서 ts ≤ idleStartTs인 마지막 char까지의 \n 카운트
+    let lastChar=null;
+    for(const m of model){ if(m.ts <= idleStartTs) lastChar = m; else break; }
+    if(!lastChar) return null;
+    let paraIdx=0; for(const m of model){ if(m===lastChar) break; if(m.ch==='\n') paraIdx++; }
+    const paragraphs=(document.getElementById('editor')?.textContent||'').split('\n').filter(p=>p.trim().length>0);
+    return {idx:paraIdx, preview:paragraphs[paraIdx]||''};
+  };
+  // table
+  if(tbody){
+    if(!idlePeriods || idlePeriods.length===0){
+      tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400 text-sm">15초 이상의 비활성 구간이 없습니다 ✓</td></tr>';
+    } else {
+      tbody.innerHTML = idlePeriods.map((p,i)=>{
+        const startStr=fmtMSS(p.startMs), endStr=fmtMSS(p.endMs), durStr=fmtMSS(p.durMs);
+        const isLong = p.durMs>=60000;
+        const para = findPrecedingPara(stats.firstTs+p.startMs);
+        const paraTxt = para ? `P${para.idx+1} — "${(para.preview||'').slice(0,18).replace(/</g,'&lt;')}${(para.preview||'').length>18?'…':''}"` : '—';
+        return `
+          <tr class="border-t border-slate-100 ${i%2===1?'bg-slate-50/30':''}">
+            <td class="px-4 py-2.5 text-slate-400 text-[12px] font-mono">${i+1}</td>
+            <td class="px-4 py-2.5 font-mono text-[12px]">${startStr} → ${endStr}</td>
+            <td class="px-4 py-2.5 font-semibold ${isLong?'text-amber-700':''}">${durStr}</td>
+            <td class="px-4 py-2.5 text-slate-600 text-[12.5px]">${paraTxt}</td>
+            <td class="px-4 py-2.5 text-right text-slate-400 text-[11px]">⏱</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+  // timeline overlay
+  if(tl && stats.firstTs && stats.lastTs && stats.lastTs>stats.firstTs){
+    const totalMs = stats.lastTs - stats.firstTs;
+    const totalMin = totalMs/60000;
+    if(lbl) lbl.textContent = `전체 세션 타임라인 (${totalMin>=1?Math.round(totalMin):totalMin.toFixed(1)}분) — 노란 구간이 비활성`;
+    if(ticksEl){
+      const t = [0, 0.25, 0.5, 0.75, 1].map(p=>{
+        const m = totalMin*p;
+        return `<span>${m<1?(m*60).toFixed(0)+'초':m.toFixed(m<10?1:0)+'분'}</span>`;
+      }).join('');
+      ticksEl.innerHTML = t;
+    }
+    tl.innerHTML = (idlePeriods||[]).map(p=>{
+      const leftPct = (p.startMs/totalMs)*100;
+      const widPct = Math.max(0.5, (p.durMs/totalMs)*100);
+      return `<div class="absolute top-0 bottom-0" style="left:${leftPct.toFixed(2)}%;width:${widPct.toFixed(2)}%;background:#FEF3C7;border-left:1px dashed #F59E0B;border-right:1px dashed #F59E0B;" title="${fmtMSS(p.startMs)} → ${fmtMSS(p.endMs)} (${fmtMSS(p.durMs)})"></div>`;
+    }).join('');
+  }
+}
+
+/* ---------- SEC-15 버전 스냅샷 ---------- */
+function buildSnapshots(){
+  const ol = document.getElementById('snapshotList');
+  const cnt = document.getElementById('snapshotCount');
+  if(!ol) return;
+  if(!stats.firstTs || !stats.lastTs || stats.lastTs<=stats.firstTs){
+    ol.innerHTML = '<span class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200"></span><li class="text-[13px] text-slate-400 p-3 text-center">스냅샷 없음</li>';
+    if(cnt) cnt.textContent='스냅샷 없음';
+    return;
+  }
+  const totalMs = stats.lastTs - stats.firstTs;
+  const sorted = [...events].sort((a,b)=>a.ts-b.ts);
+  const cumAt = (targetTs) => {
+    let cum=0;
+    for(const e of sorted){
+      if(e.ts>targetTs) break;
+      if(e.isInsert) cum += e.n;
+      else if(e.type==='delete') cum -= e.n;
+    }
+    return Math.max(0, cum);
+  };
+  // 스냅샷 시점: 0%, 25%, 50%, 75%, 100%
+  const points = [0, 0.25, 0.5, 0.75, 1];
+  const snaps = points.map((p,i)=>{
+    const ts = stats.firstTs + p*totalMs;
+    const d = new Date(ts);
+    return {
+      idx: i+1,
+      pct: p,
+      ts,
+      time: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,
+      chars: cumAt(ts),
+    };
+  });
+  for(let i=0;i<snaps.length;i++) snaps[i].diff = i===0 ? snaps[i].chars : snaps[i].chars - snaps[i-1].chars;
+  if(cnt) cnt.textContent = `${snaps.length}개 스냅샷 · 작성 시간 4등분 시점 캡처`;
+  const items = snaps.map((s,i)=>{
+    const isFirst = i===0, isLast = i===snaps.length-1;
+    const dotColor = isFirst ? 'bg-blue-600 ring-4 ring-blue-50' : isLast ? 'bg-emerald-600 ring-4 ring-emerald-50' : 'bg-blue-500';
+    const borderCls = isLast ? 'border-emerald-200' : 'border-slate-200';
+    const label = isFirst ? 'v01 — 첫 시점' : isLast ? `v${String(snaps.length).padStart(2,'0')} — 최종본` : `v${String(s.idx).padStart(2,'0')} — ${Math.round(s.pct*100)}% 시점`;
+    const badge = isFirst ? '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">초안</span>'
+                : isLast  ? '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">완성</span>'
+                : '';
+    const diffBadge = s.diff>0 ? `<span class="text-emerald-600 font-mono">+${s.diff.toLocaleString()}</span>` : s.diff<0 ? `<span class="text-red-600 font-mono">${s.diff.toLocaleString()}</span>` : '<span class="text-slate-400 font-mono">±0</span>';
+    return `
+      <li class="relative ${isLast?'':'pb-5'}">
+        <span class="absolute -left-[18px] top-1 w-3 h-3 rounded-full ${dotColor}"></span>
+        <details ${isFirst||isLast?'open':''} class="rounded-lg bg-white border ${borderCls} overflow-hidden">
+          <summary class="px-4 py-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 text-sm">
+              <span class="font-mono text-[12px] text-slate-500">${s.time}</span>
+              <span class="font-semibold text-slate-800">${label}</span>
+              ${badge}
+            </div>
+            <div class="flex items-center gap-3 text-[12px]">
+              <span class="font-mono text-slate-500">${s.chars.toLocaleString()}자</span>
+              ${diffBadge}
+              <span class="chev text-slate-400">▾</span>
+            </div>
+          </summary>
+        </details>
+      </li>
+    `;
+  }).join('');
+  ol.innerHTML = `<span class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200"></span>${items}`;
+}
+
 function fmtSec(ms){
   const s=Math.floor(ms/1000);
   const m=Math.floor(s/60); const ss=s%60;
