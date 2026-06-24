@@ -2127,7 +2127,25 @@ editor.addEventListener('focus',showRec);
 editor.addEventListener('compositionstart',()=>{ composing=true; });
 editor.addEventListener('compositionend',()=>{
   composing=false;
-  requestAnimationFrame(()=>reconcile('typing'));
+  requestAnimationFrame(()=>{
+    reconcile('typing');
+    // 보류된 Enter가 있으면 composition 종료 후 \n 삽입
+    if(pendingEnter && !composing){
+      pendingEnter = false;
+      const sel=window.getSelection();
+      if(sel && sel.rangeCount){
+        const range=sel.getRangeAt(0);
+        range.deleteContents();
+        const tn=document.createTextNode('\n');
+        range.insertNode(tn);
+        range.setStartAfter(tn);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        reconcile('typing');
+      }
+    }
+  });
 });
 
 /* paste */
@@ -2138,12 +2156,19 @@ editor.addEventListener('paste',e=>{
 });
 
 /* beforeinput */
+let pendingEnter = false;
 editor.addEventListener('beforeinput',e=>{
   if(e.inputType==='insertParagraph' || e.inputType==='insertLineBreak'){
+    if(composing){
+      // 한글 IME 조합 중에는 우리가 \n을 끼워넣으면 자모 분리가 일어남.
+      // browser가 composition을 끝내도록 두고, compositionend 이후 \n을 삽입.
+      e.preventDefault();
+      pendingEnter = true;
+      return;
+    }
     // Chrome's contenteditable refuses to render literal "\n" via execCommand,
     // and the default insertParagraph creates <div>/<br> blocks that diverge from our model.
-    // Manually insert a real text node containing "\n" (CSS white-space:pre-wrap shows it as a line break)
-    // and run reconcile so the model picks up the diff.
+    // Manually insert a real text node containing "\n" (white-space:pre-wrap renders it as line break).
     e.preventDefault();
     const sel=window.getSelection();
     if(!sel.rangeCount) return;
@@ -2155,7 +2180,6 @@ editor.addEventListener('beforeinput',e=>{
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
-    // keystrokes는 keydown에서 이미 카운트됨 (Enter 키도 keydown으로 들어옴)
     reconcile('typing');
     return;
   }
@@ -2192,8 +2216,10 @@ editor.addEventListener('keydown',e=>{
 
 /* ---------- core: read text out of contenteditable ---------- */
 function walkEditor(){
-  // returns array of {ch} from editor textContent, normalized
-  const text=editor.textContent.replace(/ /g,' ');
+  // innerText는 contenteditable 안의 <br>/<div> 줄바꿈을 \n으로 잡아내고,
+  // textContent는 block 요소의 줄바꿈을 누락하므로 IME 직후 model/DOM 어긋남이 생길 수 있음.
+  // NBSP는 일반 공백으로 정규화.
+  const text = (editor.innerText || editor.textContent || '').replace(/ /g,' ');
   return text;
 }
 
