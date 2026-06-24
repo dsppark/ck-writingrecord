@@ -332,10 +332,9 @@
     <a href="#sec-01" class="toc-item active block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">요약</a>
     <a href="#sec-02" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">자율성 지수</a>
     <a href="#sec-metrics" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">종합 지표</a>
-    <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 출처</a>
+    <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 유입 분석</a>
     <a href="#sec-07" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">외부 유입 로그</a>
     <a href="#sec-11" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">원본 보존율</a>
-    <a href="#sec-12" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 구성 분포</a>
 
     <!-- ====== 추후 검토 콘텐츠 ====== -->
     <div class="mt-5 mx-3 mb-2 pt-4 border-t border-slate-200 flex items-center gap-1.5 text-[11px] tracking-wider text-slate-400 font-semibold uppercase">
@@ -741,13 +740,35 @@
   </div>
 </section>
 
-<!-- ===== SEC-04 텍스트 출처 분류 (Origin Map) ===== -->
+<!-- ===== SEC-04 텍스트 유입 분석 ===== -->
 <section id="sec-04" class="scroll-mt pt-8">
   <div class="card p-6">
-    <div class="mb-3">
-      <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분류</h2>
+    <div class="mb-4">
+      <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석</h2>
       <p class="text-sm text-slate-500 mt-1">최종 문서 텍스트의 출처를 색상으로 시각화 · 클릭 시 우측 패널에 상세 표시</p>
     </div>
+
+    <!-- 텍스트 구성 분포 (구 SEC-12 그래프+범례) -->
+    <div class="relative mb-3">
+      <div id="compoTooltip"></div>
+      <div id="compoBar" class="flex rounded-lg overflow-hidden text-white text-[12px] font-semibold" style="height:36px;">
+        <div class="composeg flex items-center justify-center" data-key="typing" data-label="직접 타이핑" data-n="0" data-pct="0" data-color="#16A34A" style="background:#16A34A;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="ai" data-label="AI 생성" data-n="110" data-pct="100" data-color="#7C3AED" style="background:#7C3AED;width:100%">100%</div>
+        <div class="composeg flex items-center justify-center" data-key="paste" data-label="붙여넣기" data-n="0" data-pct="0" data-color="#EF4444" style="background:#EF4444;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="revised" data-label="수정" data-n="0" data-pct="0" data-color="#93C5FD" style="background:#93C5FD;color:#1E3A8A;width:0%"></div>
+      </div>
+    </div>
+    <div id="compoLegend" class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px]">
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C3AED;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span><span class="text-slate-400" data-bind="ai-pct">(100%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#93C5FD;"></span><span class="text-slate-500">수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="revised-n">0자</span><span class="text-slate-400" data-bind="revised-pct">(0%)</span></div>
+    </div>
+
+    <!-- 회색 구분선 -->
+    <hr class="my-5 border-slate-200" />
+
+    <!-- 필터 + Replay 버튼 -->
     <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
       <div class="flex items-center gap-1.5 text-xs">
         <span class="text-slate-400 mr-1">필터</span>
@@ -1145,37 +1166,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SEC-12 텍스트 구성 분포 ===== -->
-<section id="sec-12" class="scroll-mt pt-8">
-  <div class="card p-6">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h2 class="text-xl font-bold text-slate-900">텍스트 구성 분포</h2>
-        <p class="text-sm text-slate-500 mt-1">최종 문서 텍스트의 유입 출처별 비율 (합계 100%)</p>
-      </div>
-    </div>
-
-    <!-- 100% stacked bar -->
-    <div class="relative">
-      <div id="compoTooltip"></div>
-      <div id="compoBar" class="flex rounded-lg overflow-hidden text-white text-[12px] font-semibold" style="height:36px;">
-      <!-- 동적 채움 / 정적 데모 -->
-      <div class="composeg flex items-center justify-center" data-key="typing" data-label="직접 타이핑" data-n="0" data-pct="0" style="background:#16A34A;width:0%"></div>
-      <div class="composeg flex items-center justify-center" data-key="ai" data-label="AI 생성" data-n="110" data-pct="100" style="background:#7C3AED;width:100%">100%</div>
-      <div class="composeg flex items-center justify-center" data-key="paste" data-label="붙여넣기" data-n="0" data-pct="0" style="background:#EF4444;width:0%"></div>
-      <div class="composeg flex items-center justify-center" data-key="revised" data-label="수정" data-n="0" data-pct="0" style="background:#93C5FD;color:#1E3A8A;width:0%"></div>
-      </div>
-    </div>
-
-    <div id="compoLegend" class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px]">
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C3AED;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span><span class="text-slate-400" data-bind="ai-pct">(100%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#93C5FD;"></span><span class="text-slate-500">수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="revised-n">0자</span><span class="text-slate-400" data-bind="revised-pct">(0%)</span></div>
     </div>
   </div>
 </section>
@@ -2146,7 +2136,7 @@ bindCompoTooltip();
 (function reorderReportSections(){
   const main=document.querySelector('#view-report main');
   if(!main) return;
-  const mainOrder = ['sec-01','sec-02','sec-metrics','sec-04','sec-07','sec-11','sec-12'];
+  const mainOrder = ['sec-01','sec-02','sec-metrics','sec-04','sec-07','sec-11'];
   const futureOrder = ['sec-03','sec-06','sec-08','sec-09','sec-15','sec-16'];
   // 메인 섹션을 정해진 순서로 재배치
   mainOrder.forEach(id=>{ const s=document.getElementById(id); if(s) main.appendChild(s); });
