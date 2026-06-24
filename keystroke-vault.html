@@ -2280,25 +2280,28 @@ function computeScoreFromInputs(inp, w){
 }
 
 /* ---------- 채팅 초기화 (유형 선택 없음 — 자유 입력 기본) ---------- */
+// 항상 고정으로 노출할 가이드 옵션 2개
+const DEFAULT_GUIDE_CHIPS = [
+  '인공지능에 대한 에세이를 작성해줘.',
+  '서비스 기획자 직무에 대한 자기소개서 초안을 작성해줘.',
+];
 function enterChat(typeName){
   selectedType=typeName;
   const msgs=document.getElementById('chatMsgs');
   msgs.innerHTML='';
   const greet=document.createElement('div');
   greet.className='msg msg-ai';
-  const guides = AI_GUIDES[typeName] || AI_GUIDES.default;
-  const displayName = typeName || '문서';
   greet.innerHTML = `
     <div class="ai-label">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
       카피킬러 AI 어시스턴트
     </div>
     <div class="ai-body">
-      안녕하세요! <b>${displayName}</b> 작성을 도와드릴게요.<br>
-      어떤 내용으로 시작할까요? 아래를 누르거나 직접 입력해 주세요.
+      안녕하세요! 문서 작성을 도와드릴게요.<br>
+      저에게 요청할 내용을 입력해주시거나 아래 가이드 항목을 클릭해보세요.
     </div>
     <div class="guide-chips">
-      ${guides.map(g=>`<button class="guide-chip" type="button">${g.replace(/</g,'&lt;')}</button>`).join('')}
+      ${DEFAULT_GUIDE_CHIPS.map(g=>`<button class="guide-chip" type="button">${g.replace(/</g,'&lt;')}</button>`).join('')}
     </div>
   `;
   greet.querySelectorAll('.guide-chip').forEach(c=>{
