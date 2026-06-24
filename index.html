@@ -760,11 +760,11 @@
       </div>
     </div>
     <div id="compoLegend" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] justify-end">
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C3AED;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#93C5FD;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#F59E0B;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C3AED;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span><span class="text-slate-400" data-bind="ai-pct">(100%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#93C5FD;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#F59E0B;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0%)</span></div>
     </div>
 
     <!-- 회색 구분선 -->
@@ -2846,10 +2846,13 @@ async function buildReportFromSession(){
       d.textContent = pct>=10 ? `${pct.toFixed(0)}%` : '';
       bar.appendChild(d);
     });
-    // legend bindings — n자만 갱신 (% 제거)
+    // legend bindings — 글자수 + 비율
     segData.forEach(s=>{
+      const pct = s.n/total*100;
       const nEl  = document.querySelector(`#compoLegend [data-bind="${s.key}-n"]`);
+      const pcEl = document.querySelector(`#compoLegend [data-bind="${s.key}-pct"]`);
       if(nEl) nEl.textContent = `${s.n.toLocaleString()}자`;
+      if(pcEl) pcEl.textContent = `(${pct.toFixed(pct>0&&pct<10?1:0)}%)`;
     });
     // tooltip bindings
     bindCompoTooltip();
