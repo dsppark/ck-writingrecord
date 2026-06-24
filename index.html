@@ -2983,39 +2983,68 @@ async function buildReportFromSession(){
     if(bdValues[i]) bdValues[i].textContent=d.v;
   });
 
-  // ---- C-04 origin map: render real editor content with origin coloring ----
+  // ---- C-04 origin map (1안): 블록 단위 1세그먼트 + 내부에 색깔 paint span 중첩 ----
   const orgDoc=document.getElementById('originDoc');
   if(orgDoc){
-    // group model by source — track position + blockMark
+    const _paint = src =>
+      src==='ai' || src==='ai-edited'         ? 'origin-ai' :
+      src==='ai-internal'                     ? 'origin-ai-edited' :
+      src==='paste' || src==='paste-edited'   ? 'origin-paste' :
+      src==='paste-internal'                  ? 'origin-paste-edited' : '';
+    const _aiFam = s => s==='ai'||s==='ai-edited'||s==='ai-internal';
+    const _esc4 = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // blockMark 단위로 묶거나, typing run 단위로 묶음
     const segs=[];
-    let mIdx=0, cIdx=0;
-    for(const m of model){
-      if(segs.length && segs[segs.length-1].src===m.source && segs[segs.length-1].bm===(m.blockMark||0)){
-        segs[segs.length-1].text+=m.ch;
-        segs[segs.length-1].mend = mIdx+1;
-        if(m.ch!=='\n') segs[segs.length-1].cend = cIdx+1;
-      }else{
-        segs.push({
-          src:m.source, text:m.ch,
-          mstart:mIdx, mend:mIdx+1,
-          cstart:cIdx, cend: m.ch==='\n'?cIdx:cIdx+1,
-          bm: m.blockMark||0
-        });
+    let mIdx=0, cIdx=0, i=0;
+    while(i<model.length){
+      const m=model[i];
+      if(m.blockMark){
+        const bm=m.blockMark;
+        const chars=[]; const sM=mIdx, sC=cIdx;
+        while(i<model.length && model[i].blockMark===bm){
+          chars.push(model[i]);
+          mIdx++; if(model[i].ch!=='\n') cIdx++;
+          i++;
+        }
+        segs.push({kind:'block', bm, chars, mstart:sM, mend:mIdx, cstart:sC, cend:cIdx});
+      } else {
+        const src=m.source;
+        const chars=[]; const sM=mIdx, sC=cIdx;
+        while(i<model.length && !model[i].blockMark && model[i].source===src){
+          chars.push(model[i]);
+          mIdx++; if(model[i].ch!=='\n') cIdx++;
+          i++;
+        }
+        segs.push({kind:'typing', src, chars, mstart:sM, mend:mIdx, cstart:sC, cend:cIdx});
       }
-      mIdx++; if(m.ch!=='\n') cIdx++;
     }
     let html=`<h3 class="text-lg font-bold text-slate-900 mb-3">${docTitleVal}</h3><div style="white-space:pre-wrap;">`;
     segs.forEach(s=>{
-      const txt=s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // ai/paste 원본은 보라/빨강 (markEditedAround로 변환된 ai-edited/paste-edited도 동일)
-      // ai-internal/paste-internal (실제 사용자가 손댄 글자)만 +수정 컬러
-      const cls = s.src==='typing'?'':
-                  s.src==='paste' || s.src==='paste-edited' ? 'origin-paste':
-                  s.src==='paste-internal' ? 'origin-paste-edited':
-                  s.src==='ai' || s.src==='ai-edited' ? 'origin-ai':
-                  s.src==='ai-internal' ? 'origin-ai-edited':'';
-      const len=s.text.replace(/\n/g,'').length;
-      html+=`<span class="origin-seg ${cls}" data-origin="${s.src}" data-len="${len}" data-mstart="${s.mstart}" data-mend="${s.mend}" data-cstart="${s.cstart}" data-cend="${s.cend}" data-bm="${s.bm}">${txt}</span>`;
+      const visibleLen=s.chars.filter(c=>c.ch!=='\n').length;
+      if(s.kind==='block'){
+        // 블록 전체 = 1개의 클릭 가능한 segment.
+        // hasInternal / data-len은 model 전체에서 동일 blockMark를 가진 모든 글자 기준으로 계산해
+        // 시각상 두 부분으로 갈라져도 같은 블록 정보가 나오도록 한다.
+        const allBlockChars = model.filter(m=>m.blockMark===s.bm);
+        const hasInternal = allBlockChars.some(c=>c.source==='ai-internal'||c.source==='paste-internal');
+        const isAi = _aiFam(allBlockChars[0]?.source||s.chars[0].source);
+        const blockOrigin = hasInternal ? (isAi?'ai-internal':'paste-internal') : (isAi?'ai':'paste');
+        const blockTotalChars = allBlockChars.filter(c=>c.ch!=='\n').length;
+        // 내부에 paint span 중첩 (연속된 같은 paint cls 묶음)
+        let inner='', curCls=null, curTxt='';
+        s.chars.forEach(c=>{
+          const cls=_paint(c.source);
+          const t=_esc4(c.ch);
+          if(cls===curCls){ curTxt+=t; }
+          else { if(curTxt) inner += `<span class="${curCls}">${curTxt}</span>`; curCls=cls; curTxt=t; }
+        });
+        if(curTxt) inner += `<span class="${curCls}">${curTxt}</span>`;
+        html+=`<span class="origin-seg" data-origin="${blockOrigin}" data-len="${blockTotalChars}" data-mstart="${s.mstart}" data-mend="${s.mend}" data-cstart="${s.cstart}" data-cend="${s.cend}" data-bm="${s.bm}">${inner}</span>`;
+      } else {
+        // typing run = 1개의 segment (색 없음)
+        const txt = _esc4(s.chars.map(c=>c.ch).join(''));
+        html+=`<span class="origin-seg" data-origin="${s.src}" data-len="${visibleLen}" data-mstart="${s.mstart}" data-mend="${s.mend}" data-cstart="${s.cstart}" data-cend="${s.cend}" data-bm="0">${txt}</span>`;
+      }
     });
     html+='</div>';
     // 범례
