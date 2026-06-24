@@ -112,14 +112,12 @@
   body[data-view="report"] #header-write{display:none;}
   body[data-view="write"] #header-report{display:none;}
 
-  /* ===== Report Tab: 메인 ↔ 추후 검토 ===== */
+  /* ===== Report Tab: 메인 ↔ 추후 검토 (TOC는 항상 모두 노출) ===== */
   /* 기본: 추후 검토 섹션 묶음 숨김 */
   #future-sections{display:none;}
   /* 추후 검토 탭: future 묶음만 보이고, 메인 섹션은 숨김 */
   body[data-report-tab="future"] #future-sections{display:block;}
   body[data-report-tab="future"] #view-report main > section[id]{display:none;}
-  body[data-report-tab="future"] #tocMain{display:none;}
-  body[data-report-tab="main"]   #tocFuture{display:none;}
 
   /* ============ EDITOR VIEW ============ */
   .editor-grid{display:grid;grid-template-columns:320px 1fr;gap:20px;height:calc(100vh - 56px - 48px);max-width:1280px;margin:0 auto;padding:24px;}
@@ -329,48 +327,27 @@
 <!-- ============ 사이드바 TOC ============ -->
 <aside class="hidden lg:block sticky top-14 self-start no-print" style="width:var(--sidebar-width);height:calc(100vh - 56px);">
   <nav id="toc" class="h-full overflow-y-auto py-6 pr-2">
-    <!-- ====== 메인 탭 TOC ====== -->
-    <div id="tocMain">
-      <div class="text-[11px] tracking-wider text-slate-400 font-semibold uppercase px-3 mb-2">목차</div>
-      <a href="#sec-01" class="toc-item active block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">요약</a>
-      <a href="#sec-02" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">자율성 지수</a>
-      <a href="#sec-metrics" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">종합 지표</a>
-      <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">텍스트 출처</a>
-      <a href="#sec-07" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">외부 유입 로그</a>
-      <a href="#sec-11" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">원본 보존율</a>
-      <a href="#sec-12" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">텍스트 구성 분포</a>
+    <!-- ====== 목차 (메인) ====== -->
+    <div class="text-[11px] tracking-wider text-slate-400 font-semibold uppercase px-3 mb-2">목차</div>
+    <a href="#sec-01" class="toc-item active block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">요약</a>
+    <a href="#sec-02" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">자율성 지수</a>
+    <a href="#sec-metrics" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">종합 지표</a>
+    <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 출처</a>
+    <a href="#sec-07" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">외부 유입 로그</a>
+    <a href="#sec-11" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">원본 보존율</a>
+    <a href="#sec-12" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 구성 분포</a>
 
-      <button onclick="showFutureTab()" class="block w-full text-left mt-5 mx-3 px-3 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition-colors" style="width:calc(100% - 1.5rem);">
-        <div class="flex items-center justify-between gap-2">
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 text-[11px] tracking-wider text-slate-400 font-semibold uppercase">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              추후 검토
-            </div>
-            <div class="text-[12px] font-semibold text-slate-700 mt-0.5">6개 추가 분석 보기</div>
-          </div>
-          <span class="text-slate-400 text-lg leading-none">→</span>
-        </div>
-      </button>
+    <!-- ====== 추후 검토 콘텐츠 ====== -->
+    <div class="mt-5 mx-3 mb-2 pt-4 border-t border-slate-200 flex items-center gap-1.5 text-[11px] tracking-wider text-slate-400 font-semibold uppercase">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      추후 검토 콘텐츠
     </div>
-
-    <!-- ====== 추후 검토 탭 TOC ====== -->
-    <div id="tocFuture">
-      <button onclick="showMainTab()" class="flex items-center gap-1 mx-3 mb-3 text-[12px] text-blue-600 hover:underline">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        메인 결과로 돌아가기
-      </button>
-      <div class="flex items-center gap-1.5 text-[11px] tracking-wider text-slate-400 font-semibold uppercase px-3 mb-2">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        추후 검토 콘텐츠
-      </div>
-      <a href="#sec-03" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">활동 타임라인</a>
-      <a href="#sec-06" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">타이핑 속도</a>
-      <a href="#sec-08" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">비선형 커서 이동</a>
-      <a href="#sec-09" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">비활성 구간</a>
-      <a href="#sec-15" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">버전 스냅샷</a>
-      <a href="#sec-16" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50">위변조 불가능한 작성 증명</a>
-    </div>
+    <a href="#sec-03" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">활동 타임라인</a>
+    <a href="#sec-06" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">타이핑 속도</a>
+    <a href="#sec-08" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">비선형 커서 이동</a>
+    <a href="#sec-09" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">비활성 구간</a>
+    <a href="#sec-15" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">버전 스냅샷</a>
+    <a href="#sec-16" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="future">위변조 불가능한 작성 증명</a>
 
     <div class="mt-6 mx-3 p-3 rounded-xl border border-slate-200 bg-white">
       <div class="text-[11px] text-slate-500 mb-1">진행도</div>
@@ -1638,7 +1615,15 @@ const io=new IntersectionObserver(entries=>{
 sections.forEach(s=>io.observe(s));
 tocLinks.forEach(l=>l.addEventListener('click',e=>{
   e.preventDefault();
-  document.querySelector(l.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+  // data-target-tab으로 메인/추후 페이지 자동 전환
+  const targetTab = l.dataset.targetTab;
+  if(targetTab && document.body.dataset.reportTab !== targetTab){
+    document.body.dataset.reportTab = targetTab;
+  }
+  // CSS 적용이 끝난 다음 프레임에 스크롤 (display:none이 풀린 직후라야 scrollIntoView가 동작)
+  requestAnimationFrame(()=>{
+    document.querySelector(l.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+  });
 }));
 
 /* ---------- Origin segment click — 통합 핸들러 (renderSegDetail 호출) ---------- */
