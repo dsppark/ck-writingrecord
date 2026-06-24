@@ -483,7 +483,7 @@
           </div>
           <div>
             <div class="flex items-center justify-between text-[13px] mb-1">
-              <span class="text-slate-700">AI편집 후 수정</span>
+              <span class="text-slate-700">AI 영역 내 수정</span>
               <span class="font-mono font-semibold text-slate-900">22.1%</span>
             </div>
             <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:22.1%"></div></div>
@@ -518,7 +518,7 @@
           </div>
         </div>
         <div class="mt-4 p-3 rounded-lg bg-slate-50 text-[12.5px] text-slate-600 leading-relaxed border border-slate-100">
-          <span class="font-semibold text-slate-800">해석</span> · 직접 타이핑 비중이 절반을 넘고, 비선형 커서 이동과 수정 품질 점수가 높아 작성자의 능동적 편집이 충분히 관찰됩니다. AI 생성·붙여넣기 텍스트도 절반 이상 재작성되었습니다.
+          <span class="font-semibold text-slate-800">해석</span> · 직접 타이핑 비중이 절반을 넘고, 비선형 커서 이동과 수정 품질 점수가 높아 작성자의 능동적 수정이 충분히 관찰됩니다. AI 생성·붙여넣기 텍스트도 절반 이상 재작성되었습니다.
         </div>
       </div>
     </div>
@@ -996,7 +996,7 @@
     </div>
 
     <div class="grid md:grid-cols-2 gap-5">
-      <!-- AI 보존율 도넛 (보라/연파랑) -->
+      <!-- AI 보존율 도넛 (보라/연파랑/회색) -->
       <div class="bg-white rounded-xl border border-slate-200 p-5">
         <div class="flex items-center gap-1.5 mb-3">
           <div class="w-2 h-2 rounded-full" style="background:#7C3AED;"></div>
@@ -1006,32 +1006,36 @@
           <div class="relative w-[140px] h-[140px] shrink-0">
             <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" stroke-width="14"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#7C3AED" stroke-width="14" stroke-dasharray="45.7 251" stroke-dashoffset="0"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#93C5FD" stroke-width="14" stroke-dasharray="205.6 251" stroke-dashoffset="-45.7"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#7C3AED" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#93C5FD" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#CBD5E1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <div class="text-2xl font-extrabold text-slate-900">18.2<span class="text-base">%</span></div>
+              <div class="text-2xl font-extrabold text-slate-900" data-bind="ai-intact-center">0.0<span class="text-base">%</span></div>
               <div class="text-[10px] text-slate-500">원형 유지</div>
             </div>
           </div>
           <div class="flex-1 text-sm">
             <div class="flex items-center justify-between py-1.5">
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#7C3AED;"></span>원형 유지</span>
-              <span class="font-mono font-semibold">18.2%</span>
+              <span class="font-mono font-semibold" data-bind="ai-intact-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#93C5FD;"></span>편집됨</span>
-              <span class="font-mono font-semibold">81.8%</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#93C5FD;"></span>수정됨</span>
+              <span class="font-mono font-semibold" data-bind="ai-edited-pct">0.0%</span>
             </div>
-            <div class="mt-2 px-2 py-1 rounded text-[11px] font-semibold inline-flex items-center gap-1" style="background:#F5F3FF;color:#6D28D9;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              적극적 퇴고
+            <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#CBD5E1;"></span>삭제됨</span>
+              <span class="font-mono font-semibold" data-bind="ai-deleted-pct">0.0%</span>
+            </div>
+            <div data-bind="ai-badge" class="mt-2 px-2 py-1 rounded text-[11px] font-semibold inline-flex items-center gap-1" style="background:#F5F3FF;color:#6D28D9;">
+              —
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 붙여넣기 보존율 도넛 (빨강/오렌지) -->
+      <!-- 붙여넣기 보존율 도넛 (빨강/오렌지/회색) -->
       <div class="bg-white rounded-xl border border-slate-200 p-5">
         <div class="flex items-center gap-1.5 mb-3">
           <div class="w-2 h-2 rounded-full" style="background:#EF4444;"></div>
@@ -1041,25 +1045,30 @@
           <div class="relative w-[140px] h-[140px] shrink-0">
             <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" stroke-width="14"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#EF4444" stroke-width="14" stroke-dasharray="93 251" stroke-dashoffset="0"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="158 251" stroke-dashoffset="-93"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#EF4444" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#CBD5E1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <div class="text-2xl font-extrabold text-slate-900">37.0<span class="text-base">%</span></div>
+              <div class="text-2xl font-extrabold text-slate-900" data-bind="paste-intact-center">0.0<span class="text-base">%</span></div>
               <div class="text-[10px] text-slate-500">원형 유지</div>
             </div>
           </div>
           <div class="flex-1 text-sm">
             <div class="flex items-center justify-between py-1.5">
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#EF4444;"></span>원형 유지</span>
-              <span class="font-mono font-semibold">37.0%</span>
+              <span class="font-mono font-semibold" data-bind="paste-intact-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#F59E0B;"></span>편집됨</span>
-              <span class="font-mono font-semibold">63.0%</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#F59E0B;"></span>수정됨</span>
+              <span class="font-mono font-semibold" data-bind="paste-edited-pct">0.0%</span>
             </div>
-            <div class="mt-2 px-2 py-1 rounded bg-amber-50 text-amber-700 text-[11px] font-semibold inline-flex items-center gap-1">
-              ✎ 보통 수준
+            <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#CBD5E1;"></span>삭제됨</span>
+              <span class="font-mono font-semibold" data-bind="paste-deleted-pct">0.0%</span>
+            </div>
+            <div data-bind="paste-badge" class="mt-2 px-2 py-1 rounded bg-amber-50 text-amber-700 text-[11px] font-semibold inline-flex items-center gap-1">
+              —
             </div>
           </div>
         </div>
@@ -2685,47 +2694,91 @@ async function buildReportFromSession(){
   }
 
   // ---- C-11 retention ----
-  // group by blockMark for ai/paste
+  // 블록(blockMark) 단위로 외부 유입(AI/붙여넣기) 글자를 집계.
+  // size      = 삽입 당시 원본 글자수 (blockSize)
+  // intact    = 손대지 않은 원형 글자수 (source가 'ai'/'paste')
+  // edited    = 같은 블록 내 사용자가 손댄 후 잔존한 원본 글자수 ('ai-edited'/'paste-edited')
+  // deleted   = size - intact - edited (사라진 글자수)
   const blocks={};
   model.forEach(m=>{
     if(!m.blockMark) return;
     const fam = (m.source==='ai'||m.source==='ai-edited'||m.source==='ai-internal') ? 'ai' :
                 (m.source==='paste'||m.source==='paste-edited'||m.source==='paste-internal') ? 'paste' : null;
     if(!fam) return;
-    if(!blocks[m.blockMark]) blocks[m.blockMark]={fam, original:0, intact:0, size:m.blockSize||1};
-    blocks[m.blockMark].original++;
+    if(!blocks[m.blockMark]) blocks[m.blockMark]={fam, intact:0, edited:0, size:m.blockSize||1};
     if(m.source==='ai' || m.source==='paste') blocks[m.blockMark].intact++;
+    else if(m.source==='ai-edited' || m.source==='paste-edited') blocks[m.blockMark].edited++;
   });
-  let aiSize=0,aiIntact=0,pSize=0,pIntact=0;
+  let aiSize=0,aiIntact=0,aiEdited=0,pSize=0,pIntact=0,pEdited=0;
   Object.values(blocks).forEach(b=>{
-    if(b.fam==='ai'){ aiSize+=b.size; aiIntact+=b.intact; }
-    else{ pSize+=b.size; pIntact+=b.intact; }
+    if(b.fam==='ai'){ aiSize+=b.size; aiIntact+=b.intact; aiEdited+=b.edited; }
+    else{ pSize+=b.size; pIntact+=b.intact; pEdited+=b.edited; }
   });
-  const aiRet = aiSize>0 ? (aiIntact/aiSize*100) : 0;
-  const pRet  = pSize>0 ? (pIntact/pSize*100) : 0;
-  // update donut texts in SEC-11
-  const donuts=document.querySelectorAll('#sec-11 .relative.w-\\[140px\\]');
-  if(donuts[0]){
-    const center=donuts[0].querySelector('.absolute .text-2xl');
-    if(center) center.innerHTML=`${aiRet.toFixed(1)}<span class="text-base">%</span>`;
+  const aiDeleted = Math.max(0, aiSize - aiIntact - aiEdited);
+  const pDeleted  = Math.max(0, pSize  - pIntact  - pEdited);
+  const pct = (n,d)=> d>0 ? (n/d*100) : 0;
+  const aiIntactPct  = pct(aiIntact,  aiSize);
+  const aiEditedPct  = pct(aiEdited,  aiSize);
+  const aiDeletedPct = pct(aiDeleted, aiSize);
+  const pIntactPct   = pct(pIntact,   pSize);
+  const pEditedPct   = pct(pEdited,   pSize);
+  const pDeletedPct  = pct(pDeleted,  pSize);
+  // 보존율 호환 변수 (다른 섹션이 참조)
+  const aiRet = aiIntactPct;
+  const pRet  = pIntactPct;
+
+  // 중앙 % / 범례 % 갱신
+  function setBind(key, v){
+    document.querySelectorAll(`[data-bind="${key}"]`).forEach(el=>{
+      if(el.dataset.bind.endsWith('-center')){
+        el.innerHTML = `${v.toFixed(1)}<span class="text-base">%</span>`;
+      } else {
+        el.textContent = `${v.toFixed(1)}%`;
+      }
+    });
   }
-  if(donuts[1]){
-    const center=donuts[1].querySelector('.absolute .text-2xl');
-    if(center) center.innerHTML=`${pRet.toFixed(1)}<span class="text-base">%</span>`;
-  }
-  // donut stroke-dasharray
-  function setDonut(donutEl, retainedPct, retainedColor){
+  setBind('ai-intact-center',  aiIntactPct);
+  setBind('ai-intact-pct',     aiIntactPct);
+  setBind('ai-edited-pct',     aiEditedPct);
+  setBind('ai-deleted-pct',    aiDeletedPct);
+  setBind('paste-intact-center', pIntactPct);
+  setBind('paste-intact-pct',    pIntactPct);
+  setBind('paste-edited-pct',    pEditedPct);
+  setBind('paste-deleted-pct',   pDeletedPct);
+
+  // 3색 도넛 stroke-dasharray (intact → edited → deleted 순)
+  function setDonut3(donutEl, parts){
     const circles=donutEl.querySelectorAll('circle');
-    if(circles.length<3) return;
+    if(circles.length<4) return;
     const C=2*Math.PI*40;
-    const retLen=(retainedPct/100)*C;
-    circles[1].setAttribute('stroke-dasharray',`${retLen} ${C}`);
-    circles[1].setAttribute('stroke-dashoffset','0');
-    circles[2].setAttribute('stroke-dasharray',`${C-retLen} ${C}`);
-    circles[2].setAttribute('stroke-dashoffset',`-${retLen}`);
+    let off=0;
+    for(let i=0;i<3;i++){
+      const len = parts[i]/100 * C;
+      circles[i+1].setAttribute('stroke-dasharray', `${len} ${C}`);
+      circles[i+1].setAttribute('stroke-dashoffset', `-${off}`);
+      off += len;
+    }
   }
-  if(donuts[0]) setDonut(donuts[0],aiRet,'#EF4444');
-  if(donuts[1]) setDonut(donuts[1],pRet,'#F59E0B');
+  const donuts=document.querySelectorAll('#sec-11 .relative.w-\\[140px\\]');
+  if(donuts[0]) setDonut3(donuts[0],[aiIntactPct, aiEditedPct, aiDeletedPct]);
+  if(donuts[1]) setDonut3(donuts[1],[pIntactPct,  pEditedPct,  pDeletedPct]);
+
+  // 배지 — 원형 유지율 낮을수록 적극적 퇴고
+  function badgeFor(intactPct, hasData){
+    if(!hasData) return {text:'데이터 없음', bg:'#F1F5F9', fg:'#475569', icon:'·'};
+    if(intactPct < 30)  return {text:'적극적 수정', bg:'#F5F3FF', fg:'#6D28D9', icon:'✓'};
+    if(intactPct < 70)  return {text:'보통 수준',   bg:'#FEF3C7', fg:'#92400E', icon:'✎'};
+    return {text:'거의 손대지 않음', bg:'#F1F5F9', fg:'#475569', icon:'·'};
+  }
+  function applyBadge(sel, b){
+    const el=document.querySelector(sel);
+    if(!el) return;
+    el.style.background = b.bg;
+    el.style.color = b.fg;
+    el.textContent = `${b.icon} ${b.text}`;
+  }
+  applyBadge('[data-bind="ai-badge"]',    badgeFor(aiIntactPct, aiSize>0));
+  applyBadge('[data-bind="paste-badge"]', badgeFor(pIntactPct,  pSize>0));
 
   // ---- C-02 autonomy score (D 공식) ----
   const aiRewrite = aiSize>0 ? (100-aiRet) : 100;
