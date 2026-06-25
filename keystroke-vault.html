@@ -38,6 +38,10 @@
     --ck-green-50:#ECFDF5; --ck-green-100:#D1FAE5; --ck-green-200:#A7F3D0;
     --ck-green-500:#00C86A; --ck-green-600:#059669; --ck-green-700:#047857;
     --ck-green-800:#065F46; --ck-green-900:#064E3B;
+    /* teal/mint — AI 생성+수정 톤 (보라 brand-gk와 hue 명확히 분리) */
+    --ck-teal-50:#F0FDFA; --ck-teal-100:#CCFBF1; --ck-teal-200:#99F6E4;
+    --ck-teal-300:#5EEAD4; --ck-teal-400:#2DD4BF; --ck-teal-500:#14B8A6;
+    --ck-teal-600:#0D9488; --ck-teal-700:#0F766E; --ck-teal-800:#115E59;
 
     /* === 의미 매핑 — 기존 변수명을 ck-ui 값으로 alias === */
     --color-primary:var(--ck-primary-500);
@@ -129,7 +133,7 @@
   .origin-paste{background:var(--ck-danger-100);}
   .origin-paste-edited{background:var(--ck-warning-100);}
   .origin-ai{background:var(--ck-brand-gk-100);}
-  .origin-ai-edited{background:var(--ck-tertiary-100);}
+  .origin-ai-edited{background:var(--ck-teal-100);}
   /* 본문 영역 클릭 선택 — 글자색/음영 없이 검정 테두리만 */
   #originDoc .origin-seg.is-selected{outline:2px solid var(--ck-gray-900);border-radius:2px;}
 
@@ -578,7 +582,7 @@
               <span class="text-slate-700">AI 영역 내 수정</span>
               <span class="font-mono font-semibold text-slate-900">22.1%</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:22.1%;background:var(--ck-tertiary-500);"></div></div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:22.1%;background:var(--ck-teal-500);"></div></div>
           </div>
           <div>
             <div class="flex items-center justify-between text-[13px] mb-1">
@@ -592,21 +596,21 @@
               <span class="text-slate-700">수정 품질</span>
               <span class="font-mono font-semibold text-slate-900">68 / 100</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:68%"></div></div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:68%;background:#EC4899;"></div></div>
           </div>
           <div>
             <div class="flex items-center justify-between text-[13px] mb-1">
               <span class="text-slate-700">비선형 커서 이동</span>
               <span class="font-mono font-semibold text-slate-900">72 / 100</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-violet-500" style="width:72%"></div></div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:72%;background:#92400E;"></div></div>
           </div>
           <div>
             <div class="flex items-center justify-between text-[13px] mb-1">
               <span class="text-slate-700">사고 시간(비활성 비율)</span>
               <span class="font-mono font-semibold text-slate-900">55 / 100</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-sky-500" style="width:55%"></div></div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:55%;background:#EAB308;"></div></div>
           </div>
         </div>
         <div class="mt-4 p-3 rounded-lg bg-slate-50 text-[12.5px] text-slate-600 leading-relaxed border border-slate-100">
@@ -846,7 +850,7 @@
       <div id="compoBar" class="flex rounded-lg overflow-hidden text-white text-[12px] font-semibold" style="height:36px;">
         <div class="composeg flex items-center justify-center" data-key="typing"       data-label="직접 타이핑"   data-n="0"   data-pct="0"   data-color="#00C86A" style="background:#00C86A;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="ai"           data-label="AI 생성"        data-n="110" data-pct="100" data-color="#7C52F1" style="background:#7C52F1;width:100%">100%</div>
-        <div class="composeg flex items-center justify-center" data-key="ai-edited"    data-label="AI 생성+수정"  data-n="0"   data-pct="0"   data-color="#B1CEFB" style="background:#B1CEFB;color:#0859C5;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="ai-edited"    data-label="AI 생성+수정"  data-n="0"   data-pct="0"   data-color="#CCFBF1" style="background:#CCFBF1;color:#0F766E;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="paste"        data-label="붙여넣기"      data-n="0"   data-pct="0"   data-color="#EF4444" style="background:#EF4444;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="paste-edited" data-label="붙여넣기+수정" data-n="0"   data-pct="0"   data-color="#F97316" style="background:#F97316;width:0%"></div>
       </div>
@@ -854,7 +858,7 @@
     <div id="compoLegend" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] justify-end">
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#00C86A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C52F1;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span><span class="text-slate-400" data-bind="ai-pct">(100%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#B1CEFB;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#CCFBF1;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#F97316;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0%)</span></div>
     </div>
@@ -869,7 +873,7 @@
         <button onclick="toggleOrigin(this,'all')" class="origin-filter is-active" data-cat="all" style="--cat:var(--ck-gray-900);--cat-dark:var(--ck-gray-900);--cat-light:var(--ck-gray-100);">전체</button>
         <button onclick="toggleOrigin(this,'direct')" class="origin-filter" data-cat="direct" style="--cat:var(--ck-green-500);--cat-dark:var(--ck-green-700);--cat-light:var(--ck-green-100);">직접 타이핑</button>
         <button onclick="toggleOrigin(this,'ai')" class="origin-filter" data-cat="ai" style="--cat:var(--ck-brand-gk-500);--cat-dark:var(--ck-brand-gk-700);--cat-light:var(--ck-brand-gk-100);">AI생성</button>
-        <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:var(--ck-tertiary-500);--cat-dark:var(--ck-tertiary-800);--cat-light:var(--ck-tertiary-100);">AI생성+수정</button>
+        <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:var(--ck-teal-500);--cat-dark:var(--ck-teal-700);--cat-light:var(--ck-teal-100);">AI생성+수정</button>
         <button onclick="toggleOrigin(this,'paste')" class="origin-filter" data-cat="paste" style="--cat:var(--ck-danger-500);--cat-dark:var(--ck-danger-700);--cat-light:var(--ck-danger-100);">붙여넣기</button>
         <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-warning-500);--cat-dark:var(--ck-warning-700);--cat-light:var(--ck-warning-100);">붙여넣기+수정</button>
       </div>
@@ -1089,7 +1093,7 @@
             <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" stroke-width="14"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#7C52F1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#B1CEFB" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#CCFBF1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#CBD5E1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -1103,7 +1107,7 @@
               <span class="font-mono font-semibold" data-bind="ai-intact-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#B1CEFB;"></span>수정됨</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#CCFBF1;"></span>수정됨</span>
               <span class="font-mono font-semibold" data-bind="ai-edited-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
@@ -2739,7 +2743,7 @@ async function buildReportFromSession(){
   const segData = [
     {key:'typing',       label:'직접 타이핑',    n:n_typing,   color:'#00C86A'},
     {key:'ai',           label:'AI 생성',        n:n_ai,       color:'#7C52F1'},
-    {key:'ai-edited',    label:'AI 생성+수정',  n:n_aiRev,    color:'#B1CEFB'},
+    {key:'ai-edited',    label:'AI 생성+수정',  n:n_aiRev,    color:'#CCFBF1'},
     {key:'paste',        label:'붙여넣기',       n:n_paste,    color:'#EF4444'},
     {key:'paste-edited', label:'붙여넣기+수정', n:n_pasteRev, color:'#F97316'},
   ];
@@ -2757,7 +2761,7 @@ async function buildReportFromSession(){
       d.dataset.color=s.color;
       // 연파랑 배경에는 진한 텍스트
       const lightBg = s.key==='ai-edited';
-      d.style.cssText=`background:${s.color};width:${pct}%;${lightBg?'color:#0859C5;':''}`;
+      d.style.cssText=`background:${s.color};width:${pct}%;${lightBg?'color:#0F766E;':''}`;
       d.textContent = pct>=10 ? `${pct.toFixed(0)}%` : '';
       bar.appendChild(d);
     });
