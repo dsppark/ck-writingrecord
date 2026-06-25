@@ -130,8 +130,8 @@
   .origin-paste-edited{background:var(--ck-warning-100);}
   .origin-ai{background:var(--ck-brand-gk-100);}
   .origin-ai-edited{background:var(--ck-tertiary-100);}
-  /* 본문 영역 클릭 선택 — 글자색/음영 없이 시안 테두리만 */
-  #originDoc .origin-seg.is-selected{outline:2px solid var(--ck-primary-500);border-radius:2px;}
+  /* 본문 영역 클릭 선택 — 글자색/음영 없이 검정 테두리만 */
+  #originDoc .origin-seg.is-selected{outline:2px solid var(--ck-gray-900);border-radius:2px;}
 
   /* Replay 모달 */
   .speed-btn{padding:3px 8px;border-radius:6px;color:#64748B;cursor:pointer;font-size:11px;font-weight:600;background:transparent;border:none;}
@@ -3006,15 +3006,6 @@ async function buildReportFromSession(){
       }
     });
     html+='</div>';
-    // 범례
-    html+=`<div class="mt-5 pt-4 border-t border-slate-100"><div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
-      <span>출처별 색상:</span>
-      <span class="px-2 py-0.5 rounded" style="background:var(--ck-green-100);color:var(--ck-green-800);">직접 타이핑</span>
-      <span class="px-2 py-0.5 origin-ai rounded">AI생성</span>
-      <span class="px-2 py-0.5 origin-ai-edited rounded">AI생성+수정</span>
-      <span class="px-2 py-0.5 origin-paste rounded">붙여넣기</span>
-      <span class="px-2 py-0.5 origin-paste-edited rounded">붙여넣기+수정</span>
-    </div></div>`;
     orgDoc.innerHTML=html;
     // 클릭 시 상세 패널 갱신
     document.querySelectorAll('#originDoc .origin-seg').forEach(seg=>{
