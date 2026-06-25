@@ -327,7 +327,12 @@
       <div class="font-semibold text-slate-900 text-[15px] leading-tight mt-0.5">새 문서 작성</div>
     </div>
   </div>
-  <div class="ml-auto"></div>
+  <div class="ml-auto flex items-center gap-2">
+    <button onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입"
+      class="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 rounded-md px-2 py-1 bg-white hover:border-slate-400 transition-colors">
+      🧪 데모 결과지
+    </button>
+  </div>
 </header>
 
 <!-- ============ EDITOR VIEW (FS-001 ~ FS-033) ============ -->
@@ -3485,6 +3490,192 @@ function fmtSec(ms){
   const m=Math.floor(s/60); const ss=s%60;
   return m>0 ? `${m}:${String(ss).padStart(2,'0')}` : `${ss}초`;
 }
+
+/* ===========================================================================
+   DEMO MODE — 9개 케이스가 채워진 결과지를 한 번에 띄우기 위한 시드 함수.
+   - 호출 진입: 작성도구 헤더 '🧪 데모 결과지' 버튼 또는 URL ?demo=1 / ?demo=full
+   - model/events/stats/editOps 를 직접 채우고 buildReportFromSession 호출 후
+     view='report' 로 전환한다. 진짜 입력 흐름을 거치지 않으므로 reconcile/IME 우회.
+   =========================================================================== */
+function seedDemo(){
+  // 0) 초기화
+  model = [];
+  events = [];
+  editOps = [];
+  stats = {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0};
+  blockSeq = 0;
+  let bm = 0;
+  let ts = Date.now() - 22 * 60 * 1000; // 22분 전 시작
+
+  // 1) 헬퍼들
+  function addTyping(text, gap=170){
+    const startTs = ts;
+    for(const ch of text){
+      // 살짝 흔들리는 간격으로 자연스러운 평균 타이핑 속도
+      ts += gap + ((ch.charCodeAt(0)%7) * 18);
+      model.push({ch, source:'typing', ts});
+    }
+    events.push({ts:startTs, type:'typing', srcFamily:'typing', n:text.length, isInsert:true});
+  }
+  function addNewline(){ model.push({ch:'\n', source:'typing', ts:++ts}); }
+  function addPaste(text){
+    bm++;
+    ts += 1300;
+    const eventTs = ts;
+    const bSize = text.length;
+    for(const ch of text){
+      ts += 4;
+      model.push({ch, source:'paste', ts, blockMark:bm, blockSize:bSize});
+    }
+    events.push({ts:eventTs, type:'paste', srcFamily:'paste', n:text.length, isInsert:true});
+  }
+  function addAi(text){
+    bm++;
+    ts += 2200; // AI 응답 대기 멈춤
+    const eventTs = ts;
+    const bSize = text.length;
+    for(const ch of text){
+      ts += 4;
+      model.push({ch, source:'ai', ts, blockMark:bm, blockSize:bSize});
+    }
+    events.push({ts:eventTs, type:'ai', srcFamily:'ai', n:text.length, isInsert:true});
+  }
+  // 마지막 블록 끝쪽에서 n자 삭제 + 잔존을 edited 마킹
+  function deleteFromLastBlock(n){
+    if(!model.length) return;
+    const lastBm = model[model.length-1].blockMark;
+    if(!lastBm) return;
+    ts += 700;
+    let removed = 0;
+    while(removed < n && model.length){
+      const m = model[model.length-1];
+      if(m.blockMark !== lastBm) break;
+      if(m.source.startsWith('paste')) stats.pasteDeleted++;
+      else if(m.source.startsWith('ai')) stats.aiDeleted++;
+      else stats.typingDeleted++;
+      model.pop();
+      removed++;
+      stats.deletes++;
+    }
+    events.push({ts, type:'delete', srcFamily: (model[model.length-1]?.source?.startsWith('ai') ? 'ai':'paste'), n:removed, isInsert:false});
+    editOps.push({deleted:removed, inserted:0, isContent:true, ts});
+    // 잔존을 edited 로
+    for(let i=model.length-1; i>=0; i--){
+      const m = model[i];
+      if(m.blockMark !== lastBm) break;
+      if(m.source === 'paste') m.source = 'paste-edited';
+      else if(m.source === 'ai') m.source = 'ai-edited';
+    }
+  }
+  // 마지막 블록 끝에 internal 글자 삽입 + 원본 잔존을 edited 마킹
+  function insertInternalToLastBlock(text){
+    if(!model.length) return;
+    const lastBm = model[model.length-1].blockMark;
+    if(!lastBm) return;
+    const fam = (model[model.length-1].source.startsWith('ai')) ? 'ai-internal' : 'paste-internal';
+    ts += 400;
+    const startTs = ts;
+    for(const ch of text){
+      ts += 210;
+      model.push({ch, source:fam, ts, blockMark:lastBm});
+    }
+    events.push({ts:startTs, type:'typing', srcFamily:'typing', n:text.length, isInsert:true});
+    editOps.push({deleted:0, inserted:text.length, isContent:true, ts});
+    // 같은 블록의 원본을 edited 로
+    for(let i=0; i<model.length; i++){
+      const m = model[i];
+      if(m.blockMark !== lastBm) continue;
+      if(m.source === 'paste') m.source = 'paste-edited';
+      else if(m.source === 'ai') m.source = 'ai-edited';
+    }
+  }
+
+  // 2) 9개 케이스 시드 — 자연스러운 한국어 흐름으로 엮음
+  // [1] 직접 입력
+  addTyping('대학생 자율성 시대의 글쓰기 윤리에 관한 짧은 보고서. ', 165);
+  addNewline();
+  addTyping('먼저 직접 작성한 도입부를 정리한다. ', 170);
+
+  // [2] 외부 붙여넣기 원본 — 손 안 댐
+  addPaste('“좋은 글은 흔적을 남긴다.” — 글쓰기 교사의 말처럼, 과정 자체가 글의 정체성을 만든다.');
+  addNewline();
+
+  // [3] 외부 붙여넣기 후 일부 삭제
+  addPaste('이 인용은 보고서 본문에 그대로 두려 했으나 일부 표현을 다듬기로 한다. 뒤쪽 문장은 잘라낸다.');
+  deleteFromLastBlock(18);
+  addNewline();
+
+  // [4] 외부 붙여넣기 후 삽입
+  addPaste('표절 검사로는 “학생의 글”과 “AI의 글”을 충분히 구분할 수 없다.');
+  insertInternalToLastBlock(' (현장 사례로 보면 더욱 그렇다)');
+  addNewline();
+
+  // [5] 외부 붙여넣기 후 텍스트 교체
+  addPaste('따라서 우리는 결과보다 ‘과정’에 주목해야 한다고 강조한다.');
+  deleteFromLastBlock(7);
+  insertInternalToLastBlock('실천을 권한다.');
+  addNewline();
+
+  // 사이에 직접 타이핑 한 단락
+  addTyping('이제 본문 핵심을 정리한다. ', 180);
+
+  // [6] AI 생성 원본
+  addAi('AI는 단순한 보조 도구가 아니라, 사고를 확장하는 동반자라는 인식이 필요하다.');
+  addNewline();
+
+  // [7] AI 후 일부 삭제
+  addAi('그러나 의존하는 비중을 학생 스스로 통제할 수 있어야 한다. 마지막 강조 문장은 제거한다.');
+  deleteFromLastBlock(15);
+  addNewline();
+
+  // [8] AI 후 삽입
+  addAi('통제는 추적과 공개가 가능할 때 비로소 실효를 가진다.');
+  insertInternalToLastBlock(' 이는 우리의 출발점이기도 하다.');
+  addNewline();
+
+  // [9] AI 후 텍스트 교체
+  addAi('우리가 제안하는 KeyStroke Vault는 그 과정을 보관·증명한다.');
+  deleteFromLastBlock(6);
+  insertInternalToLastBlock('투명하게 공개한다.');
+  addNewline();
+
+  // 마지막 직접 타이핑
+  addTyping('이상으로 짧은 보고서를 마친다.', 175);
+
+  // 3) stats / 시간대 설정
+  stats.firstTs = model[0]?.ts || Date.now();
+  stats.lastTs  = ts;
+  stats.keystrokes = events.filter(e=>e.type==='typing').reduce((a,e)=>a+e.n, 0);
+
+  // 4) idle gap 한 곳 — 사고 시간(비활성 비율) 지표가 잡히도록 중간에 큰 공백
+  if(events.length > 10){
+    const mid = Math.floor(events.length/2);
+    events.splice(mid, 0, {ts: events[mid-1].ts + 60_000, type:'typing', srcFamily:'typing', n:0, isInsert:true});
+  }
+
+  // 5) 에디터 DOM 갱신
+  if(typeof renderEditor === 'function') renderEditor();
+
+  // 6) 결과지 빌드 후 진입
+  sessionFrozen = true;
+  saveCount = Math.max(saveCount, 1);
+  if(typeof buildReportFromSession === 'function') buildReportFromSession();
+  document.body.dataset.view = 'report';
+  document.body.dataset.reportTab = 'main';
+  window.scrollTo(0, 0);
+}
+
+/* URL ?demo=1 또는 ?demo=full 진입 시 자동 시드 */
+(function autoDemoFromUrl(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const v = params.get('demo');
+    if(v === '1' || v === 'full' || v === 'true'){
+      // 다른 init 코드(이벤트 바인딩 등) 완료 후 호출되도록 살짝 지연
+      setTimeout(()=>{ try{ seedDemo(); }catch(e){ console.warn('demo seed failed', e); } }, 120);
+    }
+  }catch(e){}
+})();
 
 </script>
 </body>
