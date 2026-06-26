@@ -217,17 +217,17 @@
   body[data-view="write"]{background:#fff;}
   body[data-view="write"] #header-write{display:none !important;}
   body[data-view="write"] #view-write{padding-top:0;padding-bottom:84px;}
-  /* 페이지 헤더 (제목 + 데모 버튼) */
-  #write-pageheader{display:flex;align-items:center;justify-content:space-between;padding:28px 40px 18px;background:#fff;}
+  /* 페이지 헤더 (제목 + 데모 버튼) — 카피킬러 본 서비스 px-10 py-8 정렬 */
+  #write-pageheader{display:flex;align-items:center;justify-content:space-between;padding:32px 40px 16px;background:#fff;}
   #write-pageheader .write-pagetitle{font-size:22px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
   #write-pageheader .write-demobtn{font-size:12px;font-weight:600;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:8px;padding:7px 12px;cursor:pointer;}
   #write-pageheader .write-demobtn:hover{background:var(--ck-primary-50);}
-  /* editor-grid: 흰 배경 + height 자동 */
-  body[data-view="write"] .editor-grid{background:#fff;max-width:none;height:auto;min-height:calc(100vh - 200px);padding:0 40px 20px;}
-  body[data-view="write"] .ed-panel{border:1px solid var(--ck-secondary-300);}
-  /* 액션 바 LNB 우측 전체 너비 fixed bottom */
+  /* editor-grid — 카드 gap 20px, 메인 가로 padding 40px */
+  body[data-view="write"] .editor-grid{background:#fff;max-width:none;height:auto;min-height:calc(100vh - 220px);padding:0 40px 20px;gap:20px;grid-template-columns:500px 1fr;}
+  body[data-view="write"] .ed-panel{border:1px solid var(--ck-gray-300);border-radius:8px;}
+  /* 액션 바 LNB(275px) 우측 전체 너비 fixed bottom */
   body[data-view="write"] .doc-actions{
-    position:fixed;left:240px;right:0;bottom:0;
+    position:fixed;left:275px;right:0;bottom:0;
     padding:16px 40px;
     background:#fff;
     border-top:1px solid var(--ck-secondary-200);
@@ -238,9 +238,9 @@
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb{display:flex;}
-  #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
-  body[data-view="write"] #header-write{left:240px;}
-  body[data-view="write"] #view-write{padding-left:240px;}
+  #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:275px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
+  body[data-view="write"] #header-write{left:275px;}
+  body[data-view="write"] #view-write{padding-left:275px;}
   /* 접힘 상태: LNB rail 56px, 본문은 LNB만큼만 비움. 우측 영역(.editor-grid 우측 패널)이 가변 확장 */
   body.lnb-collapsed #lnb{width:56px !important;}
   body.lnb-collapsed #lnb .lnb-nav,
@@ -251,13 +251,13 @@
   body[data-view="write"].lnb-collapsed #view-write{padding-left:56px !important;}
   body[data-view="write"].lnb-collapsed .doc-actions{left:56px !important;}
   /* LNB 내부 */
-  #lnb .lnb-brand{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;}
+  #lnb .lnb-brand{display:flex;align-items:center;justify-content:space-between;padding:32px 28px 16px;}
   #lnb .lnb-brand-logo{display:flex;align-items:baseline;gap:1px;font-weight:800;font-size:20px;letter-spacing:-0.02em;}
   #lnb .lnb-brand-logo .l-copy{color:var(--ck-gray-900);}
   #lnb .lnb-brand-logo .l-killer{color:var(--ck-primary-500);}
   #lnb .lnb-collapse{width:22px;height:22px;border:1px solid var(--ck-secondary-200);background:#fff;border-radius:4px;cursor:pointer;color:var(--ck-gray-500);display:flex;align-items:center;justify-content:center;font-size:11px;}
-  #lnb .lnb-nav{flex:1;overflow-y:auto;padding:6px 12px 12px;}
-  #lnb .lnb-bottom{padding:8px 12px 16px;border-top:1px solid var(--ck-secondary-100);}
+  #lnb .lnb-nav{flex:1;overflow-y:auto;padding:6px 16px 12px;}
+  #lnb .lnb-bottom{padding:8px 16px 28px;border-top:1px solid var(--ck-secondary-100);}
   /* 그룹 헤더 (✓ 카피킬러) */
   #lnb .lnb-group{display:flex;align-items:center;gap:8px;padding:10px 10px 6px;font-weight:700;color:var(--ck-gray-900);font-size:14px;}
   #lnb .lnb-group svg{flex-shrink:0;color:var(--ck-gray-700);}
