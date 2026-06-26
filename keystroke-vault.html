@@ -213,43 +213,6 @@
   body[data-view="report"] #header-write{display:none;}
   body[data-view="write"] #header-report{display:none;}
 
-  /* ============ '새 문서 작성' 페이지 — 흰 배경 + GNB 없음 ============ */
-  body[data-view="write"]{background:#fff;}
-  body[data-view="write"] #header-write{display:none !important;}
-
-  /* === 새 문서 작성 본문 영역 === */
-  .write-page{max-width:1280px;margin:0 auto;padding:36px 40px 120px;}
-  .write-title{font-size:26px;font-weight:800;color:var(--ck-gray-900);margin-bottom:24px;letter-spacing:-0.01em;}
-  .write-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px;align-items:start;}
-  .write-card{background:#fff;border:1px solid var(--ck-secondary-200);border-radius:14px;padding:24px;}
-  .write-card-title{font-size:15px;font-weight:700;color:var(--ck-gray-900);margin-bottom:6px;}
-  .write-card-desc{font-size:13.5px;color:var(--ck-gray-600);margin-bottom:6px;line-height:1.55;}
-  .write-card-note{font-size:11.5px;color:var(--ck-gray-400);margin-bottom:18px;text-align:right;}
-  /* 문서 유형 칩 (2열) */
-  .doctype-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .doctype-chip{padding:13px 12px;background:#fff;border:1px solid var(--ck-gray-300);border-radius:10px;font-size:14px;font-weight:600;color:var(--ck-gray-900);cursor:pointer;transition:border-color .15s, background .15s;}
-  .doctype-chip:hover{border-color:var(--ck-primary-500);background:var(--ck-primary-50);color:var(--ck-primary-700);}
-  .doctype-chip.is-active{border-color:var(--ck-primary-500);background:var(--ck-primary-50);color:var(--ck-primary-700);}
-  /* 우측 입력 카드 */
-  .editor-card{display:flex;flex-direction:column;gap:12px;padding:18px;min-height:760px;}
-  .write-title-input{width:100%;padding:14px 16px;border:1px solid var(--ck-gray-300);border-radius:10px;font-size:15px;color:var(--ck-gray-900);outline:none;font-family:inherit;}
-  .write-title-input:focus{border-color:var(--ck-primary-500);}
-  .write-title-input::placeholder{color:var(--ck-gray-400);}
-  .write-body-wrap{flex:1;border:1px solid var(--ck-gray-300);border-radius:10px;padding:16px 18px 36px;position:relative;display:flex;flex-direction:column;min-height:560px;}
-  .write-body-wrap:focus-within{border-color:var(--ck-primary-500);}
-  #editor.editor-area-v2{flex:1;font-size:15px;line-height:1.85;color:var(--ck-gray-900);outline:none;overflow-y:auto;white-space:pre-wrap;word-break:break-word;min-height:520px;}
-  #editor.editor-area-v2:empty::before{content:attr(data-ph);color:var(--ck-gray-400);pointer-events:none;}
-  .write-body-counter{position:absolute;right:14px;bottom:10px;font-size:12px;color:var(--ck-gray-400);font-family:'JetBrains Mono',monospace;}
-  /* 하단 액션 바 */
-  .write-actions{display:flex;align-items:center;gap:8px;padding:18px 0 0;margin-top:18px;border-top:1px solid var(--ck-secondary-100);}
-  .write-actions-right{margin-left:auto;display:flex;gap:8px;}
-  .write-btn{padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
-  .write-btn:hover{background:var(--ck-secondary-50);}
-  .write-btn-primary{background:var(--ck-secondary-800);color:#fff;border-color:var(--ck-secondary-800);}
-  .write-btn-primary:hover{background:var(--ck-secondary-900);}
-  .write-btn-demo{background:#fff;color:var(--ck-primary-700);border-color:var(--ck-primary-300);}
-  .write-btn-demo:hover{background:var(--ck-primary-50);}
-
   /* ============ LNB (좌측 사이드바) — view-write 한정 ============ */
   body[data-view="write"] #lnb{display:flex;}
   #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
@@ -479,53 +442,48 @@
   </div>
 </header>
 
-<!-- ============ EDITOR VIEW (재구성, FS-001 ~ FS-033) ============ -->
-<section id="view-write">
-  <div class="write-page">
-    <h1 class="write-title">새 문서 작성</h1>
+<!-- ============ EDITOR VIEW (FS-001 ~ FS-033) ============ -->
+<section id="view-write" class="pt-14">
 
-    <div class="write-grid">
-      <!-- 좌측: 문서 유형 선택 -->
-      <div class="write-card">
-        <div class="write-card-title">문서 유형 선택</div>
-        <div class="write-card-desc">카피킬러AI로 작성하고 싶은 문서 유형을 선택하세요.</div>
-        <div class="write-card-note">*작성 유형은 계속 추가될 예정입니다.</div>
-        <div class="doctype-grid" id="docTypeGrid">
-          <button class="doctype-chip" data-type="자기소개서">자기소개서</button>
-          <button class="doctype-chip" data-type="독서감상문">독서감상문</button>
-          <button class="doctype-chip" data-type="과제물">과제물</button>
-          <button class="doctype-chip" data-type="기획/보고문서">기획/보고문서</button>
-          <button class="doctype-chip" data-type="공지문">공지문</button>
-          <button class="doctype-chip" data-type="직무기술서">직무기술서</button>
-          <button class="doctype-chip" data-type="경력기술서">경력기술서</button>
-          <button class="doctype-chip" data-type="이메일">이메일</button>
-          <button class="doctype-chip" data-type="보도자료">보도자료</button>
-          <button class="doctype-chip" data-type="블로그">블로그</button>
-          <button class="doctype-chip" data-type="상품리뷰">상품리뷰</button>
-          <button class="doctype-chip" data-type="생활기록부-창체">생활기록부-창체</button>
-          <button class="doctype-chip" data-type="생활기록부-세특">생활기록부-세특</button>
-          <button class="doctype-chip" data-type="생활기록부-행발">생활기록부-행발</button>
+  <div class="editor-grid">
+    <!-- 좌측 패널 — 항상 채팅 모드 -->
+    <div class="ed-panel type-panel">
+      <div id="chatPanel" style="display:flex;">
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" id="chatInput" rows="1" placeholder="요청할 내용을 입력해주세요."></textarea>
+          <button class="chat-send" id="btnSend" title="보내기" disabled>↑</button>
         </div>
-      </div>
-
-      <!-- 우측: 제목 + 본문 -->
-      <div class="write-card editor-card">
-        <input class="write-title-input" id="docTitle" placeholder="제목을 입력해 주세요." />
-        <div class="write-body-wrap">
-          <div class="editor-area editor-area-v2" id="editor" contenteditable="true" data-ph="내용을 입력해 주세요."></div>
-          <div class="write-body-counter"><span id="stCount">0</span> / 10,000</div>
-        </div>
+        <div class="chat-foot">AI가 작성한 초안은 우측 에디터에 자동 삽입됩니다. 본인의 색채를 입혀 글을 완성해보세요.</div>
       </div>
     </div>
 
-    <!-- 하단 액션 -->
-    <div class="write-actions">
-      <button class="write-btn" type="button">내문서</button>
-      <div class="write-actions-right">
-        <button class="write-btn write-btn-demo" type="button" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
-        <button class="write-btn" id="btnSaveOnly" type="button">작성 내용 복사</button>
-        <button class="write-btn" type="button" onclick="if(confirm('현재 입력 내용을 모두 초기화할까요?')){location.reload();}">초기화</button>
-        <button class="write-btn write-btn-primary" id="btnComplete" type="button">문서 저장</button>
+    <!-- 우측: 에디터 -->
+    <div class="ed-panel doc-panel">
+      <div class="title-row">
+        <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
+      </div>
+      <div class="stat-row">
+        <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
+        <div class="stat-right">
+          <span class="s s-write"><span class="d"></span>직접 타이핑 <b id="stWrite">0</b></span>
+          <span class="s s-ai"><span class="d"></span>AI생성 <b id="stAi">0</b></span>
+          <span class="s s-paste"><span class="d"></span>붙여넣기 <b id="stPaste">0</b></span>
+          <span class="s s-revised"><span class="d"></span>수정 <b id="stRevised">0</b></span>
+        </div>
+      </div>
+      <div class="editor-shell">
+        <div class="editor-toolbar">
+          <button class="tool-btn" id="btnDemoPaste" title="외부 클립보드 텍스트를 paste source로 시뮬레이션">📋 외부 붙여넣기(데모)</button>
+          <button class="tool-btn" id="btnDemoAI" title="AI 응답을 즉시 삽입 (시연용)">🤖 AI 초안 받기(데모)</button>
+          <span class="rec" id="recBadge"><span class="blink"></span>작성 기록중 <span class="font-mono ml-1" id="recClock">00:00</span></span>
+        </div>
+        <div class="editor-area" id="editor" contenteditable="true" data-ph="여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다."></div>
+      </div>
+      <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
+      <div class="doc-actions">
+        <button class="btn btn-ghost" id="btnSaveOnly">내 문서로 저장</button>
+        <button class="btn btn-primary" id="btnComplete" disabled>문서 작성 완료 →</button>
       </div>
     </div>
   </div>
@@ -2250,25 +2208,6 @@ const AI_GUIDES = {
   'default':['작성할 문서의 유형과 주제를 알려줄게','분량과 톤 가이드를 같이 정해줄래'],
 };
 
-/* ---------- 리뉴얼된 UI에서 사라진 레거시 DOM 안전 처리 ----------
-   기존 JS가 #chatInput/#stWrite 등을 직접 참조하므로, 페이지에 없으면
-   숨김 stub 요소를 동적으로 만들어 textContent/value/style/onclick 호출이
-   에러 없이 동작하도록 보장 (실제 화면에는 안 보임). */
-(function ensureLegacyDomStubs(){
-  function mk(id, tag){
-    if(document.getElementById(id)) return;
-    const el = document.createElement(tag||'div');
-    el.id = id; el.style.display='none';
-    document.body.appendChild(el);
-  }
-  mk('chatInput','textarea');
-  mk('btnSend','button');
-  mk('chatMsgs');
-  mk('recBadge'); mk('recClock');
-  mk('stSpeed'); mk('stWrite'); mk('stAi'); mk('stPaste'); mk('stRevised'); mk('stKs');
-  mk('btnDemoPaste','button'); mk('btnDemoAI','button');
-})();
-
 let model=[];
 let events=[];
 let editOps=[]; // 삭제가 포함된 오퍼레이션 — {deleted, inserted, isContent, ts}
@@ -2347,15 +2286,6 @@ function enterChat(typeName){
 }
 // 페이지 진입 시 자유 유형 채팅 자동 표시
 enterChat(null);
-
-// 새 UI: doctype-chip 클릭 핸들러 (시각 active + selectedType 설정)
-document.querySelectorAll('#docTypeGrid .doctype-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('#docTypeGrid .doctype-chip').forEach(c => c.classList.remove('is-active'));
-    chip.classList.add('is-active');
-    selectedType = chip.dataset.type;
-  });
-});
 
 /* ---------- 채팅 입력 ---------- */
 const chatInput=document.getElementById('chatInput');
