@@ -213,6 +213,39 @@
   body[data-view="report"] #header-write{display:none;}
   body[data-view="write"] #header-report{display:none;}
 
+  /* ============ LNB (좌측 사이드바) — view-write 한정 ============ */
+  body[data-view="write"] #lnb{display:flex;}
+  #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
+  body[data-view="write"] #header-write{left:240px;}
+  body[data-view="write"] #view-write{padding-left:240px;}
+  /* LNB 내부 */
+  #lnb .lnb-brand{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;}
+  #lnb .lnb-brand-logo{display:flex;align-items:baseline;gap:1px;font-weight:800;font-size:20px;letter-spacing:-0.02em;}
+  #lnb .lnb-brand-logo .l-copy{color:var(--ck-gray-900);}
+  #lnb .lnb-brand-logo .l-killer{color:var(--ck-primary-500);}
+  #lnb .lnb-collapse{width:22px;height:22px;border:1px solid var(--ck-secondary-200);background:#fff;border-radius:4px;cursor:pointer;color:var(--ck-gray-500);display:flex;align-items:center;justify-content:center;font-size:11px;}
+  #lnb .lnb-nav{flex:1;overflow-y:auto;padding:6px 12px 12px;}
+  #lnb .lnb-bottom{padding:8px 12px 16px;border-top:1px solid var(--ck-secondary-100);}
+  /* 그룹 헤더 (✓ 카피킬러) */
+  #lnb .lnb-group{display:flex;align-items:center;gap:8px;padding:10px 10px 6px;font-weight:700;color:var(--ck-gray-900);font-size:14px;}
+  #lnb .lnb-group svg{flex-shrink:0;color:var(--ck-gray-700);}
+  /* 서브 항목 (들여쓰기) */
+  #lnb .lnb-sub{padding:8px 10px 8px 36px;color:var(--ck-gray-700);font-size:13.5px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  #lnb .lnb-sub:hover{background:var(--ck-secondary-50);}
+  /* 일반 항목 (아이콘+텍스트) */
+  #lnb .lnb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--ck-gray-700);font-size:14px;font-weight:500;}
+  #lnb .lnb-item svg{flex-shrink:0;color:var(--ck-gray-700);}
+  #lnb .lnb-item:hover{background:var(--ck-secondary-50);}
+  #lnb .lnb-item.is-active{background:var(--ck-primary-50);color:var(--ck-primary-700);font-weight:700;}
+  #lnb .lnb-item.is-active svg{color:var(--ck-primary-500);}
+  #lnb .lnb-item .lnb-chevron{margin-left:auto;color:var(--ck-gray-400);font-size:12px;}
+  /* 작은 배지 (Free, Hot) */
+  #lnb .lnb-badge{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:700;line-height:1.4;margin-left:4px;}
+  #lnb .lnb-badge-free{background:var(--ck-green-100);color:var(--ck-green-800);}
+  #lnb .lnb-badge-hot{background:var(--ck-danger-100);color:var(--ck-danger-700);}
+  /* divider */
+  #lnb .lnb-divider{height:1px;background:var(--ck-secondary-100);margin:8px 6px;}
+
   /* ===== Report Tab: 메인 ↔ 추후 검토 (TOC는 항상 모두 노출) ===== */
   /* 기본: 추후 검토 섹션 묶음 숨김 */
   #future-sections{display:none;}
@@ -322,6 +355,75 @@
 <body data-view="write" data-report-tab="main">
 
 <!-- ============ WRITE 뷰 헤더 ============ -->
+<!-- ============ LNB (좌측 사이드바) — '새 문서 작성' 화면 한정 ============ -->
+<aside id="lnb" class="no-print">
+  <div class="lnb-brand">
+    <div class="lnb-brand-logo">
+      <span class="l-copy">Copy</span><span class="l-killer">Killer</span>
+    </div>
+    <button class="lnb-collapse" title="사이드바 접기" type="button">‹</button>
+  </div>
+  <nav class="lnb-nav">
+    <!-- 카피킬러 그룹 -->
+    <div class="lnb-group">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>카피킬러</span>
+    </div>
+    <div class="lnb-sub">문서 검사</div>
+    <div class="lnb-sub">참고문헌 유효성 검증<span class="lnb-badge lnb-badge-free">Free</span></div>
+    <div class="lnb-sub">표이미지 표절검사</div>
+    <div class="lnb-sub">생활기록부 검사</div>
+
+    <div style="height:6px;"></div>
+
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 7.5l-9 9-5.5-5.5"/><path d="M9 3h6v4H9z"/></svg>
+      <span>카피킬러 eXtension</span>
+    </div>
+    <div class="lnb-item is-active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <span>문서 작성</span>
+      <span class="lnb-chevron">›</span>
+    </div>
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H3z"/><path d="M7 12h2M11 12h6"/></svg>
+      <span>이용권 관리</span>
+    </div>
+  </nav>
+  <div class="lnb-bottom">
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>GPT Killer 인사이드</span>
+      <span class="lnb-badge lnb-badge-hot">Hot</span>
+    </div>
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>읽고 쓰는, CK텀즈</span>
+    </div>
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg>
+      <span>카피킬러 연구소</span>
+      <span class="lnb-chevron">⌄</span>
+    </div>
+
+    <div class="lnb-divider"></div>
+
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span>마이페이지</span>
+    </div>
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>고객센터</span>
+      <span class="lnb-chevron">⌄</span>
+    </div>
+    <div class="lnb-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>로그아웃</span>
+    </div>
+  </div>
+</aside>
+
 <header id="header-write" class="fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-50 flex items-center px-6 no-print">
   <div class="flex items-center gap-3 min-w-0">
     <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background:var(--color-primary);">
