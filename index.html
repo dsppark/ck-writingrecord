@@ -400,10 +400,16 @@
   body[data-view="write"] .doc-actions #btnSaveOnly{margin-left:0 !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
-  body[data-view="write"] #lnb{display:flex;}
+  body[data-view="write"] #lnb,
+  body[data-view="report"] #lnb{display:flex;}
   #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
   body[data-view="write"] #header-write{left:240px;}
   body[data-view="write"] #view-write{padding-left:240px;}
+  /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
+  body[data-view="report"] #view-report{padding-left:240px;}
+  body[data-view="report"] .report-actions{left:240px;}
+  body[data-view="report"].lnb-collapsed #view-report{padding-left:56px !important;}
+  body[data-view="report"].lnb-collapsed .report-actions{left:56px !important;}
   /* 접힘 상태: LNB rail 56px, 본문은 LNB만큼만 비움. 우측 영역(.editor-grid 우측 패널)이 가변 확장 */
   body.lnb-collapsed #lnb{width:56px !important;}
   body.lnb-collapsed #lnb .lnb-nav,
