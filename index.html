@@ -358,7 +358,9 @@
     z-index:50;
     display:flex;align-items:center;gap:8px;
   }
-  body[data-view="write"] .doc-actions #btnBackToList{margin-right:auto;}
+  body[data-view="write"] .doc-actions #btnBackToList{margin-right:auto !important;}
+  body[data-view="write"] .doc-actions #btnComplete{margin-left:0 !important;}
+  body[data-view="write"] .doc-actions #btnSaveOnly{margin-left:0 !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb{display:flex;}
