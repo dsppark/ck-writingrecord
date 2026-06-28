@@ -212,6 +212,58 @@
   body[data-view="report"] #view-write{display:none;}
   body[data-view="report"] #header-write{display:none;}
   body[data-view="write"] #header-report{display:none;}
+  /* view-box (내 문서함) */
+  #view-box{display:none;}
+  body[data-view="box"] #view-box{display:block;}
+  body[data-view="box"] #view-write,
+  body[data-view="box"] #view-report,
+  body[data-view="box"] #header-write,
+  body[data-view="box"] #header-report{display:none !important;}
+  body[data-view="box"] #lnb{display:flex;}
+  body[data-view="box"]{background:#fff;}
+  body[data-view="box"] #view-box{padding-left:275px;padding-top:0;padding-bottom:60px;min-height:100vh;}
+  /* 내 문서함 페이지 내부 */
+  .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
+  .box-pageheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .box-pageheader h1{font-size:24px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
+  .box-newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:10px 18px;font-size:13.5px;font-weight:700;border:0;cursor:pointer;}
+  .box-newbtn:hover{background:var(--ck-primary-600);}
+  /* 필터 바 */
+  .box-filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:6px 0;}
+  .box-filterbar .box-checkall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ck-gray-700);font-weight:600;margin-right:6px;}
+  .box-filterbar select,
+  .box-filterbar input[type="text"],
+  .box-filterbar input[type="date"]{font-size:13px;padding:7px 10px;border:1px solid var(--ck-gray-300);border-radius:6px;color:var(--ck-gray-700);background:#fff;font-family:inherit;}
+  .box-filterbar select{min-width:80px;}
+  .box-filterbar input[type="text"]{min-width:200px;}
+  .box-filterbar .box-search{font-size:13px;font-weight:700;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:6px;padding:7px 14px;cursor:pointer;}
+  .box-filterbar .box-search:hover{background:var(--ck-primary-50);}
+  .box-filterbar .box-range{display:inline-flex;align-items:center;gap:4px;}
+  /* 문서 리스트 */
+  .box-list{display:flex;flex-direction:column;gap:8px;}
+  .box-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;}
+  .box-row .box-rowchk{flex-shrink:0;}
+  .box-row .box-rowmain{flex:1;min-width:0;}
+  .box-row .box-rowtitle{font-size:14px;font-weight:700;color:var(--ck-gray-900);margin-bottom:6px;}
+  .box-row .box-rowmeta{font-size:12px;color:var(--ck-gray-500);}
+  .box-row .box-rowmeta b{font-weight:500;color:var(--ck-gray-600);}
+  .box-row .box-rowactions{display:flex;gap:8px;flex-shrink:0;}
+  .box-actionbtn{font-size:12px;font-weight:700;border-radius:6px;padding:8px 14px;cursor:pointer;border:0;}
+  .box-actionbtn.ghost{background:var(--ck-primary-50);color:var(--ck-primary-700);}
+  .box-actionbtn.ghost:hover{background:var(--ck-primary-100);}
+  .box-actionbtn.solid{background:var(--ck-primary-500);color:#fff;}
+  .box-actionbtn.solid:hover{background:var(--ck-primary-600);}
+  /* 빈 상태 */
+  .box-empty{padding:64px 20px;text-align:center;color:var(--ck-gray-500);font-size:14px;background:#fff;border:1px dashed var(--ck-secondary-200);border-radius:10px;}
+  /* 삭제 버튼 (우측 끝) */
+  .box-deleterow{display:flex;justify-content:flex-end;margin-top:16px;}
+  .box-delete{background:var(--ck-accent-600,#FF006B);color:#fff;font-size:13px;font-weight:700;border:0;border-radius:6px;padding:8px 16px;cursor:pointer;}
+  .box-delete:hover{filter:brightness(0.92);}
+  /* 페이지네이션 */
+  .box-pagination{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:36px;font-size:13px;color:var(--ck-gray-600);}
+  .box-pagination .pg{min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;}
+  .box-pagination .pg.is-active{background:var(--ck-primary-50);color:var(--ck-primary-700);font-weight:700;}
+  .box-pagination .pg:hover{background:var(--ck-secondary-50);}
 
   /* ============ '새 문서 작성' 페이지 — 흰 배경, GNB 제거, 페이지 헤더, 카드 진한 테두리, 액션 바 fixed ============ */
   body[data-view="write"]{background:#fff;}
@@ -1397,6 +1449,40 @@
 </main>
 </div>
 </section><!-- /view-report -->
+
+<!-- ============ 내 문서함 ============ -->
+<section id="view-box">
+  <div class="box-page">
+    <header class="box-pageheader">
+      <h1>내 문서함</h1>
+      <button class="box-newbtn" type="button" onclick="goWrite()">＋ 새 문서 작성</button>
+    </header>
+
+    <div class="box-filterbar">
+      <label class="box-checkall"><input type="checkbox" id="boxCheckAll" /> 전체 선택</label>
+      <select><option>전체</option><option>자기소개서</option><option>독서감상문</option><option>과제물</option></select>
+      <div class="box-range">
+        <input type="date" value="2024-02-01" /> <span style="color:var(--ck-gray-400);">-</span> <input type="date" />
+      </div>
+      <select><option>전체</option><option>제목</option><option>내용</option></select>
+      <input type="text" placeholder="검색어를 입력하세요" />
+      <button class="box-search" type="button">조회</button>
+      <select><option>10개</option><option>20개</option><option>50개</option></select>
+    </div>
+
+    <div class="box-list" id="boxList">
+      <div class="box-empty">저장된 문서가 아직 없어요.<br>좌측 상단 「＋ 새 문서 작성」으로 시작해 보세요.</div>
+    </div>
+
+    <div class="box-deleterow"><button class="box-delete" type="button" onclick="boxDeleteSelected()">삭제</button></div>
+
+    <nav class="box-pagination">
+      <span class="pg">«</span><span class="pg">‹</span>
+      <span class="pg is-active">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">4</span><span class="pg">5</span><span class="pg">6</span><span class="pg">7</span><span class="pg">8</span><span class="pg">9</span><span class="pg">10</span>
+      <span class="pg">›</span><span class="pg">»</span>
+    </nav>
+  </div>
+</section>
 
 <!-- ============ 토스트 ============ -->
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm shadow-lg z-50 flex items-center gap-2">
@@ -2776,10 +2862,120 @@ document.getElementById('btnDemoAI').onclick=()=>{
   appendToEditor(draft,'ai','데모 AI 초안 요청');
 };
 
-/* ---------- 작성 완료 → 결과지 ---------- */
+/* ---------- 내 문서함 (view-box) ---------- */
+const BOX_STORE = 'ksv_box_docs';
+function boxLoadDocs(){
+  try{ return JSON.parse(localStorage.getItem(BOX_STORE) || '[]'); }catch(e){ return []; }
+}
+function boxSaveDocs(arr){
+  try{ localStorage.setItem(BOX_STORE, JSON.stringify(arr)); }catch(e){ console.warn('box save fail', e); }
+}
+function boxSaveCurrentDoc(){
+  if(!stats.firstTs) stats.firstTs = Date.now();
+  stats.lastTs = Date.now();
+  const titleEl = document.getElementById('docTitle');
+  const title = (titleEl?.value || '').trim() || '제목 없음';
+  const docs = boxLoadDocs();
+  const id = 'd_' + Date.now();
+  docs.unshift({
+    id,
+    title,
+    type: selectedType || '자유',
+    savedAt: Date.now(),
+    chars: model.filter(m=>m.ch!=='\n').length,
+    model: model.map(m=>({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
+    events: events.map(e=>({...e})),
+    stats: {...stats},
+    editOps: editOps.map(o=>({...o}))
+  });
+  boxSaveDocs(docs);
+  return id;
+}
+function _fmtSaved(ts){
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function renderBoxList(){
+  const list = document.getElementById('boxList');
+  if(!list) return;
+  const docs = boxLoadDocs();
+  if(!docs.length){
+    list.innerHTML = `<div class="box-empty">저장된 문서가 아직 없어요.<br>좌측 상단 「＋ 새 문서 작성」으로 시작해 보세요.</div>`;
+    return;
+  }
+  list.innerHTML = docs.map(d => `
+    <div class="box-row" data-id="${d.id}">
+      <input type="checkbox" class="box-rowchk" />
+      <div class="box-rowmain">
+        <div class="box-rowtitle">${(d.title||'').replace(/[<>]/g,'')}</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} · ${d.chars.toLocaleString()}자</div>
+      </div>
+      <div class="box-rowactions">
+        <button class="box-actionbtn ghost" onclick="boxScanDoc('${d.id}')">문서 검사하기</button>
+        <button class="box-actionbtn solid" onclick="boxOpenDoc('${d.id}')">문서 열기</button>
+      </div>
+    </div>
+  `).join('');
+}
+function _loadDocIntoSession(d){
+  // 저장된 doc을 session에 복원
+  model.length = 0; events.length = 0; editOps.length = 0;
+  d.model.forEach(m => model.push({...m}));
+  d.events.forEach(e => events.push({...e}));
+  if(d.editOps) d.editOps.forEach(o => editOps.push({...o}));
+  Object.assign(stats, d.stats||{});
+  selectedType = d.type || null;
+  // 에디터 DOM 갱신
+  if(typeof renderEditor === 'function') renderEditor();
+  const t = document.getElementById('docTitle');
+  if(t) t.value = d.title || '';
+}
+function boxOpenDoc(id){
+  const docs = boxLoadDocs();
+  const d = docs.find(x => x.id===id);
+  if(!d) return;
+  sessionFrozen = false;
+  _loadDocIntoSession(d);
+  document.body.dataset.view = 'write';
+  window.scrollTo(0,0);
+}
+function boxScanDoc(id){
+  const docs = boxLoadDocs();
+  const d = docs.find(x => x.id===id);
+  if(!d) return;
+  _loadDocIntoSession(d);
+  sessionFrozen = true;
+  if(typeof buildReportFromSession === 'function') buildReportFromSession();
+  document.body.dataset.view = 'report';
+  document.body.dataset.reportTab = 'main';
+  window.scrollTo(0,0);
+}
+function boxDeleteSelected(){
+  const checked = Array.from(document.querySelectorAll('#boxList .box-row .box-rowchk:checked'))
+    .map(c => c.closest('.box-row')?.dataset?.id).filter(Boolean);
+  if(!checked.length){ showToast('삭제할 문서를 선택하세요'); return; }
+  const docs = boxLoadDocs().filter(d => !checked.includes(d.id));
+  boxSaveDocs(docs);
+  renderBoxList();
+  showToast(`${checked.length}건 삭제됨`);
+}
+// '전체 선택' 토글
+document.getElementById('boxCheckAll')?.addEventListener('change', e=>{
+  document.querySelectorAll('#boxList .box-rowchk').forEach(c => c.checked = e.target.checked);
+});
+// 페이지 진입 시 초기 렌더
+renderBoxList();
+
+/* ---------- '내 문서에 저장' → localStorage 저장 + 내 문서함으로 이동 ---------- */
 document.getElementById('btnSaveOnly').onclick=()=>{
+  if(model.length === 0){ showToast('저장할 내용이 없습니다'); return; }
+  const id = boxSaveCurrentDoc();
   saveCount++;
-  showToast(`내 문서함에 저장되었습니다 (누적 ${saveCount}회)`);
+  renderBoxList();
+  document.body.dataset.view = 'box';
+  window.scrollTo(0,0);
+  showToast('내 문서함에 저장되었습니다');
 };
 document.getElementById('btnComplete').onclick=()=>{
   // 작성 완료 시점에 lastTs 확정 + freeze (이후 결과지 조회 동안 시간 누적 X)
