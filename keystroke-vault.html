@@ -248,6 +248,52 @@
   .dv-btn-primary:hover{background:var(--ck-primary-600);}
   /* box meta 구분점 */
   .box-meta-sep{color:var(--ck-gray-300);margin:0 4px;}
+
+  /* ============ view-print (작성 증명 인증서 — PDF/인쇄용) ============ */
+  #view-print{display:none;}
+  body[data-view="print"] #view-print{display:block;}
+  body[data-view="print"] #lnb,
+  body[data-view="print"] #view-write,
+  body[data-view="print"] #view-report,
+  body[data-view="print"] #view-box,
+  body[data-view="print"] #view-doc,
+  body[data-view="print"] #header-write,
+  body[data-view="print"] #header-report{display:none !important;}
+  body[data-view="print"]{background:var(--ck-secondary-100);}
+  body[data-view="print"] #view-print{padding:32px 0;}
+  .print-page{max-width:780px;margin:0 auto;background:#fff;padding:48px 56px;border:1px solid var(--ck-gray-200);box-shadow:0 2px 10px rgba(0,0,0,0.06);font-family:'Pretendard','Arial',sans-serif;color:var(--ck-gray-900);}
+  .print-header{border-bottom:2px solid var(--ck-gray-900);padding-bottom:14px;margin-bottom:24px;}
+  .print-header h1{font-size:22px;font-weight:800;color:var(--ck-gray-900);margin:0;letter-spacing:-0.01em;}
+  .print-header .sub{font-size:11px;color:var(--ck-gray-500);margin:2px 0 0;letter-spacing:0.06em;text-transform:uppercase;}
+  .print-issued{font-size:11.5px;color:var(--ck-gray-600);margin-top:8px;}
+  .print-sec{margin-bottom:22px;page-break-inside:avoid;}
+  .print-sec h2{font-size:13px;font-weight:800;color:var(--ck-gray-900);margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--ck-gray-300);letter-spacing:-0.01em;}
+  .print-kv{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--ck-gray-700);}
+  .print-kv th{width:32%;text-align:left;font-weight:600;color:var(--ck-gray-600);padding:6px 12px 6px 0;vertical-align:top;}
+  .print-kv td{padding:6px 0;color:var(--ck-gray-900);font-weight:500;}
+  .print-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .print-table th,.print-table td{border:1px solid var(--ck-gray-200);padding:7px 10px;text-align:left;}
+  .print-table thead th{background:var(--ck-gray-50);color:var(--ck-gray-700);font-weight:700;font-size:11.5px;}
+  .print-table td.num{text-align:right;font-family:'JetBrains Mono',monospace;}
+  .print-score-row{display:flex;align-items:center;gap:14px;margin:6px 0 14px;}
+  .print-score-num{font-size:30px;font-weight:800;color:var(--ck-primary-700);font-family:'JetBrains Mono',monospace;}
+  .print-score-num .of{font-size:14px;color:var(--ck-gray-500);font-family:'Pretendard';font-weight:600;}
+  .print-score-tier{font-size:12px;font-weight:700;color:var(--ck-gray-900);padding:4px 10px;border:1px solid var(--ck-gray-300);border-radius:4px;}
+  .print-body-text{font-size:12px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;border:1px solid var(--ck-gray-200);padding:18px;border-radius:4px;background:#FCFCFD;}
+  .print-mono{font-family:'JetBrains Mono',monospace;font-size:11px;word-break:break-all;}
+  .print-footer{margin-top:32px;text-align:center;}
+  .print-action{font-size:12.5px;font-weight:700;background:var(--ck-primary-500);color:#fff;border:0;border-radius:6px;padding:9px 22px;cursor:pointer;margin:0 4px;}
+  .print-action:hover{background:var(--ck-primary-600);}
+  .print-action.ghost{background:#fff;color:var(--ck-gray-700);border:1px solid var(--ck-gray-300);}
+  .print-action.ghost:hover{background:var(--ck-secondary-50);}
+  .print-mark{font-size:10px;color:var(--ck-gray-400);margin-top:14px;}
+  @media print{
+    body[data-view="print"]{background:#fff;}
+    .print-page{box-shadow:none;border:0;padding:24px 32px;max-width:none;}
+    .print-footer{display:none !important;}
+    .print-body-text{background:#fff;}
+    @page{size:A4;margin:14mm;}
+  }
   /* 내 문서함 페이지 내부 */
   .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
   .box-pageheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
@@ -1523,6 +1569,115 @@
   </div>
 </section>
 
+<!-- ============ 작성 증명 인증서 (PDF/인쇄용) ============ -->
+<section id="view-print">
+  <div class="print-page">
+    <header class="print-header">
+      <h1>작성 증명 인증서</h1>
+      <p class="sub">Writing Authenticity Certificate · 카피킬러 KeyStroke Vault</p>
+      <div class="print-issued">발급일 <span data-print="issuedAt">-</span></div>
+    </header>
+
+    <section class="print-sec">
+      <h2>1. 문서 정보</h2>
+      <table class="print-kv"><tbody>
+        <tr><th>제목</th><td data-print="title">-</td></tr>
+        <tr><th>문서 유형</th><td data-print="type">-</td></tr>
+        <tr><th>작성자</th><td data-print="author">-</td></tr>
+        <tr><th>작성 일시</th><td data-print="period">-</td></tr>
+        <tr><th>총 작성 시간</th><td data-print="duration">-</td></tr>
+        <tr><th>총 글자수</th><td data-print="chars">-</td></tr>
+        <tr><th>누적 저장 횟수</th><td data-print="saveCount">-</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="print-sec">
+      <h2>2. 작성 증명 지수</h2>
+      <div class="print-score-row">
+        <div class="print-score-num"><span data-print="score">-</span><span class="of"> / 100</span></div>
+        <div class="print-score-tier" data-print="tier">-</div>
+      </div>
+      <table class="print-kv"><tbody>
+        <tr><th>직접 타이핑 기여</th><td data-print="bd-typing">-</td></tr>
+        <tr><th>AI 영역 내 수정</th><td data-print="bd-ai-edit">-</td></tr>
+        <tr><th>붙여넣기 후 수정</th><td data-print="bd-paste-edit">-</td></tr>
+        <tr><th>수정 품질</th><td data-print="bd-depth">-</td></tr>
+        <tr><th>비선형 커서 이동</th><td data-print="bd-nav">-</td></tr>
+        <tr><th>사고 시간(비활성 비율)</th><td data-print="bd-idle">-</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="print-sec">
+      <h2>3. 텍스트 구성 분포</h2>
+      <table class="print-table">
+        <thead><tr><th>카테고리</th><th style="text-align:right;width:25%;">글자수</th><th style="text-align:right;width:20%;">비중</th></tr></thead>
+        <tbody>
+          <tr><td>직접 타이핑</td><td class="num" data-print="dist-typing-n">-</td><td class="num" data-print="dist-typing-pct">-</td></tr>
+          <tr><td>AI 생성</td><td class="num" data-print="dist-ai-n">-</td><td class="num" data-print="dist-ai-pct">-</td></tr>
+          <tr><td>AI 생성+수정</td><td class="num" data-print="dist-aiedit-n">-</td><td class="num" data-print="dist-aiedit-pct">-</td></tr>
+          <tr><td>붙여넣기</td><td class="num" data-print="dist-paste-n">-</td><td class="num" data-print="dist-paste-pct">-</td></tr>
+          <tr><td>붙여넣기+수정</td><td class="num" data-print="dist-pasteedit-n">-</td><td class="num" data-print="dist-pasteedit-pct">-</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="print-sec">
+      <h2>4. 원본 보존율 (외부 유입 텍스트)</h2>
+      <table class="print-table">
+        <thead><tr><th style="width:24%;">영역</th><th class="num">원형 유지</th><th class="num">수정됨</th><th class="num">삭제됨</th><th style="width:22%;">판정</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>AI 생성</td>
+            <td class="num" data-print="ai-intact">-</td>
+            <td class="num" data-print="ai-edited">-</td>
+            <td class="num" data-print="ai-deleted">-</td>
+            <td data-print="ai-badge">-</td>
+          </tr>
+          <tr>
+            <td>붙여넣기</td>
+            <td class="num" data-print="paste-intact">-</td>
+            <td class="num" data-print="paste-edited">-</td>
+            <td class="num" data-print="paste-deleted">-</td>
+            <td data-print="paste-badge">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="print-sec">
+      <h2>5. 종합 지표</h2>
+      <table class="print-kv"><tbody>
+        <tr><th>평균 타이핑 속도</th><td><span data-print="m-speed">-</span> 타/분</td></tr>
+        <tr><th>평균 타이핑 간격</th><td><span data-print="m-interval">-</span> 초</td></tr>
+        <tr><th>총 수정 횟수</th><td><span data-print="m-edits">-</span> 회</td></tr>
+        <tr><th>총 삭제 횟수</th><td><span data-print="m-deletes">-</span> 회</td></tr>
+        <tr><th>최장 무중단 타이핑</th><td data-print="m-longest">-</td></tr>
+        <tr><th>원문 보존율(외부 유입 합산)</th><td data-print="m-retention">-</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="print-sec">
+      <h2>6. 본문</h2>
+      <div class="print-body-text" data-print="body">-</div>
+    </section>
+
+    <section class="print-sec">
+      <h2>7. 무결성 정보</h2>
+      <table class="print-kv"><tbody>
+        <tr><th>SHA-256 루트 해시</th><td class="print-mono" data-print="hash">-</td></tr>
+        <tr><th>발급 시각 (KST)</th><td data-print="tsaTime">-</td></tr>
+        <tr><th>검증 URL</th><td class="print-mono" data-print="verifyUrl">-</td></tr>
+      </tbody></table>
+    </section>
+
+    <footer class="print-footer">
+      <button class="print-action" type="button" onclick="window.print()">PDF 저장 / 인쇄</button>
+      <button class="print-action ghost" type="button" onclick="window.close()">닫기</button>
+      <p class="print-mark">본 인증서는 카피킬러 KeyStroke Vault에서 자동 생성되었으며, 위의 SHA-256 해시로 무결성을 검증할 수 있습니다.</p>
+    </footer>
+  </div>
+</section>
+
 <!-- ============ 토스트 ============ -->
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm shadow-lg z-50 flex items-center gap-2">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1688,7 +1843,119 @@ function copyHash(){
   navigator.clipboard?.writeText(document.getElementById('rootHash').textContent).catch(()=>{});
   showToast('해시값이 복사되었습니다');
 }
-function issueCert(){ showToast('인증서가 발급되었습니다 (.pdf)'); }
+async function issueCert(){
+  // 결과지 데이터를 localStorage에 수집해 새 창에서 인증서(view-print)로 렌더
+  if(document.body.dataset.view !== 'report'){
+    alert('작성 증명 결과지에서만 발급할 수 있습니다.');
+    return;
+  }
+  const $ = sel => document.querySelector(sel);
+  const txt = (sel, fb='-') => ($(sel)?.textContent?.trim() || fb);
+  const bind = key => $(`[data-bind="${key}"]`)?.textContent?.trim() || '-';
+  const distN = key => $(`#compoLegend [data-bind="${key}-n"]`)?.textContent?.trim() || '-';
+  const distP = key => ($(`#compoLegend [data-bind="${key}-pct"]`)?.textContent?.trim() || '-').replace(/[()]/g,'');
+
+  const docTitle = (document.getElementById('docTitle')?.value || '').trim()
+    || (currentDocId ? (boxLoadDocs().find(d=>d.id===currentDocId)?.title || '제목 없음') : '제목 없음');
+  const fmt = ts => ts ? new Date(ts).toLocaleString('ko-KR') : '-';
+  const fmtDur = ms => {
+    if(!ms || ms<0) return '-';
+    const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    return h>0 ? `${h}시간 ${m}분 ${sec}초` : m>0 ? `${m}분 ${sec}초` : `${sec}초`;
+  };
+  const charsTotal = model.filter(m=>m.ch!=='\n').length;
+  const bodyText = model.map(m=>m.ch).join('').replace(/\n{3,}/g,'\n\n').trim();
+
+  // SHA-256
+  let hash = '-';
+  try{
+    const enc = new TextEncoder().encode(JSON.stringify(model));
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){}
+
+  // 작성 증명 지수 6개 breakdown — DOM 텍스트로 매핑(라벨 의존)
+  const bdMap = {};
+  document.querySelectorAll('#sec-02 .text-slate-700').forEach(el => {
+    const label = el.textContent.trim();
+    const val = el.parentElement?.querySelector('.font-mono')?.textContent?.trim();
+    if(label && val) bdMap[label] = val;
+  });
+
+  const data = {
+    issuedAt: new Date().toLocaleString('ko-KR'),
+    title: docTitle,
+    type: selectedType || '자유',
+    author: 'gb@muhayu.com',
+    period: (stats.firstTs && stats.lastTs) ? `${fmt(stats.firstTs)} ~ ${fmt(stats.lastTs)}` : '-',
+    duration: fmtDur(stats.lastTs - stats.firstTs),
+    chars: charsTotal.toLocaleString() + '자',
+    saveCount: (saveCount||1) + '회',
+    score: txt('#sec02Score'),
+    tier: '주도적 작성',
+    'bd-typing':    bdMap['직접 타이핑 기여']     || '-',
+    'bd-ai-edit':   bdMap['AI 영역 내 수정']      || '-',
+    'bd-paste-edit':bdMap['붙여넣기 후 수정']     || '-',
+    'bd-depth':     bdMap['수정 품질']            || '-',
+    'bd-nav':       bdMap['비선형 커서 이동']     || '-',
+    'bd-idle':      bdMap['사고 시간(비활성 비율)']|| '-',
+    'dist-typing-n':    distN('typing'),
+    'dist-typing-pct':  distP('typing'),
+    'dist-ai-n':        distN('ai'),
+    'dist-ai-pct':      distP('ai'),
+    'dist-aiedit-n':    distN('ai-edited'),
+    'dist-aiedit-pct':  distP('ai-edited'),
+    'dist-paste-n':     distN('paste'),
+    'dist-paste-pct':   distP('paste'),
+    'dist-pasteedit-n': distN('paste-edited'),
+    'dist-pasteedit-pct': distP('paste-edited'),
+    'ai-intact':   bind('ai-intact-pct'),
+    'ai-edited':   bind('ai-edited-pct'),
+    'ai-deleted':  bind('ai-deleted-pct'),
+    'ai-badge':    bind('ai-badge'),
+    'paste-intact':bind('paste-intact-pct'),
+    'paste-edited':bind('paste-edited-pct'),
+    'paste-deleted':bind('paste-deleted-pct'),
+    'paste-badge': bind('paste-badge'),
+    'm-speed':   txt('#m_speed','0'),
+    'm-interval':txt('#m_interval','0'),
+    'm-edits':   txt('#m_edits','0'),
+    'm-deletes': txt('#m_deletes','0'),
+    'm-longest': txt('#m_longest','-'),
+    'm-retention':txt('#m_retention','-'),
+    body: bodyText || '(본문 데이터 없음)',
+    hash,
+    tsaTime: new Date().toISOString().replace('T',' ').replace('Z',' UTC'),
+    verifyUrl: `https://copykiller.com/verify/${hash.slice(0,16)}`
+  };
+
+  try{ localStorage.setItem('ksv_print_data', JSON.stringify(data)); }catch(e){}
+  window.open(`${location.pathname}?print=1&t=${Date.now()}`, '_blank', 'noopener=yes');
+}
+
+// 새 창에서 ?print=1 진입 시 데이터 적용
+function applyPrintData(){
+  try{
+    const data = JSON.parse(localStorage.getItem('ksv_print_data') || '{}');
+    Object.keys(data).forEach(key => {
+      document.querySelectorAll(`[data-print="${key}"]`).forEach(el => {
+        el.textContent = data[key] != null ? String(data[key]) : '-';
+      });
+    });
+    document.body.dataset.view = 'print';
+    document.title = `작성 증명 인증서 - ${data.title || ''}`;
+    window.scrollTo(0,0);
+  }catch(e){ console.warn('print data load fail', e); }
+}
+(function autoPrintFromUrl(){
+  try{
+    const p = new URLSearchParams(location.search);
+    if(p.get('print') === '1'){
+      // 다른 init 끝난 뒤 적용
+      setTimeout(applyPrintData, 200);
+    }
+  }catch(e){}
+})();
 function openCriteriaModal(){
   document.getElementById('criteriaModal').classList.remove('hidden');
   // 현재 가중치를 슬라이더에 반영
