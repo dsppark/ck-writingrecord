@@ -274,6 +274,18 @@
   /* box meta 구분점 */
   .box-meta-sep{color:var(--ck-gray-300);margin:0 4px;}
 
+  /* ============ 결과지(view-report) 하단 액션바 ============ */
+  .report-actions{position:fixed;left:0;right:0;bottom:0;padding:14px 32px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:none;align-items:center;gap:8px;}
+  body[data-view="report"] .report-actions{display:flex;}
+  body[data-view="report"]{padding-bottom:84px;}
+  .report-actions .ra-left{margin-right:auto;}
+  .report-actions .ra-right{display:flex;gap:8px;margin-left:auto;}
+  .ra-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);transition:background .12s;}
+  .ra-btn:hover{background:var(--ck-secondary-50);}
+  .ra-btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);}
+  .ra-btn-primary:hover{background:var(--ck-primary-600);}
+  @media print{ .report-actions{display:none !important;} }
+
   /* ============ view-print (작성 증명 인증서 — PDF/인쇄용) ============ */
   #view-print{display:none;}
   body[data-view="print"] #view-print{display:block;}
@@ -681,44 +693,25 @@
 <section id="view-report">
 
 <!-- ============ SEC-00 페이지 헤더 (Fixed Top Bar) ============ -->
-<header id="header-report" class="fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-50 flex items-center px-6 no-print">
-  <button onclick="goWrite()" class="mr-3 h-9 px-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-1" title="작성 도구로 돌아가기">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    다시 작성
+<!-- header-report 제거 — 하단 .report-actions 액션바로 통합됨 -->
+<div class="report-actions no-print">
+  <button class="ra-btn ra-btn-ghost ra-left" type="button" onclick="goWrite()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    작성 화면으로 이동
   </button>
-  <div class="flex items-center gap-3 min-w-0">
-    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background:var(--color-primary);">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
-    <div class="min-w-0">
-      <div class="text-[11px] text-slate-500 leading-none">KeyStroke Vault · <span id="hdSessId">/report/sess_7f3a92</span></div>
-      <div class="font-semibold text-slate-900 truncate text-[15px] leading-tight mt-0.5" id="hdDocTitle">대학생 자율성 시대의 글쓰기 윤리 — 최종본</div>
-    </div>
-  </div>
-  <div class="ml-auto flex items-center gap-2">
-    <div class="hidden md:flex items-center gap-2 mr-3 pl-3 border-l border-slate-200">
-      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white text-xs font-semibold flex items-center justify-center">박</div>
-      <div class="text-xs leading-tight">
-        <div class="font-medium text-slate-800">박다솜</div>
-        <div class="text-slate-500">2026-06-22 14:08 작성 완료</div>
-      </div>
-    </div>
-    <button onclick="copyShareLink()" class="h-9 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-1.5">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      공유 링크
+  <div class="ra-right">
+    <button class="ra-btn ra-btn-ghost" type="button" onclick="copyShareLink()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      공유 링크 생성
     </button>
-    <button onclick="window.print()" class="h-9 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-1.5">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      인쇄
-    </button>
-    <button onclick="issueCert()" class="h-9 px-3.5 rounded-lg text-white text-sm font-semibold flex items-center gap-1.5" style="background:var(--color-primary);">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      인증서 발급
+    <button class="ra-btn ra-btn-primary" type="button" onclick="issueCert()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      PDF 다운로드
     </button>
   </div>
-</header>
+</div>
 
-<div class="pt-14 flex" style="max-width:var(--max-content-width);margin:0 auto;">
+<div class="flex" style="max-width:var(--max-content-width);margin:0 auto;">
 
 <!-- ============ 사이드바 TOC ============ -->
 <aside class="hidden lg:block sticky top-14 self-start no-print" style="width:var(--sidebar-width);height:calc(100vh - 56px);">
@@ -3514,9 +3507,11 @@ async function buildReportFromSession(){
 
   // ---- header / title ----
   const docTitleVal=document.getElementById('docTitle').value.trim() || '제목 없는 문서';
-  document.getElementById('hdDocTitle').textContent = docTitleVal + ' — 최종본';
+  const _hdt=document.getElementById('hdDocTitle');
+  if(_hdt) _hdt.textContent = docTitleVal + ' — 최종본';
   const sessId='sess_'+Math.random().toString(36).slice(2,8);
-  document.getElementById('hdSessId').textContent='/report/'+sessId;
+  const _hsi=document.getElementById('hdSessId');
+  if(_hsi) _hsi.textContent='/report/'+sessId;
 
   // ---- 세션 요약 부제목 — 실측 날짜·시간만 ----
   const pad=n=>String(n).padStart(2,'0');
