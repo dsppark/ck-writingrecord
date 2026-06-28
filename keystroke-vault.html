@@ -358,7 +358,7 @@
     z-index:50;
     display:flex;align-items:center;gap:8px;
   }
-  body[data-view="write"] .doc-actions #btnSaveOnly{margin-right:auto;}
+  body[data-view="write"] .doc-actions #btnBackToList{margin-right:auto;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb{display:flex;}
@@ -642,6 +642,7 @@
       </div>
       <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
       <div class="doc-actions">
+        <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>작성 증명 리포트 확인</button>
       </div>
