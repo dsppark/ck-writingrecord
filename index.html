@@ -217,11 +217,37 @@
   body[data-view="box"] #view-box{display:block;}
   body[data-view="box"] #view-write,
   body[data-view="box"] #view-report,
+  body[data-view="box"] #view-doc,
   body[data-view="box"] #header-write,
   body[data-view="box"] #header-report{display:none !important;}
   body[data-view="box"] #lnb{display:flex;}
   body[data-view="box"]{background:#fff;}
   body[data-view="box"] #view-box{padding-left:275px;padding-top:0;padding-bottom:60px;min-height:100vh;}
+
+  /* view-doc (문서 보기 — 단순 열람) */
+  #view-doc{display:none;}
+  body[data-view="doc"] #view-doc{display:block;}
+  body[data-view="doc"] #view-write,
+  body[data-view="doc"] #view-report,
+  body[data-view="doc"] #view-box,
+  body[data-view="doc"] #header-write,
+  body[data-view="doc"] #header-report{display:none !important;}
+  body[data-view="doc"] #lnb{display:flex;}
+  body[data-view="doc"]{background:#fff;}
+  body[data-view="doc"] #view-doc{padding-left:275px;padding-top:0;padding-bottom:84px;min-height:100vh;}
+  /* 내부 */
+  .docview-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
+  .docview-title{font-size:18px;font-weight:700;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0 0 18px 4px;}
+  .docview-body{background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;padding:24px 28px;min-height:560px;font-size:14px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;}
+  /* 액션 바 (LNB 우측 전체 너비 fixed) */
+  .docview-actions{position:fixed;left:275px;right:0;bottom:0;padding:16px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
+  .docview-actions .docview-back{margin-right:auto;}
+  .dv-btn{padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
+  .dv-btn:hover{background:var(--ck-secondary-50);}
+  .dv-btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);}
+  .dv-btn-primary:hover{background:var(--ck-primary-600);}
+  /* box meta 구분점 */
+  .box-meta-sep{color:var(--ck-gray-300);margin:0 4px;}
   /* 내 문서함 페이지 내부 */
   .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
   .box-pageheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
@@ -1455,7 +1481,7 @@
   <div class="box-page">
     <header class="box-pageheader">
       <h1>내 문서함</h1>
-      <button class="box-newbtn" type="button" onclick="goWrite()">＋ 새 문서 작성</button>
+      <button class="box-newbtn" type="button" onclick="newWrite()">＋ 새 문서 작성</button>
     </header>
 
     <div class="box-filterbar">
@@ -1481,6 +1507,19 @@
       <span class="pg is-active">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">4</span><span class="pg">5</span><span class="pg">6</span><span class="pg">7</span><span class="pg">8</span><span class="pg">9</span><span class="pg">10</span>
       <span class="pg">›</span><span class="pg">»</span>
     </nav>
+  </div>
+</section>
+
+<!-- ============ 문서 보기 (단순 열람) ============ -->
+<section id="view-doc">
+  <div class="docview-page">
+    <h1 class="docview-title" id="docViewTitle">제목 없음</h1>
+    <div class="docview-body" id="docViewBody"></div>
+  </div>
+  <div class="docview-actions">
+    <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
+    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button>
+    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 증명 리포트 확인 ›</button>
   </div>
 </section>
 
@@ -2340,6 +2379,7 @@ let blockSeq=0;
 let lastKeyTs=0;
 let lastParaIdx=0;
 let saveCount=0;
+let currentDocId=null; // 현재 작성 도구 세션이 다루는 문서 id (저장 시 upsert 기준)
 let sessionFrozen=false; // 작성 완료 후 true → stats.lastTs 갱신 중단
 
 /* ---------- 작성 증명 지수 가중치 (사용자 조정 가능) ---------- */
@@ -2876,20 +2916,53 @@ function boxSaveCurrentDoc(){
   const titleEl = document.getElementById('docTitle');
   const title = (titleEl?.value || '').trim() || '제목 없음';
   const docs = boxLoadDocs();
-  const id = 'd_' + Date.now();
-  docs.unshift({
-    id,
+  const now = Date.now();
+  const snapshot = {
     title,
     type: selectedType || '자유',
-    savedAt: Date.now(),
+    savedAt: now,
     chars: model.filter(m=>m.ch!=='\n').length,
     model: model.map(m=>({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
     events: events.map(e=>({...e})),
     stats: {...stats},
     editOps: editOps.map(o=>({...o}))
-  });
+  };
+  let id;
+  if(currentDocId){
+    // 동일 문서 upsert — 첫 번째 행으로 끌어올림 + saveCount 증가
+    const idx = docs.findIndex(d => d.id === currentDocId);
+    if(idx >= 0){
+      const prev = docs[idx];
+      const updated = {...prev, ...snapshot, id: currentDocId, saveCount: (prev.saveCount||1) + 1, createdAt: prev.createdAt || prev.savedAt};
+      docs.splice(idx, 1);
+      docs.unshift(updated);
+      id = currentDocId;
+    } else {
+      // 메모리상의 id가 store에 없으면 새로 생성
+      id = currentDocId;
+      docs.unshift({id, ...snapshot, saveCount:1, createdAt: now});
+    }
+  } else {
+    id = 'd_' + now;
+    currentDocId = id;
+    docs.unshift({id, ...snapshot, saveCount:1, createdAt: now});
+  }
   boxSaveDocs(docs);
   return id;
+}
+
+// 새 문서 작성 진입 — 세션 초기화
+function newWrite(){
+  currentDocId = null;
+  model.length = 0; events.length = 0; editOps.length = 0;
+  Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
+  saveCount = 0;
+  sessionFrozen = false;
+  selectedType = null;
+  const t = document.getElementById('docTitle'); if(t) t.value = '';
+  if(typeof renderEditor === 'function') renderEditor();
+  document.body.dataset.view = 'write';
+  window.scrollTo(0,0);
 }
 function _fmtSaved(ts){
   const d = new Date(ts);
@@ -2909,14 +2982,19 @@ function renderBoxList(){
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} · ${d.chars.toLocaleString()}자</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글자 수</b> ${(d.chars||0).toLocaleString()}자 <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn ghost" onclick="boxScanDoc('${d.id}')">문서 검사하기</button>
-        <button class="box-actionbtn solid" onclick="boxOpenDoc('${d.id}')">문서 열기</button>
+        <button class="box-actionbtn ghost" onclick="boxScanShowToast('${d.id}')">문서 검사하기</button>
+        <button class="box-actionbtn solid" onclick="boxViewDoc('${d.id}')">문서 열기</button>
       </div>
     </div>
   `).join('');
+}
+// '문서 검사하기' — 추후 표절/AI 검사 메뉴로 이동 예정
+function boxScanShowToast(id){
+  // 일관성·자유로운 시안 검토를 위해 alert (팝업) 사용
+  alert('문서 검사 메뉴로 이동');
 }
 function _loadDocIntoSession(d){
   // 저장된 doc을 session에 복원
@@ -2926,11 +3004,31 @@ function _loadDocIntoSession(d){
   if(d.editOps) d.editOps.forEach(o => editOps.push({...o}));
   Object.assign(stats, d.stats||{});
   selectedType = d.type || null;
+  currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
+  saveCount = d.saveCount || 1;
   // 에디터 DOM 갱신
   if(typeof renderEditor === 'function') renderEditor();
   const t = document.getElementById('docTitle');
   if(t) t.value = d.title || '';
 }
+// 문서 보기 (단순 열람)
+function boxViewDoc(id){
+  const docs = boxLoadDocs();
+  const d = docs.find(x => x.id===id);
+  if(!d) return;
+  currentDocId = d.id;
+  // 보기 화면에 데이터 채움
+  const titleEl = document.getElementById('docViewTitle');
+  if(titleEl) titleEl.textContent = d.title || '제목 없음';
+  const bodyEl = document.getElementById('docViewBody');
+  if(bodyEl){
+    const text = (d.model||[]).map(m=>m.ch).join('');
+    bodyEl.textContent = text;
+  }
+  document.body.dataset.view = 'doc';
+  window.scrollTo(0,0);
+}
+// '문서 수정' — 작성 도구에서 이어 작성
 function boxOpenDoc(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
@@ -2940,6 +3038,7 @@ function boxOpenDoc(id){
   document.body.dataset.view = 'write';
   window.scrollTo(0,0);
 }
+// '작성 증명 리포트 확인' — 보기 화면에서 호출
 function boxScanDoc(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
