@@ -149,17 +149,31 @@
   #replayBox .caret-rep{display:inline-block;width:2px;height:1.05em;background:var(--ck-primary-500);margin-left:1px;animation:caretBlink 1s steps(2) infinite;vertical-align:text-bottom;}
   @keyframes caretBlink { 50%{opacity:0;} }
   #replaySeek{accent-color:var(--ck-primary-500);height:4px;}
-  /* 리플레이 타임라인 외부 유입 마커 */
-  .replay-seek-wrap{position:relative;flex:1;display:flex;align-items:center;padding-top:22px;}
-  .replay-seek-wrap > #replaySeek{width:100%;margin:0;}
-  #replayMarkers{position:absolute;left:0;right:0;top:0;height:24px;pointer-events:none;}
-  .replay-marker{position:absolute;top:0;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;line-height:1;}
-  .replay-marker .replay-marker-label{font-size:9.5px;font-weight:700;color:#fff;padding:2px 6px;border-radius:3px;white-space:nowrap;}
-  .replay-marker .replay-marker-bar{width:2px;height:8px;margin-top:1px;border-radius:1px;}
-  .replay-marker[data-src="paste"] .replay-marker-label,
-  .replay-marker[data-src="paste"] .replay-marker-bar{background:#EF4444;}
-  .replay-marker[data-src="ai"] .replay-marker-label,
-  .replay-marker[data-src="ai"] .replay-marker-bar{background:#7C52F1;}
+  /* ===== 리플레이 타임라인: 외부 유입 + 타임라인 2행 구조 ===== */
+  .replay-track-area{display:flex;flex-direction:column;gap:6px;flex:1;}
+  .replay-track-row{display:flex;align-items:center;gap:10px;}
+  .replay-track-label{font-size:11px;font-weight:600;color:var(--ck-gray-500);min-width:54px;flex-shrink:0;}
+  .replay-track-bar{position:relative;flex:1;height:16px;display:flex;align-items:center;}
+  /* 외부 유입 트랙 — 옅은 background rail */
+  #replayMarkersTrack::before{content:'';position:absolute;left:0;right:0;top:50%;height:3px;background:var(--ck-secondary-100);border-radius:2px;transform:translateY(-50%);}
+  #replayMarkersTrack{cursor:crosshair;}
+  /* 점 */
+  .replay-marker-dot{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;z-index:2;cursor:pointer;transition:transform .12s ease;}
+  .replay-marker-dot[data-src="paste"]{background:#EF4444;}
+  .replay-marker-dot[data-src="ai"]{background:#7C52F1;}
+  .replay-marker-dot:hover{transform:translate(-50%,-50%) scale(1.45);}
+  .replay-marker-dot:hover{z-index:4;}
+  /* 호버 툴팁 */
+  .replay-marker-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);padding:5px 9px;background:var(--ck-secondary-800);color:#fff;font-size:10.5px;font-weight:600;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;}
+  .replay-marker-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ck-secondary-800);}
+  .replay-marker-dot:hover .replay-marker-tip{opacity:1;}
+  /* cursor line + 화살표 */
+  .replay-cursor{position:absolute;top:-12px;bottom:-2px;left:0;width:0;display:none;pointer-events:none;z-index:1;}
+  .replay-cursor.is-visible{display:block;}
+  .replay-cursor-arrow{position:absolute;top:0;left:0;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ck-gray-900);}
+  .replay-cursor-line{position:absolute;left:0;top:8px;bottom:0;width:1px;background:var(--ck-gray-900);transform:translateX(-50%);}
+  /* 타임라인 input 행 */
+  .replay-track-timeline #replaySeek{width:100%;margin:0;flex:1;}
   .ba-mod-block{outline:1px dashed rgba(245,158,11,0.45);border-radius:2px;}
 
   /* 외부 유입 로그 — 전후 비교 슬라이딩 expansion */
@@ -1799,9 +1813,21 @@
       <button id="btnReplay" onclick="toggleReplay()" title="재생/일시정지" class="w-9 h-9 rounded-lg text-white flex items-center justify-center" style="background:var(--ck-primary-500);">
         <svg id="btnReplayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
       </button>
-      <div class="replay-seek-wrap">
-        <div id="replayMarkers"></div>
-        <input id="replaySeek" type="range" min="0" max="0" value="0" oninput="seekReplayTo(Number(this.value))"/>
+      <div class="replay-track-area">
+        <div class="replay-track-row replay-track-external">
+          <span class="replay-track-label">외부 유입</span>
+          <div class="replay-track-bar" id="replayMarkersTrack">
+            <div id="replayMarkers"></div>
+            <div class="replay-cursor" id="replayCursor">
+              <div class="replay-cursor-arrow"></div>
+              <div class="replay-cursor-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="replay-track-row replay-track-timeline">
+          <span class="replay-track-label">타임라인</span>
+          <input id="replaySeek" type="range" min="0" max="0" value="0" oninput="seekReplayTo(Number(this.value))"/>
+        </div>
       </div>
       <span id="replayClock" class="font-mono text-[12px] text-slate-700 min-w-[44px] text-right">00:00</span>
       <div class="flex items-center gap-0.5 ml-2 bg-slate-100 rounded-lg p-0.5">
@@ -2446,7 +2472,7 @@ function prepReplay(){
   renderReplayMarkers();
 }
 
-/* 리플레이 타임라인에 외부 유입(paste/ai) 시점 마커 표기 */
+/* 리플레이 타임라인에 외부 유입(paste/ai) 시점 마커 표기 — 별도 트랙·점 + 호버 툴팁 */
 function renderReplayMarkers(){
   const wrap = document.getElementById('replayMarkers');
   if(!wrap) return;
@@ -2455,13 +2481,31 @@ function renderReplayMarkers(){
   wrap.innerHTML = replayFrames.map((f, i) => {
     if(f.src !== 'paste' && f.src !== 'ai') return '';
     const pct = (i / total) * 100;
-    const label = f.src === 'paste' ? '붙여넣기' : 'AI';
+    const label = f.src === 'paste' ? '붙여넣기' : 'AI 생성';
     const len = (f.chars || []).length;
-    return `<div class="replay-marker" data-src="${f.src}" style="left:${pct}%;" title="${label} ${len}자 (${i}프레임)">
-      <div class="replay-marker-label">${label} ${len}자</div>
-      <div class="replay-marker-bar"></div>
+    return `<div class="replay-marker-dot" data-src="${f.src}" style="left:${pct}%;">
+      <div class="replay-marker-tip">${label} ${len}자</div>
     </div>`;
   }).join('');
+  bindReplayCursor();
+}
+
+/* 외부 유입 트랙 mousemove → cursor (▼ + 수직선) */
+function bindReplayCursor(){
+  const bar = document.getElementById('replayMarkersTrack');
+  const cursor = document.getElementById('replayCursor');
+  if(!bar || !cursor) return;
+  if(bar.dataset.cursorBound === '1') return;
+  bar.dataset.cursorBound = '1';
+  bar.addEventListener('mousemove', e=>{
+    const r = bar.getBoundingClientRect();
+    const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
+    cursor.style.left = x + 'px';
+    cursor.classList.add('is-visible');
+  });
+  bar.addEventListener('mouseleave', ()=>{
+    cursor.classList.remove('is-visible');
+  });
 }
 
 /* RP-001/RP-002 모달 open/close */
