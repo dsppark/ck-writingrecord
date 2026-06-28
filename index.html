@@ -136,7 +136,7 @@
   /* origin highlights — typing: 그린 / ai:보라 / ai-edited:파랑(AI 영역 수정) / paste:빨강 / paste-edited:오렌지(붙여넣기 수정) */
   .origin-typing{background:var(--ck-green-100);}
   .origin-paste{background:var(--ck-danger-100);}
-  .origin-paste-edited{background:var(--ck-warning-100);}
+  .origin-paste-edited{background:var(--ck-yellow-100);}
   .origin-ai{background:#DAD3FF;}
   .origin-ai-edited{background:var(--ck-tertiary-100);}
   /* 본문 영역 클릭 선택 — 글자색/음영 없이 검정 테두리만 */
@@ -345,7 +345,7 @@
   .s-write .d{background:var(--ck-green-500);}
   .s-ai .d{background:#7C52F1;}
   .s-paste .d{background:#EF4444;}
-  .s-revised .d{background:#F97316;}
+  .s-revised .d{background:#EAB308;}
 
   .editor-shell{flex:1;display:flex;flex-direction:column;min-height:0;}
   .editor-toolbar{display:flex;align-items:center;gap:6px;padding:8px 18px;border-bottom:1px solid #F1F5F9;background:#FAFBFC;}
@@ -365,8 +365,8 @@
   .editor-area .seg-ai-edited{background:rgba(60,135,246,0.18);border-bottom:1px dotted #3C87F6;}
   .editor-area .seg-ai-internal{background:rgba(60,135,246,0.18);border-bottom:1px dotted #3C87F6;}
   .editor-area .seg-paste{background:rgba(239,68,68,0.14);border-bottom:1px dotted #EF4444;}
-  .editor-area .seg-paste-edited{background:rgba(245,158,11,0.18);border-bottom:1px dotted #F97316;}
-  .editor-area .seg-paste-internal{background:rgba(245,158,11,0.18);border-bottom:1px dotted #F97316;}
+  .editor-area .seg-paste-edited{background:rgba(234,179,8,0.18);border-bottom:1px dotted #EAB308;}
+  .editor-area .seg-paste-internal{background:rgba(234,179,8,0.18);border-bottom:1px dotted #EAB308;}
 
   .foot-count{padding:8px 18px;font-size:11.5px;color:#64748B;border-top:1px solid #F1F5F9;background:#FAFBFC;}
   .foot-count b{color:var(--ck-primary-700);font-family:'JetBrains Mono',monospace;}
@@ -691,7 +691,7 @@
               <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#991B1B"/>
                 <stop offset="25%" stop-color="#EF4444"/>
-                <stop offset="50%" stop-color="#F97316"/>
+                <stop offset="50%" stop-color="#EAB308"/>
                 <stop offset="75%" stop-color="#2CD1FF"/>
                 <stop offset="100%" stop-color="#10B981"/>
               </linearGradient>
@@ -737,7 +737,7 @@
               <span class="text-slate-700">붙여넣기 후 수정</span>
               <span class="font-mono font-semibold text-slate-900">10.4%</span>
             </div>
-            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:10.4%;background:#F97316;"></div></div>
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:10.4%;background:#EAB308;"></div></div>
           </div>
           <div>
             <div class="flex items-center justify-between text-[13px] mb-1">
@@ -788,8 +788,8 @@
       <div class="flex items-center gap-4 text-xs mb-3">
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#00C2FF;"></span>키스트로크/분</span>
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#A5B4FC;"></span>누적 글자수</span>
-        <span class="flex items-center gap-1.5"><span class="w-0.5 h-3" style="background:#F97316;border-left:2px dashed #F97316;"></span>붙여넣기</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#D8E5FD;border:1px solid #F97316;"></span>비활성 구간</span>
+        <span class="flex items-center gap-1.5"><span class="w-0.5 h-3" style="background:#EAB308;border-left:2px dashed #EAB308;"></span>붙여넣기</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#D8E5FD;border:1px solid #EAB308;"></span>비활성 구간</span>
       </div>
 
       <!-- Area chart SVG (동적 빌드: buildActivityChart) -->
@@ -816,12 +816,12 @@
         </g>
         <!-- idle shade region (45min~52min) -->
         <rect x="475" y="20" width="60" height="200" fill="#D8E5FD" opacity="0.5"/>
-        <rect x="475" y="20" width="60" height="200" fill="none" stroke="#F97316" stroke-width="1" stroke-dasharray="4 3"/>
+        <rect x="475" y="20" width="60" height="200" fill="none" stroke="#EAB308" stroke-width="1" stroke-dasharray="4 3"/>
         <text x="505" y="35" text-anchor="middle" font-size="9" fill="#92400E" font-weight="600">Idle 7:14</text>
 
         <!-- second idle (95min~99min) -->
         <rect x="820" y="20" width="40" height="200" fill="#D8E5FD" opacity="0.5"/>
-        <rect x="820" y="20" width="40" height="200" fill="none" stroke="#F97316" stroke-width="1" stroke-dasharray="4 3"/>
+        <rect x="820" y="20" width="40" height="200" fill="none" stroke="#EAB308" stroke-width="1" stroke-dasharray="4 3"/>
 
         <!-- charCount area (auxiliary y, normalized) -->
         <path d="M 40 215 L 90 210 L 140 195 L 190 180 L 240 160 L 290 140 L 340 110 L 390 85 L 440 75 L 475 70 L 535 65 L 585 55 L 635 45 L 685 38 L 735 32 L 785 30 L 820 30 L 860 28 L 900 25 L 900 220 L 40 220 Z" fill="url(#areaFill)"/>
@@ -839,18 +839,18 @@
 
         <!-- paste markers -->
         <g>
-          <line x1="240" y1="20" x2="240" y2="220" stroke="#F97316" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
-          <circle cx="240" cy="20" r="6" fill="#F97316" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(0)"/>
+          <line x1="240" y1="20" x2="240" y2="220" stroke="#EAB308" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
+          <circle cx="240" cy="20" r="6" fill="#EAB308" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(0)"/>
           <text x="240" y="14" text-anchor="middle" font-size="9" fill="#92400E" font-weight="700">P</text>
         </g>
         <g>
-          <line x1="440" y1="20" x2="440" y2="220" stroke="#F97316" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
-          <circle cx="440" cy="20" r="6" fill="#F97316" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(1)"/>
+          <line x1="440" y1="20" x2="440" y2="220" stroke="#EAB308" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
+          <circle cx="440" cy="20" r="6" fill="#EAB308" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(1)"/>
           <text x="440" y="14" text-anchor="middle" font-size="9" fill="#92400E" font-weight="700">P</text>
         </g>
         <g>
-          <line x1="685" y1="20" x2="685" y2="220" stroke="#F97316" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
-          <circle cx="685" cy="20" r="6" fill="#F97316" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(2)"/>
+          <line x1="685" y1="20" x2="685" y2="220" stroke="#EAB308" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>
+          <circle cx="685" cy="20" r="6" fill="#EAB308" cursor="pointer" onclick="document.getElementById('sec-07').scrollIntoView({behavior:'smooth'});flashRow(2)"/>
           <text x="685" y="14" text-anchor="middle" font-size="9" fill="#92400E" font-weight="700">P</text>
         </g>
 
@@ -1000,7 +1000,7 @@
         <div class="composeg flex items-center justify-center" data-key="ai"           data-label="AI 생성"        data-n="110" data-pct="100" data-color="#7C52F1" style="background:#7C52F1;width:100%">100%</div>
         <div class="composeg flex items-center justify-center" data-key="ai-edited"    data-label="AI 생성+수정"  data-n="0"   data-pct="0"   data-color="#D8E5FD" style="background:#D8E5FD;color:#0859C5;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="paste"        data-label="붙여넣기"      data-n="0"   data-pct="0"   data-color="#EF4444" style="background:#EF4444;width:0%"></div>
-        <div class="composeg flex items-center justify-center" data-key="paste-edited" data-label="붙여넣기+수정" data-n="0"   data-pct="0"   data-color="#FFEDD4" style="background:#FFEDD4;color:#C2410C;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="paste-edited" data-label="붙여넣기+수정" data-n="0"   data-pct="0"   data-color="#FEF3C7" style="background:#FEF3C7;color:#854D0E;width:0%"></div>
       </div>
     </div>
     <div id="compoLegend" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] justify-end">
@@ -1008,7 +1008,7 @@
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C52F1;"></span><span class="text-slate-500">AI 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">110자</span><span class="text-slate-400" data-bind="ai-pct">(100%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#D8E5FD;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#F97316;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EAB308;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0%)</span></div>
     </div>
 
     <!-- 회색 구분선 -->
@@ -1023,7 +1023,7 @@
         <button onclick="toggleOrigin(this,'ai')" class="origin-filter" data-cat="ai" style="--cat:var(--ck-brand-gk-500);--cat-dark:var(--ck-brand-gk-700);--cat-light:var(--ck-brand-gk-100);">AI생성</button>
         <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:var(--ck-tertiary-500);--cat-dark:var(--ck-tertiary-800);--cat-light:var(--ck-tertiary-100);">AI생성+수정</button>
         <button onclick="toggleOrigin(this,'paste')" class="origin-filter" data-cat="paste" style="--cat:var(--ck-danger-500);--cat-dark:var(--ck-danger-700);--cat-light:var(--ck-danger-100);">붙여넣기</button>
-        <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-warning-500);--cat-dark:var(--ck-warning-700);--cat-light:var(--ck-warning-100);">붙여넣기+수정</button>
+        <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-yellow-500);--cat-dark:var(--ck-yellow-800);--cat-light:var(--ck-yellow-100);">붙여넣기+수정</button>
       </div>
       <button onclick="openReplay()" class="h-8 px-3 rounded-lg text-xs font-semibold text-white flex items-center gap-1.5 hover:brightness-110" style="background:var(--ck-primary-500);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1280,7 +1280,7 @@
             <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" stroke-width="14"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#EF4444" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#F97316" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#EAB308" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#CBD5E1" stroke-width="14" stroke-dasharray="0 251" stroke-dashoffset="0"/>
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -1294,7 +1294,7 @@
               <span class="font-mono font-semibold" data-bind="paste-intact-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#F97316;"></span>수정됨</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm" style="background:#EAB308;"></span>수정됨</span>
               <span class="font-mono font-semibold" data-bind="paste-edited-pct">0.0%</span>
             </div>
             <div class="flex items-center justify-between py-1.5 border-t border-slate-100">
@@ -2912,7 +2912,7 @@ async function buildReportFromSession(){
     {key:'ai',           label:'AI 생성',        n:n_ai,       color:'#7C52F1'},
     {key:'ai-edited',    label:'AI 생성+수정',  n:n_aiRev,    color:'#D8E5FD'},
     {key:'paste',        label:'붙여넣기',       n:n_paste,    color:'#EF4444'},
-    {key:'paste-edited', label:'붙여넣기+수정', n:n_pasteRev, color:'#FFEDD4'},
+    {key:'paste-edited', label:'붙여넣기+수정', n:n_pasteRev, color:'#FEF3C7'},
   ];
   const bar=document.getElementById('compoBar');
   if(bar){
@@ -2927,7 +2927,7 @@ async function buildReportFromSession(){
       d.dataset.pct=pct.toFixed(1);
       d.dataset.color=s.color;
       // light 배경(ai-edited:노랑, paste-edited:파랑)엔 진한 텍스트
-      const lightBgColor = s.key==='ai-edited' ? '#0859C5' : (s.key==='paste-edited' ? '#C2410C' : null);
+      const lightBgColor = s.key==='ai-edited' ? '#0859C5' : (s.key==='paste-edited' ? '#854D0E' : null);
       d.style.cssText=`background:${s.color};width:${pct}%;${lightBgColor?`color:${lightBgColor};`:''}`;
       d.textContent = pct>=10 ? `${pct.toFixed(0)}%` : '';
       bar.appendChild(d);
@@ -3348,7 +3348,7 @@ function buildActivityChart(idlePeriods){
     const x1 = LEFT + (p.startMs/totalMs)*(RIGHT-LEFT);
     const x2 = LEFT + (p.endMs/totalMs)*(RIGHT-LEFT);
     const w = Math.max(2, x2-x1);
-    return `<rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="#D8E5FD" opacity="0.55"/><rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="none" stroke="#F97316" stroke-width="1" stroke-dasharray="4 3"/>`;
+    return `<rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="#D8E5FD" opacity="0.55"/><rect x="${x1.toFixed(1)}" y="${TOP}" width="${w.toFixed(1)}" height="${BOT-TOP}" fill="none" stroke="#EAB308" stroke-width="1" stroke-dasharray="4 3"/>`;
   }).join('');
   // paste/ai 마커
   const markers = events.filter(e=>e.type==='paste'||e.type==='ai').map(e=>{
@@ -3574,7 +3574,7 @@ function buildIdleSection(idlePeriods, idleRatio){
     tl.innerHTML = (idlePeriods||[]).map(p=>{
       const leftPct = (p.startMs/totalMs)*100;
       const widPct = Math.max(0.5, (p.durMs/totalMs)*100);
-      return `<div class="absolute top-0 bottom-0" style="left:${leftPct.toFixed(2)}%;width:${widPct.toFixed(2)}%;background:#D8E5FD;border-left:1px dashed #F97316;border-right:1px dashed #F97316;" title="${fmtMSS(p.startMs)} → ${fmtMSS(p.endMs)} (${fmtMSS(p.durMs)})"></div>`;
+      return `<div class="absolute top-0 bottom-0" style="left:${leftPct.toFixed(2)}%;width:${widPct.toFixed(2)}%;background:#D8E5FD;border-left:1px dashed #EAB308;border-right:1px dashed #EAB308;" title="${fmtMSS(p.startMs)} → ${fmtMSS(p.endMs)} (${fmtMSS(p.durMs)})"></div>`;
     }).join('');
   }
 }
