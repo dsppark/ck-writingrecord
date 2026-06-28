@@ -149,6 +149,17 @@
   #replayBox .caret-rep{display:inline-block;width:2px;height:1.05em;background:var(--ck-primary-500);margin-left:1px;animation:caretBlink 1s steps(2) infinite;vertical-align:text-bottom;}
   @keyframes caretBlink { 50%{opacity:0;} }
   #replaySeek{accent-color:var(--ck-primary-500);height:4px;}
+  /* 리플레이 타임라인 외부 유입 마커 */
+  .replay-seek-wrap{position:relative;flex:1;display:flex;align-items:center;padding-top:22px;}
+  .replay-seek-wrap > #replaySeek{width:100%;margin:0;}
+  #replayMarkers{position:absolute;left:0;right:0;top:0;height:24px;pointer-events:none;}
+  .replay-marker{position:absolute;top:0;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;line-height:1;}
+  .replay-marker .replay-marker-label{font-size:9.5px;font-weight:700;color:#fff;padding:2px 6px;border-radius:3px;white-space:nowrap;}
+  .replay-marker .replay-marker-bar{width:2px;height:8px;margin-top:1px;border-radius:1px;}
+  .replay-marker[data-src="paste"] .replay-marker-label,
+  .replay-marker[data-src="paste"] .replay-marker-bar{background:#EF4444;}
+  .replay-marker[data-src="ai"] .replay-marker-label,
+  .replay-marker[data-src="ai"] .replay-marker-bar{background:#7C52F1;}
   .ba-mod-block{outline:1px dashed rgba(245,158,11,0.45);border-radius:2px;}
 
   /* 외부 유입 로그 — 전후 비교 슬라이딩 expansion */
@@ -1788,7 +1799,10 @@
       <button id="btnReplay" onclick="toggleReplay()" title="재생/일시정지" class="w-9 h-9 rounded-lg text-white flex items-center justify-center" style="background:var(--ck-primary-500);">
         <svg id="btnReplayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
       </button>
-      <input id="replaySeek" type="range" min="0" max="0" value="0" class="flex-1" oninput="seekReplayTo(Number(this.value))"/>
+      <div class="replay-seek-wrap">
+        <div id="replayMarkers"></div>
+        <input id="replaySeek" type="range" min="0" max="0" value="0" oninput="seekReplayTo(Number(this.value))"/>
+      </div>
       <span id="replayClock" class="font-mono text-[12px] text-slate-700 min-w-[44px] text-right">00:00</span>
       <div class="flex items-center gap-0.5 ml-2 bg-slate-100 rounded-lg p-0.5">
         <button class="speed-btn is-active" data-speed="1" onclick="setReplaySpeed(1)">1×</button>
@@ -2429,6 +2443,25 @@ function prepReplay(){
   });
   setReplayIcon('play');
   renderReplayAt(0);
+  renderReplayMarkers();
+}
+
+/* 리플레이 타임라인에 외부 유입(paste/ai) 시점 마커 표기 */
+function renderReplayMarkers(){
+  const wrap = document.getElementById('replayMarkers');
+  if(!wrap) return;
+  if(!replayFrames || replayFrames.length === 0){ wrap.innerHTML = ''; return; }
+  const total = replayFrames.length;
+  wrap.innerHTML = replayFrames.map((f, i) => {
+    if(f.src !== 'paste' && f.src !== 'ai') return '';
+    const pct = (i / total) * 100;
+    const label = f.src === 'paste' ? '붙여넣기' : 'AI';
+    const len = (f.chars || []).length;
+    return `<div class="replay-marker" data-src="${f.src}" style="left:${pct}%;" title="${label} ${len}자 (${i}프레임)">
+      <div class="replay-marker-label">${label} ${len}자</div>
+      <div class="replay-marker-bar"></div>
+    </div>`;
+  }).join('');
 }
 
 /* RP-001/RP-002 모달 open/close */
