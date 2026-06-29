@@ -274,6 +274,38 @@
   /* box meta 구분점 */
   .box-meta-sep{color:var(--ck-gray-300);margin:0 4px;}
 
+  /* ============ Froala-style 에디터 툴바 (data-write-variant='extra') ============ */
+  .ft-toolbar{display:none;flex-direction:column;gap:6px;padding:8px 12px;background:#FAFBFC;border-bottom:1px solid var(--ck-secondary-200);}
+  body[data-write-variant="extra"] .ft-toolbar{display:flex;}
+  body[data-write-variant="extra"] .editor-toolbar{display:none;}
+  .ft-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+  .ft-sep{width:1px;height:18px;background:var(--ck-secondary-200);margin:0 4px;}
+  .ft-btn{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 6px;border:1px solid transparent;background:transparent;color:var(--ck-gray-800);font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;transition:background .12s,border-color .12s;position:relative;}
+  .ft-btn:hover{background:#fff;border-color:var(--ck-secondary-300);}
+  .ft-btn:active{background:var(--ck-primary-50);}
+  .ft-btn b,.ft-btn i,.ft-btn u,.ft-btn s{font-size:14px;}
+  .ft-select{height:28px;padding:0 8px;border:1px solid var(--ck-secondary-300);background:#fff;color:var(--ck-gray-800);font-size:12px;border-radius:5px;cursor:pointer;font-family:inherit;}
+  .ft-color{width:28px;height:28px;padding:1px;border:1px solid var(--ck-secondary-300);border-radius:5px;background:#fff;cursor:pointer;}
+  /* 표 picker */
+  .ft-table-btn{position:relative;}
+  .ft-table-picker{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--ck-secondary-300);border-radius:8px;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,0.10);z-index:20;display:none;grid-template-columns:repeat(8,18px);gap:2px;}
+  .ft-table-picker.open{display:grid;}
+  .ft-tp-cell{width:18px;height:18px;border:1px solid var(--ck-secondary-200);background:#fff;cursor:pointer;border-radius:2px;}
+  .ft-tp-cell.is-hover{background:var(--ck-primary-200);border-color:var(--ck-primary-500);}
+  .ft-tp-label{grid-column:1/-1;text-align:center;font-size:11px;color:var(--ck-gray-600);margin-top:4px;font-family:'JetBrains Mono',monospace;}
+  /* 에디터 안 표 스타일 */
+  .editor-area table{border-collapse:collapse;margin:8px 0;width:auto;}
+  .editor-area table td,.editor-area table th{border:1px solid var(--ck-gray-300);padding:6px 10px;min-width:60px;vertical-align:top;}
+  .editor-area table th{background:var(--ck-secondary-50);font-weight:700;}
+  .editor-area blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--ck-secondary-300);background:var(--ck-secondary-50);color:var(--ck-gray-700);}
+  .editor-area pre{margin:8px 0;padding:10px 14px;background:var(--ck-secondary-50);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;white-space:pre-wrap;}
+  .editor-area h1{font-size:24px;font-weight:800;margin:14px 0 6px;}
+  .editor-area h2{font-size:19px;font-weight:700;margin:12px 0 6px;}
+  .editor-area h3{font-size:16px;font-weight:700;margin:10px 0 4px;}
+  .editor-area ul,.editor-area ol{margin:6px 0;padding-left:24px;}
+  .editor-area li{margin:2px 0;}
+  .editor-area a{color:var(--ck-primary-700);text-decoration:underline;}
+
   /* ===== SEC-02 breakdown 3그룹 ===== */
   .bd-group{margin-top:10px;}
   .bd-group:first-child{margin-top:0;}
@@ -697,6 +729,61 @@
           <button class="tool-btn" id="btnDemoPaste" title="외부 클립보드 텍스트를 paste source로 시뮬레이션">📋 외부 붙여넣기(데모)</button>
           <button class="tool-btn" id="btnDemoAI" title="AI 응답을 즉시 삽입 (시연용)">🤖 AI 초안 받기(데모)</button>
           <span class="rec" id="recBadge"><span class="blink"></span>작성 기록중 <span class="font-mono ml-1" id="recClock">00:00</span></span>
+        </div>
+        <!-- Froala-style 툴바 (variant=extra) -->
+        <div class="ft-toolbar" id="ftToolbar">
+          <div class="ft-row">
+            <select class="ft-select" onchange="ftFormat(this.value); this.value='';">
+              <option value="">단락 ▾</option>
+              <option value="h1">제목 1</option>
+              <option value="h2">제목 2</option>
+              <option value="h3">제목 3</option>
+              <option value="p">본문</option>
+            </select>
+            <select class="ft-select" onchange="ftFontSize(this.value); this.value='';">
+              <option value="">글자 크기 ▾</option>
+              <option value="2">작게</option>
+              <option value="3">기본</option>
+              <option value="4">중간</option>
+              <option value="5">큼</option>
+              <option value="6">매우 큼</option>
+              <option value="7">아주 큼</option>
+            </select>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="굵게" onclick="ftExec('bold')"><b>B</b></button>
+            <button class="ft-btn" title="기울임" onclick="ftExec('italic')"><i>I</i></button>
+            <button class="ft-btn" title="밑줄" onclick="ftExec('underline')"><u>U</u></button>
+            <button class="ft-btn" title="취소선" onclick="ftExec('strikeThrough')"><s>S</s></button>
+            <span class="ft-sep"></span>
+            <input type="color" class="ft-color" title="글자색" oninput="ftExec('foreColor', this.value)" value="#111827"/>
+            <input type="color" class="ft-color" title="형광펜" oninput="ftExec('hiliteColor', this.value)" value="#FEF3C7"/>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="왼쪽 정렬" onclick="ftExec('justifyLeft')">⬅</button>
+            <button class="ft-btn" title="가운데 정렬" onclick="ftExec('justifyCenter')">⬌</button>
+            <button class="ft-btn" title="오른쪽 정렬" onclick="ftExec('justifyRight')">➡</button>
+            <button class="ft-btn" title="양쪽 정렬" onclick="ftExec('justifyFull')">▭</button>
+          </div>
+          <div class="ft-row">
+            <button class="ft-btn" title="순서 있는 목록" onclick="ftExec('insertOrderedList')">1.</button>
+            <button class="ft-btn" title="순서 없는 목록" onclick="ftExec('insertUnorderedList')">•</button>
+            <button class="ft-btn" title="들여쓰기" onclick="ftExec('indent')">▸</button>
+            <button class="ft-btn" title="내어쓰기" onclick="ftExec('outdent')">◂</button>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="인용" onclick="ftExec('formatBlock','blockquote')">❝</button>
+            <button class="ft-btn" title="코드 블록" onclick="ftExec('formatBlock','pre')">&lt;/&gt;</button>
+            <button class="ft-btn" title="가로선" onclick="ftExec('insertHorizontalRule')">─</button>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="링크 삽입" onclick="ftLink()">🔗</button>
+            <button class="ft-btn ft-table-btn" title="표 삽입" onclick="ftTableTogglePicker(event)">
+              ▦
+              <div class="ft-table-picker" id="ftTablePicker"></div>
+            </button>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="실행 취소" onclick="ftExec('undo')">↶</button>
+            <button class="ft-btn" title="다시 실행" onclick="ftExec('redo')">↷</button>
+            <span class="ft-sep"></span>
+            <button class="ft-btn" title="서식 지우기" onclick="ftExec('removeFormat')">⌫</button>
+          </div>
         </div>
         <div class="editor-area" id="editor" contenteditable="true" data-ph="여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다."></div>
       </div>
@@ -4432,6 +4519,90 @@ function fmtSec(ms){
   const m=Math.floor(s/60); const ss=s%60;
   return m>0 ? `${m}:${String(ss).padStart(2,'0')}` : `${ss}초`;
 }
+
+/* ============ Froala-style 에디터 툴바 핸들러 (variant=extra) ============ */
+function ftExec(cmd, val){
+  const ed = document.getElementById('editor');
+  if(!ed) return;
+  ed.focus();
+  try{ document.execCommand(cmd, false, val || null); }catch(e){ console.warn('execCommand fail', cmd, e); }
+}
+function ftFormat(tag){ if(!tag) return; ftExec('formatBlock', tag); }
+function ftFontSize(size){ if(!size) return; ftExec('fontSize', size); }
+function ftLink(){
+  const url = prompt('링크 URL을 입력하세요', 'https://');
+  if(url && url.trim()){ ftExec('createLink', url.trim()); }
+}
+function ftInsertTable(rows, cols){
+  const ed = document.getElementById('editor');
+  if(!ed) return;
+  ed.focus();
+  let html = '<table>';
+  for(let r=0;r<rows;r++){
+    html += '<tr>';
+    for(let c=0;c<cols;c++){
+      const tag = r===0 ? 'th' : 'td';
+      html += `<${tag}>&nbsp;</${tag}>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table><p><br></p>';
+  document.execCommand('insertHTML', false, html);
+}
+function ftBuildTablePicker(){
+  const picker = document.getElementById('ftTablePicker');
+  if(!picker) return;
+  const ROWS=8, COLS=8;
+  let html = '';
+  for(let r=1;r<=ROWS;r++){
+    for(let c=1;c<=COLS;c++){
+      html += `<div class="ft-tp-cell" data-r="${r}" data-c="${c}"></div>`;
+    }
+  }
+  html += `<div class="ft-tp-label" id="ftTpLabel">0 × 0</div>`;
+  picker.innerHTML = html;
+  picker.addEventListener('mousemove', e => {
+    const cell = e.target.closest('.ft-tp-cell');
+    if(!cell) return;
+    const tr = parseInt(cell.dataset.r,10);
+    const tc = parseInt(cell.dataset.c,10);
+    picker.querySelectorAll('.ft-tp-cell').forEach(el=>{
+      const r = parseInt(el.dataset.r,10), c = parseInt(el.dataset.c,10);
+      el.classList.toggle('is-hover', r<=tr && c<=tc);
+    });
+    const lab = document.getElementById('ftTpLabel');
+    if(lab) lab.textContent = `${tc} × ${tr}`;
+  });
+  picker.addEventListener('mouseleave', ()=>{
+    picker.querySelectorAll('.ft-tp-cell.is-hover').forEach(el=>el.classList.remove('is-hover'));
+    const lab = document.getElementById('ftTpLabel');
+    if(lab) lab.textContent = '0 × 0';
+  });
+  picker.addEventListener('click', e => {
+    const cell = e.target.closest('.ft-tp-cell');
+    if(!cell) return;
+    const tr = parseInt(cell.dataset.r,10);
+    const tc = parseInt(cell.dataset.c,10);
+    ftInsertTable(tr, tc);
+    picker.classList.remove('open');
+  });
+}
+function ftTableTogglePicker(evt){
+  evt?.stopPropagation?.();
+  const picker = document.getElementById('ftTablePicker');
+  if(!picker) return;
+  if(!picker.dataset.built){
+    ftBuildTablePicker();
+    picker.dataset.built = '1';
+  }
+  picker.classList.toggle('open');
+}
+// 다른 곳 클릭 시 표 picker 닫기
+document.addEventListener('click', e => {
+  const picker = document.getElementById('ftTablePicker');
+  if(!picker || !picker.classList.contains('open')) return;
+  if(!e.target.closest('.ft-table-btn')){ picker.classList.remove('open'); }
+});
 
 /* ===========================================================================
    DEMO MODE — 9개 케이스가 채워진 결과지를 한 번에 띄우기 위한 시드 함수.
