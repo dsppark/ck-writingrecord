@@ -281,6 +281,10 @@
   .ft-toolbar{display:none;flex-direction:column;gap:6px;padding:8px 12px;background:#FAFBFC;border-bottom:1px solid var(--ck-secondary-200);}
   body[data-write-variant="extra"] .ft-toolbar{display:flex;}
   body[data-write-variant="extra"] .editor-toolbar{display:none;}
+  /* 에디터 추가 버전 결과지 — 사이드 TOC / 세션요약 / 보존율 영역 제거 */
+  body[data-view="report"][data-write-variant="extra"] #view-report > div.flex > aside{display:none !important;}
+  body[data-view="report"][data-write-variant="extra"] #sec-01{display:none !important;}
+  body[data-view="report"][data-write-variant="extra"] #sec-11{display:none !important;}
   .ft-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .ft-sep{width:1px;height:18px;background:var(--ck-secondary-200);margin:0 4px;}
   .ft-btn{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 6px;border:1px solid transparent;background:transparent;color:var(--ck-gray-800);font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;transition:background .12s,border-color .12s;position:relative;}
@@ -3535,6 +3539,7 @@ function boxSaveCurrentDoc(){
   const snapshot = {
     title,
     type: selectedType || '자유',
+    writeVariant: document.body.dataset.writeVariant || '',
     savedAt: now,
     chars: model.filter(m=>m.ch!=='\n').length,
     model: model.map(m=>({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
@@ -3625,6 +3630,7 @@ function _loadDocIntoSession(d){
   selectedType = d.type || null;
   currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
   saveCount = d.saveCount || 1;
+  document.body.dataset.writeVariant = d.writeVariant || '';
   // 에디터 DOM 갱신
   if(typeof renderEditor === 'function') renderEditor();
   const t = document.getElementById('docTitle');
