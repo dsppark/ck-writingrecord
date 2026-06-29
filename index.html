@@ -4062,9 +4062,12 @@ async function buildReportFromSession(){
     const _paint = src =>
       src==='ai' || src==='ai-edited'         ? 'origin-ai' :
       src==='ai-internal'                     ? 'origin-ai-edited' :
+      src==='quote-paste' || src==='quote-paste-edited' ? 'origin-quote-paste' :
+      src==='quote-paste-internal'            ? 'origin-quote-paste-edited' :
       src==='paste' || src==='paste-edited'   ? 'origin-paste' :
       src==='paste-internal'                  ? 'origin-paste-edited' : '';
     const _aiFam = s => s==='ai'||s==='ai-edited'||s==='ai-internal';
+    const _quoteFam = s => s==='quote-paste'||s==='quote-paste-edited'||s==='quote-paste-internal';
     const _esc4 = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     // blockMark 단위로 묶거나, typing run 단위로 묶음
     const segs=[];
@@ -4099,9 +4102,15 @@ async function buildReportFromSession(){
         // hasInternal / data-len은 model 전체에서 동일 blockMark를 가진 모든 글자 기준으로 계산해
         // 시각상 두 부분으로 갈라져도 같은 블록 정보가 나오도록 한다.
         const allBlockChars = model.filter(m=>m.blockMark===s.bm);
-        const hasInternal = allBlockChars.some(c=>c.source==='ai-internal'||c.source==='paste-internal');
-        const isAi = _aiFam(allBlockChars[0]?.source||s.chars[0].source);
-        const blockOrigin = hasInternal ? (isAi?'ai-internal':'paste-internal') : (isAi?'ai':'paste');
+        const hasInternal = allBlockChars.some(c=>c.source==='ai-internal'||c.source==='paste-internal'||c.source==='quote-paste-internal');
+        const firstSrc = allBlockChars[0]?.source||s.chars[0].source;
+        const isAi = _aiFam(firstSrc);
+        const isQuote = _quoteFam(firstSrc);
+        const blockOrigin = isAi
+          ? (hasInternal ? 'ai-internal' : 'ai')
+          : isQuote
+            ? (hasInternal ? 'quote-paste-internal' : 'quote-paste')
+            : (hasInternal ? 'paste-internal' : 'paste');
         const blockTotalChars = allBlockChars.filter(c=>c.ch!=='\n').length;
         // 내부에 paint span 중첩 (연속된 같은 paint cls 묶음)
         let inner='', curCls=null, curTxt='';
