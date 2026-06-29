@@ -366,7 +366,8 @@
   .box-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;}
   .box-row .box-rowchk{flex-shrink:0;}
   .box-row .box-rowmain{flex:1;min-width:0;}
-  .box-row .box-rowtitle{font-size:14px;font-weight:700;color:var(--ck-gray-900);margin-bottom:6px;}
+  .box-row .box-rowtitle{font-size:14px;font-weight:700;color:var(--ck-gray-900);margin-bottom:6px;cursor:pointer;display:inline-block;transition:color .12s;}
+  .box-row .box-rowtitle:hover{color:var(--ck-primary-600);text-decoration:underline;text-underline-offset:3px;}
   .box-row .box-rowmeta{font-size:12px;color:var(--ck-gray-500);}
   .box-row .box-rowmeta b{font-weight:500;color:var(--ck-gray-600);}
   .box-row .box-rowactions{display:flex;gap:8px;flex-shrink:0;}
@@ -3445,7 +3446,7 @@ function renderBoxList(){
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
-        <div class="box-rowtitle">${(d.title||'').replace(/[<>]/g,'')}</div>
+        <div class="box-rowtitle" role="button" tabindex="0" onclick="boxViewDoc('${d.id}')">${(d.title||'').replace(/[<>]/g,'')}</div>
         <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글자 수</b> ${(d.chars||0).toLocaleString()}자 <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
