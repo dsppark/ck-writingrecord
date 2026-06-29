@@ -2250,6 +2250,16 @@ function renderSegDetail(seg){
     const kept = intact + editKept;
     const deleted = Math.max(0, blockSize - kept);
     const added = internal;
+    // 개입 흔적 — 출처(=AI/붙여넣기)는 그대로지만 사람이 영역에 손댔는지 별도 표기
+    let touch;
+    if(internal > 0){
+      touch = `수정·재작성 흔적 <span class="text-slate-400 font-normal">(+${added}자 / −${deleted}자)</span>`;
+    } else if(deleted > 0){
+      touch = `일부 삭제 흔적 <span class="text-slate-400 font-normal">(−${deleted}자)</span>`;
+    } else {
+      touch = '<span class="text-slate-500">손대지 않음</span>';
+    }
+    rows.push(['개입 흔적', touch, true]);
     // ai-internal/paste-internal (실제 사용자가 손댄 글자) 일 때만 +수정 필드 노출
     const isEditedCat = src.endsWith('-internal');
     if(isEditedCat){
