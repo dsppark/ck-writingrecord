@@ -285,8 +285,7 @@
   .bd-w{font-size:10.5px;color:var(--ck-gray-400);font-weight:500;margin-left:6px;}
   .bd-bar{height:6px;background:var(--ck-secondary-100);border-radius:999px;overflow:hidden;}
   .bd-bar > div{height:100%;border-radius:999px;}
-  .sec02-tier{max-width:240px;}
-  .sec02-tier .sec02-tier-desc{font-weight:500;font-size:11.5px;line-height:1.45;margin-left:6px;opacity:0.92;}
+  .sec02-tier{transition:background .15s, color .15s;}
 
   /* ============ 결과지(view-report) 하단 액션바 ============ */
   .report-actions{position:fixed;left:0;right:0;bottom:0;padding:14px 32px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:none;align-items:center;gap:8px;}
@@ -874,10 +873,9 @@
             <span class="text-lg font-semibold text-slate-400 ml-1">/ 100</span>
           </div>
         </div>
-        <div class="sec02-tier mt-3 px-3 py-2 rounded-lg text-[12px] font-semibold flex items-start gap-1.5" style="background:#D1FAE5;color:#047857;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span class="ml-1 font-semibold">높음</span>
-          <span class="sec02-tier-desc">독자적인 글쓰기 — 작성자의 사고와 퇴고 흔적이 충분히 관찰됩니다.</span>
+        <div class="sec02-tier mt-2 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1" style="background:#D1FAE5;color:#047857;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>높음</span>
         </div>
       </div>
 
@@ -937,7 +935,7 @@
         </div>
 
         <div class="mt-4 p-3 rounded-lg bg-slate-50 text-[12.5px] text-slate-600 leading-relaxed border border-slate-100">
-          <span class="font-semibold text-slate-800">해석</span> · 직접 타이핑 비중이 절반을 넘고, 비선형 커서 이동과 수정 품질 점수가 높아 작성자의 능동적 수정이 충분히 관찰됩니다. AI 생성·붙여넣기 텍스트도 절반 이상 재작성되었습니다.
+          <span class="font-semibold text-slate-800">해석</span> · <span class="sec02-interpret">독자적인 글쓰기 — 작성자의 사고 흐름과 퇴고 행동이 충분히 관찰됩니다. AI 또는 외부 유입 텍스트가 있더라도 적극적으로 다듬어진 흔적이 뚜렷해, 자율적으로 작성된 글로 판단할 수 있습니다.</span>
         </div>
       </div>
     </div>
@@ -2100,25 +2098,27 @@ function renderScore(score){
     gaugeFill.setAttribute('stroke-dashoffset', String(C * (1 - score/100)));
   }
   const labelEl=document.querySelector('#sec-02 .sec02-tier');
+  const interpEl=document.querySelector('#sec-02 .sec02-interpret');
+  let lab, bg, fg, icon, interp;
+  if(score >= 70){
+    lab = '높음'; bg='#D1FAE5'; fg='#047857';
+    icon = '<polyline points="20 6 9 17 4 12"/>';
+    interp = '독자적인 글쓰기 — 작성자의 사고 흐름과 퇴고 행동이 충분히 관찰됩니다. AI 또는 외부 유입 텍스트가 있더라도 적극적으로 다듬어진 흔적이 뚜렷해, 자율적으로 작성된 글로 판단할 수 있습니다.';
+  } else if(score >= 40){
+    lab = '보통'; bg='#FEF3C7'; fg='#92400E';
+    icon = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+    interp = '자체 작성과 외부 유입이 함께 나타나는 혼합 패턴입니다. 텍스트 유입 분포·원본 보존율·작성 행동 패턴 등 세부 영역을 함께 살펴 작성자의 실제 기여도를 판단해 주세요.';
+  } else {
+    lab = '낮음'; bg='#FEE2E2'; fg='#B91C1C';
+    icon = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+    interp = '자체 작성 흔적이 부족하고 외부 유입에 대한 의존이 높습니다. 능동적인 수정·퇴고 행동이 충분히 관찰되지 않으므로, 외부 유입 로그와 보존율을 함께 확인해 추가 검토가 필요합니다.';
+  }
   if(labelEl){
-    let lab, desc, bg, fg, icon;
-    if(score >= 70){
-      lab = '높음'; bg='#D1FAE5'; fg='#047857';
-      desc = '독자적인 글쓰기 — 작성자의 사고와 퇴고 흔적이 충분히 관찰됩니다.';
-      icon = '<polyline points="20 6 9 17 4 12"/>';
-    } else if(score >= 40){
-      lab = '보통'; bg='#FEF3C7'; fg='#92400E';
-      desc = '자체 작성과 외부 유입이 함께 나타납니다. 세부 영역을 함께 검토해 보세요.';
-      icon = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
-    } else {
-      lab = '낮음'; bg='#FEE2E2'; fg='#B91C1C';
-      desc = '자체 작성 흔적이 부족합니다. 외부 유입 의존이 높아 추가 검토가 필요합니다.';
-      icon = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
-    }
     labelEl.style.background = bg;
     labelEl.style.color = fg;
-    labelEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${icon}</svg><span class="ml-1 font-semibold">${lab}</span><span class="sec02-tier-desc">${desc}</span>`;
+    labelEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${icon}</svg><span>${lab}</span>`;
   }
+  if(interpEl){ interpEl.textContent = interp; }
 }
 // slider live update
 document.addEventListener('input', e=>{
