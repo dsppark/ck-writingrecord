@@ -3120,6 +3120,7 @@ editor.addEventListener('paste',e=>{
 /* beforeinput */
 let pendingEnter = false;
 editor.addEventListener('beforeinput',e=>{
+  const isExtra = document.body.dataset.writeVariant === 'extra';
   if(e.inputType==='insertParagraph' || e.inputType==='insertLineBreak'){
     if(composing){
       // 한글 IME 조합 중에는 우리가 \n을 끼워넣으면 자모 분리가 일어남.
@@ -3127,6 +3128,19 @@ editor.addEventListener('beforeinput',e=>{
       e.preventDefault();
       pendingEnter = true;
       return;
+    }
+    // extra variant: list / heading / blockquote / pre 안에서는 브라우저 기본 동작 허용
+    // (새 <li>·<p> 생성, 빈 줄에서 list 종료 등) — reconcile은 글자만 추적하므로 OK.
+    if(isExtra){
+      const sel0 = window.getSelection();
+      if(sel0 && sel0.rangeCount){
+        let node = sel0.getRangeAt(0).startContainer;
+        const inBlockTag = /^(LI|UL|OL|H1|H2|H3|H4|H5|H6|BLOCKQUOTE|PRE)$/i;
+        while(node && node !== editor){
+          if(node.nodeName && inBlockTag.test(node.nodeName)) return; // 기본 동작 허용
+          node = node.parentNode;
+        }
+      }
     }
     // Chrome's contenteditable refuses to render literal "\n" via execCommand,
     // and the default insertParagraph creates <div>/<br> blocks that diverge from our model.
@@ -3321,6 +3335,7 @@ function markEditedAround(idx){
 
 /* ---------- insertAtCaret / appendToEditor ---------- */
 function insertAtCaret(text, source){
+  const isExtra = document.body.dataset.writeVariant === 'extra';
   const sel=window.getSelection();
   let pos=model.length;
   if(sel && sel.rangeCount){
@@ -3340,11 +3355,28 @@ function insertAtCaret(text, source){
   events.push({ts,type:source==='paste'?'paste':'ai', srcFamily:source,n:text.length,isInsert:true,meta:{blockMark:mark,blockSize:text.length,text:text}});
   if(!stats.firstTs) stats.firstTs=Date.now();
   stats.lastTs=Date.now();
-  renderEditor();
-  setCaretByPos(pos+text.length);
+  if(isExtra){
+    // 기존 HTML 서식(B/I/H/UL/...)을 유지하고, caret 위치에 텍스트노드만 삽입.
+    if(sel && sel.rangeCount){
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      const tn = document.createTextNode(text);
+      range.insertNode(tn);
+      range.setStartAfter(tn);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      editor.appendChild(document.createTextNode(text));
+    }
+  } else {
+    renderEditor();
+    setCaretByPos(pos+text.length);
+  }
   updateStats();
 }
 function appendToEditor(text, source, promptHint){
+  const isExtra = document.body.dataset.writeVariant === 'extra';
   // append at end
   const pos=model.length;
   const mark=++blockSeq;
@@ -3359,14 +3391,35 @@ function appendToEditor(text, source, promptHint){
   events.push({ts,type:'ai',srcFamily:'ai',n:text.length,isInsert:true,meta:{blockMark:mark,blockSize:text.length,text:text,prompt:promptHint||''}});
   if(!stats.firstTs) stats.firstTs=Date.now();
   stats.lastTs=Date.now();
-  renderEditor();
-  setCaretByPos(pos+ins.length);
+  if(isExtra){
+    // 본문 끝에 새 단락으로 텍스트 삽입 — 기존 서식 보존
+    if(needsBreak){
+      editor.appendChild(document.createElement('br'));
+    }
+    editor.appendChild(document.createTextNode(text));
+    // caret을 본문 끝으로
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } else {
+    renderEditor();
+    setCaretByPos(pos+ins.length);
+  }
   updateStats();
   showRec();
 }
 
 /* ---------- render editor (segment groups) ---------- */
 function renderEditor(){
+  // extra variant — Froala-style WYSIWYG. 본문 HTML 서식(말머리·H·B 등)을 보존해야 하므로
+  // model 기반 통째 재렌더는 금지. 단, 빈 본문 진입(newWrite 등)일 때만 초기화 허용.
+  if(document.body.dataset.writeVariant === 'extra'){
+    if(model.length === 0 && editor) editor.innerHTML = '';
+    return;
+  }
   const variant=document.body.dataset.variant||'v0';
   // group by source
   const groups=[];
