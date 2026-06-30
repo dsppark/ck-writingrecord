@@ -486,6 +486,7 @@
   /* 서브 항목 (들여쓰기) */
   #lnb .lnb-sub{padding:8px 10px 8px 36px;color:var(--ck-gray-700);font-size:13.5px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;}
   #lnb .lnb-sub:hover{background:var(--ck-secondary-50);}
+  #lnb .lnb-sub.is-active{background:var(--ck-primary-50);color:var(--ck-primary-700);font-weight:700;}
   /* 일반 항목 (아이콘+텍스트) */
   #lnb .lnb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--ck-gray-700);font-size:14px;font-weight:500;}
   #lnb .lnb-item svg{flex-shrink:0;color:var(--ck-gray-700);}
@@ -634,12 +635,12 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 7.5l-9 9-5.5-5.5"/><path d="M9 3h6v4H9z"/></svg>
       <span>카피킬러 eXtension</span>
     </div>
-    <div class="lnb-item is-active" onclick="newWrite()">
+    <div class="lnb-item is-active" data-menu="write" onclick="newWrite()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <span>문서 작성</span>
       <span class="lnb-chevron">›</span>
     </div>
-    <div class="lnb-sub" onclick="newWrite('extra')">에디터 추가 버전</div>
+    <div class="lnb-sub" data-menu="write-extra" onclick="newWrite('extra')">에디터 추가 버전</div>
     <div class="lnb-item">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H3z"/><path d="M7 12h2M11 12h6"/></svg>
       <span>이용권 관리</span>
@@ -3585,6 +3586,11 @@ function newWrite(variant){
   document.body.dataset.writeVariant = variant || '';
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
   if(ph) ph.textContent = (variant === 'extra') ? '문서 작성 · 에디터 추가 버전' : '문서 작성';
+  // LNB 활성 메뉴 토글 — 일반 ↔ 에디터 추가 버전
+  document.querySelectorAll('#lnb [data-menu="write"], #lnb [data-menu="write-extra"]').forEach(el=>el.classList.remove('is-active'));
+  const activeKey = variant === 'extra' ? 'write-extra' : 'write';
+  const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
+  if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
   window.scrollTo(0,0);
 }
