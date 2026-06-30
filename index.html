@@ -937,7 +937,7 @@
   <div class="card p-6">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-xl font-bold text-slate-900">작성 증명 지수</h2>
+        <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 증명 요약">작성 증명 지수</h2>
         <p class="text-sm text-slate-500 mt-1">독립적 기여도 0~100점 · 3개 영역 · 8개 항목 가중 평균</p>
       </div>
       <button onclick="openCriteriaModal()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
@@ -983,7 +983,7 @@
       <div class="lg:col-span-8">
         <!-- 그룹 1: 텍스트 구성 -->
         <div class="bd-group">
-          <div class="bd-group-head">🖋 텍스트 구성</div>
+          <div class="bd-group-head" data-orig-label="🖋 텍스트 구성" data-extra-label="🖋 입력 증거">🖋 텍스트 구성</div>
           <div class="bd-grid">
             <div>
               <div class="bd-row"><span>직접 타이핑 기여</span><span><b class="bd-val">58.3%</b><span class="bd-w">(20%)</span></span></div>
@@ -1002,7 +1002,7 @@
 
         <!-- 그룹 2: 행동 패턴 -->
         <div class="bd-group">
-          <div class="bd-group-head">⌨ 행동 패턴</div>
+          <div class="bd-group-head" data-orig-label="⌨ 행동 패턴" data-extra-label="⌨ 사고 과정 증거">⌨ 행동 패턴</div>
           <div class="bd-grid">
             <div>
               <div class="bd-row"><span>수정 품질</span><span><b class="bd-val">68 / 100</b><span class="bd-w">(18%)</span></span></div>
@@ -1021,7 +1021,7 @@
 
         <!-- 그룹 3: 문서 성장 (신규) -->
         <div class="bd-group">
-          <div class="bd-group-head">📈 문서 성장</div>
+          <div class="bd-group-head" data-orig-label="📈 문서 성장" data-extra-label="📈 문서 성장 증거">📈 문서 성장</div>
           <div class="bd-grid">
             <div>
               <div class="bd-row"><span>점진적 작성 흐름</span><span><b class="bd-val">62 / 100</b><span class="bd-w">(4%)</span></span></div>
@@ -1863,7 +1863,7 @@
     <div class="flex items-start justify-between">
       <div>
         <div class="text-xs text-slate-500">INDEX</div>
-        <h3 class="text-lg font-bold text-slate-900">작성 증명 지수 산정 기준</h3>
+        <h3 class="text-lg font-bold text-slate-900" data-orig-label="작성 증명 지수 산정 기준" data-extra-label="작성 증명 요약 산정 기준">작성 증명 지수 산정 기준</h3>
         <p class="text-[12.5px] text-slate-500 mt-1">각 항목의 가중치를 조정하면 결과 지수가 즉시 재계산됩니다.</p>
       </div>
       <button onclick="closeCriteriaModal()" class="text-slate-400 hover:text-slate-700">✕</button>
@@ -3824,6 +3824,12 @@ function applyQuoteLabel(){
   // 리플레이 모달 범례 인용 칩 — extra에서만 노출
   const lg = document.getElementById('replayLegendQuote');
   if(lg) lg.style.display = isExtra ? '' : 'none';
+  // SEC-02 라벨 swap — '작성 증명 지수' ↔ '작성 증명 요약',
+  // 3그룹 헤더(텍스트 구성/행동 패턴/문서 성장) ↔ 입력 증거/사고 과정 증거/문서 성장 증거
+  document.querySelectorAll('[data-orig-label][data-extra-label]').forEach(el => {
+    const target = isExtra ? el.getAttribute('data-extra-label') : el.getAttribute('data-orig-label');
+    if(target != null) el.textContent = target;
+  });
 }
 async function buildReportFromSession(){
   // 인용 붙여넣기 자동 분류 (extra variant 한정) — 후처리로 model.source 변환
