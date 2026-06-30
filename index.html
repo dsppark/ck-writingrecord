@@ -3439,7 +3439,7 @@ document.addEventListener('selectionchange',()=>{
    그 블록의 source(paste/paste-edited/paste-internal)를 quote-* 로 일괄 변환.
    판정 후 일반 paste·자율성 지수 산출에서 불이익 받지 않음. */
 const QUOTE_PATTERNS = [
-  /["""''「」『』]/,
+  /[""""「」『』]/,  // 큰따옴표(직·컬리)와 한일식 따옴표만 — 작은따옴표는 강조 용도가 잦아 제외
   /https?:\/\//i,
   /www\./i,
   /출처|참고|인용|참조/,
