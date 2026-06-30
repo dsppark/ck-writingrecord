@@ -288,6 +288,10 @@
   body[data-view="report"][data-write-variant="extra"] #sec-11{display:none !important;}
   /* 에디터 추가 버전 리플레이 — 직접 타이핑 칩은 본문에 음영이 없음을 반영해 화이트 배경 + 검정 텍스트 (테두리 없음) */
   body[data-write-variant="extra"] #replayLegendDirect{background:#fff !important;color:#111827 !important;}
+  /* 외부 유입 로그 — 잔존 텍스트 컬럼은 extra variant에서만 노출 */
+  .col-survive{display:none;}
+  body[data-write-variant="extra"] th.col-survive{display:table-cell;}
+  body[data-write-variant="extra"] td.col-survive{display:table-cell;}
   .ft-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .ft-sep{width:1px;height:18px;background:var(--ck-secondary-200);margin:0 4px;}
   .ft-btn{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 6px;border:1px solid transparent;background:transparent;color:var(--ck-gray-800);font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;transition:background .12s,border-color .12s;position:relative;}
@@ -1417,6 +1421,7 @@
               <span class="inline-flex items-center gap-1">삽입 위치<span class="info-tooltip" data-pos="below" data-tip="외부 텍스트가 본문에 삽입될 때마다 발생 순서대로 부여되는 번호입니다. P1은 첫 번째 외부 유입, P2는 두 번째…이며 본문 내 위치를 빠르게 식별하는 데 사용됩니다.">i</span></span>
             </th>
             <th class="px-4 py-3 font-semibold text-[12px]">원본 보존율</th>
+            <th class="col-survive px-4 py-3 font-semibold text-[12px]">잔존 텍스트</th>
             <th class="px-4 py-3 font-semibold text-[12px] text-right">전후 비교</th>
           </tr>
         </thead>
@@ -3970,11 +3975,12 @@ async function buildReportFromSession(){
   model.forEach(m=>{
     if(!m.blockMark) return;
     const fam = (m.source==='ai'||m.source==='ai-edited'||m.source==='ai-internal') ? 'ai' :
-                (m.source==='paste'||m.source==='paste-edited'||m.source==='paste-internal') ? 'paste' : null;
+                (m.source==='paste'||m.source==='paste-edited'||m.source==='paste-internal') ? 'paste' :
+                (m.source==='quote-paste'||m.source==='quote-paste-edited'||m.source==='quote-paste-internal') ? 'quote-paste' : null;
     if(!fam) return;
     if(!blocks[m.blockMark]) blocks[m.blockMark]={fam, intact:0, edited:0, size:m.blockSize||1};
-    if(m.source==='ai' || m.source==='paste') blocks[m.blockMark].intact++;
-    else if(m.source==='ai-edited' || m.source==='paste-edited') blocks[m.blockMark].edited++;
+    if(m.source==='ai' || m.source==='paste' || m.source==='quote-paste') blocks[m.blockMark].intact++;
+    else if(m.source==='ai-edited' || m.source==='paste-edited' || m.source==='quote-paste-edited') blocks[m.blockMark].edited++;
   });
   let aiSize=0,aiIntact=0,aiEdited=0,pSize=0,pIntact=0,pEdited=0;
   Object.values(blocks).forEach(b=>{
@@ -4257,13 +4263,17 @@ async function buildReportFromSession(){
   if(pasteRows){
     pasteRows.innerHTML='';
     if(externalEvents.length===0){
-      pasteRows.innerHTML='<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 text-sm">외부 유입 없음 ✓</td></tr>';
+      pasteRows.innerHTML='<tr><td colspan="8" class="px-4 py-8 text-center text-slate-400 text-sm">외부 유입 없음 ✓</td></tr>';
     }else{
       externalEvents.forEach((p,i)=>{
         const tDate=new Date(p.ts);
         const tstr=`${String(tDate.getHours()).padStart(2,'0')}:${String(tDate.getMinutes()).padStart(2,'0')}:${String(tDate.getSeconds()).padStart(2,'0')}`;
         const blk=blocks[p.meta?.blockMark];
         const ret = blk ? (blk.intact/blk.size*100) : 0;
+        // 잔존 텍스트 — intact+edited 가 size 대비 살아남은 비율 (글자 단위 잔존)
+        const survN = blk ? (blk.intact + blk.edited) : 0;
+        const survSize = blk ? blk.size : 0;
+        const survPct = survSize > 0 ? (survN / survSize * 100) : 0;
         const isAi = p.type==='ai';
         const typeChip = isAi
           ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:#EDE9FE;color:#6D28D9;">AI 생성</span>'
@@ -4284,6 +4294,13 @@ async function buildReportFromSession(){
               <span class="font-mono text-[12px] ${ret>=50?'text-amber-700':'text-emerald-700'} font-semibold">${ret.toFixed(1)}%</span>
             </div>
           </td>
+          <td class="col-survive px-4 py-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full" style="width:${survPct}%;background:${survPct>=70?'#10B981':survPct>=40?'#F59E0B':'#EF4444'};"></div></div>
+              <span class="font-mono text-[12px] font-semibold ${survPct>=70?'text-emerald-700':survPct>=40?'text-amber-700':'text-red-700'}">${Math.round(survPct)}%</span>
+              <span class="text-[11px] text-slate-500 font-mono">${survN.toLocaleString()}/${survSize.toLocaleString()}자</span>
+            </div>
+          </td>
           <td class="px-4 py-2.5 text-right">
             <span class="ext-toggle">보기 <span class="chev">▾</span></span>
           </td>
@@ -4291,7 +4308,8 @@ async function buildReportFromSession(){
         // expansion 행 (initially closed)
         const exp=document.createElement('tr');
         exp.className='ext-expansion';
-        exp.innerHTML=`<td colspan="7"><div class="ext-expansion-content"></div></td>`;
+        const expColspan = document.body.dataset.writeVariant === 'extra' ? 8 : 7;
+        exp.innerHTML=`<td colspan="${expColspan}"><div class="ext-expansion-content"></div></td>`;
         tr.addEventListener('click',()=>toggleExtExpansion(tr, exp, p));
         pasteRows.appendChild(tr);
         pasteRows.appendChild(exp);
