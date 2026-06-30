@@ -164,6 +164,7 @@
   .replay-marker-dot{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;z-index:2;cursor:pointer;transition:transform .12s ease;}
   .replay-marker-dot[data-src="paste"]{background:#EF4444;}
   .replay-marker-dot[data-src="ai"]{background:#7C52F1;}
+  .replay-marker-dot[data-src="quote-paste"]{background:#EC4899;}
   .replay-marker-dot:hover{transform:translate(-50%,-50%) scale(1.45);}
   .replay-marker-dot:hover{z-index:4;}
   /* 호버 툴팁 */
@@ -1280,7 +1281,7 @@
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#D8E5FD;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EAB308;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0.0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500">인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500" data-quote-label>인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
     </div>
 
     <!-- 회색 구분선 -->
@@ -1296,7 +1297,7 @@
         <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:var(--ck-tertiary-500);--cat-dark:var(--ck-tertiary-800);--cat-light:var(--ck-tertiary-100);">AI생성+수정</button>
         <button onclick="toggleOrigin(this,'paste')" class="origin-filter" data-cat="paste" style="--cat:var(--ck-danger-500);--cat-dark:var(--ck-danger-700);--cat-light:var(--ck-danger-100);">붙여넣기</button>
         <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-yellow-500);--cat-dark:var(--ck-yellow-800);--cat-light:var(--ck-yellow-100);">붙여넣기+수정</button>
-        <button onclick="toggleOrigin(this,'quote-paste')" class="origin-filter" data-cat="quote-paste" style="--cat:#EC4899;--cat-dark:#BE185D;--cat-light:#FCE7F3;">인용 붙여넣기</button>
+        <button onclick="toggleOrigin(this,'quote-paste')" class="origin-filter" data-cat="quote-paste" data-quote-label style="--cat:#EC4899;--cat-dark:#BE185D;--cat-light:#FCE7F3;">인용 붙여넣기</button>
       </div>
       <button onclick="openReplay()" class="h-8 px-3 rounded-lg text-xs font-semibold text-white flex items-center gap-1.5 hover:brightness-110" style="background:var(--ck-primary-500);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1946,6 +1947,7 @@
       <span class="px-2 py-0.5 origin-ai-edited rounded">AI 생성+수정</span>
       <span class="px-2 py-0.5 origin-paste rounded">붙여넣기</span>
       <span class="px-2 py-0.5 origin-paste-edited rounded">붙여넣기+수정</span>
+      <span id="replayLegendQuote" class="px-2 py-0.5 origin-quote-paste rounded" style="display:none;">인용</span>
     </div>
     <!-- 캔버스 -->
     <div id="replayBox" class="flex-1 px-6 py-4 overflow-y-auto text-[15px] leading-[1.85] text-slate-900" style="min-height:300px;max-height:50vh;white-space:pre-wrap;"></div>
@@ -2288,9 +2290,9 @@ const SEG_TYPE_LABELS = {
   'paste':'붙여넣기',
   'paste-edited':'붙여넣기',
   'paste-internal':'붙여넣기+수정',
-  'quote-paste':'인용 붙여넣기',
-  'quote-paste-edited':'인용 붙여넣기',
-  'quote-paste-internal':'인용 붙여넣기',
+  'quote-paste':'인용',
+  'quote-paste-edited':'인용',
+  'quote-paste-internal':'인용',
 };
 function resetSegPanel(){
   const empty=document.getElementById('segEmpty'), detail=document.getElementById('segDetail');
@@ -2453,8 +2455,9 @@ function buildReplayFrames(){
   const m = model.map((c,i)=>({...c, idx:i}));
   m.sort((a,b)=> (a.ts - b.ts) || (a.idx - b.idx));
   const blockFamily = src =>
-    (src==='ai' || src==='ai-edited')         ? 'ai'    :
-    (src==='paste' || src==='paste-edited')   ? 'paste' : null;
+    (src==='ai' || src==='ai-edited')                         ? 'ai'    :
+    (src==='quote-paste' || src==='quote-paste-edited')       ? 'quote-paste' :
+    (src==='paste' || src==='paste-edited')                   ? 'paste' : null;
   const frames = [];
   let i = 0;
   while(i < m.length){
@@ -2506,6 +2509,9 @@ function replayMessageFor(src, len){
     case 'paste':          return `외부 콘텐츠 ${len}자 단순 붙여넣기`;
     case 'paste-edited':   return '붙여넣은 영역 수정 중…';
     case 'paste-internal': return '붙여넣은 영역 내 직접 입력';
+    case 'quote-paste':        return `인용 ${len}자 붙여넣기`;
+    case 'quote-paste-edited': return '인용 영역 수정 중…';
+    case 'quote-paste-internal': return '인용 영역 내 직접 입력';
     default: return '입력 중…';
   }
 }
@@ -2529,10 +2535,12 @@ function renderReplayAt(frameCount){
   // paste-internal    → origin-paste-edited (오렌지, +수정 컬러)
   // typing            → (없음)
   const clsFor = src =>
-    src==='ai' || src==='ai-edited'       ? 'origin-ai' :
-    src==='ai-internal'                   ? 'origin-ai-edited' :
-    src==='paste' || src==='paste-edited' ? 'origin-paste' :
-    src==='paste-internal'                ? 'origin-paste-edited' : '';
+    src==='ai' || src==='ai-edited'                           ? 'origin-ai' :
+    src==='ai-internal'                                       ? 'origin-ai-edited' :
+    src==='quote-paste' || src==='quote-paste-edited'         ? 'origin-quote-paste' :
+    src==='quote-paste-internal'                              ? 'origin-quote-paste-edited' :
+    src==='paste' || src==='paste-edited'                     ? 'origin-paste' :
+    src==='paste-internal'                                    ? 'origin-paste-edited' : '';
 
   // 같은 표시 클래스 인접 그룹핑 (시각상 같은 색이면 묶기)
   const segs = [];
@@ -2668,9 +2676,9 @@ function renderReplayMarkers(){
   if(!replayFrames || replayFrames.length === 0){ wrap.innerHTML = ''; return; }
   const total = replayFrames.length;
   wrap.innerHTML = replayFrames.map((f, i) => {
-    if(f.src !== 'paste' && f.src !== 'ai') return '';
+    if(f.src !== 'paste' && f.src !== 'ai' && f.src !== 'quote-paste') return '';
     const pct = (i / total) * 100;
-    const label = f.src === 'paste' ? '붙여넣기' : 'AI 생성';
+    const label = f.src === 'paste' ? '붙여넣기' : f.src === 'ai' ? 'AI 생성' : '인용';
     const len = (f.chars || []).length;
     return `<div class="replay-marker-dot" data-src="${f.src}" data-idx="${i}" style="left:${pct}%;">
       <div class="replay-marker-tip">${label} ${len}자</div>
@@ -3750,9 +3758,21 @@ setInterval(()=>{
 /* =============================================================
    REPORT BUILDER — maps model/events/stats → 16 components
    ============================================================= */
+function applyQuoteLabel(){
+  // extra variant에서는 '인용 붙여넣기' → '인용' 으로 라벨 표기
+  const isExtra = document.body.dataset.writeVariant === 'extra';
+  const t = isExtra ? '인용' : '인용 붙여넣기';
+  document.querySelectorAll('[data-quote-label]').forEach(el => { el.textContent = t; });
+  const composeg = document.querySelector('.composeg[data-key="quote-paste"]');
+  if(composeg) composeg.dataset.label = t;
+  // 리플레이 모달 범례 인용 칩 — extra에서만 노출
+  const lg = document.getElementById('replayLegendQuote');
+  if(lg) lg.style.display = isExtra ? '' : 'none';
+}
 async function buildReportFromSession(){
   // 인용 붙여넣기 자동 분류 (extra variant 한정) — 후처리로 model.source 변환
   detectQuotePasteBlocks();
+  applyQuoteLabel();
   const cleanModel=model.filter(m=>m.ch!=='\n' || true); // keep newlines for paragraph split
   const totalChars=model.filter(m=>m.ch!=='\n').length;
   const c=counts();
@@ -3844,7 +3864,7 @@ async function buildReportFromSession(){
     {key:'ai-edited',    label:'AI 생성+수정',  n:n_aiRev,    color:'#D8E5FD'},
     {key:'paste',        label:'붙여넣기',       n:n_paste,    color:'#EF4444'},
     {key:'paste-edited', label:'붙여넣기+수정', n:n_pasteRev, color:'#FEF3C7'},
-    {key:'quote-paste',  label:'인용 붙여넣기', n:n_quote,    color:'#EC4899'},
+    {key:'quote-paste',  label:(document.body.dataset.writeVariant==='extra'?'인용':'인용 붙여넣기'), n:n_quote, color:'#EC4899'},
   ];
   const bar=document.getElementById('compoBar');
   if(bar){
