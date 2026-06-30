@@ -2348,9 +2348,10 @@ function renderSegDetail(seg){
     const blockChars = model.filter(m=>m.blockMark===bm);
     const blockSize = blockChars[0]?.blockSize || blockChars.length;
     const isAiFam = src.startsWith('ai');
-    const origSrc = isAiFam?'ai':'paste';
-    const editSrc = isAiFam?'ai-edited':'paste-edited';
-    const intSrc  = isAiFam?'ai-internal':'paste-internal';
+    const isQuoteFam = src.startsWith('quote-paste');
+    const origSrc = isAiFam ? 'ai'           : isQuoteFam ? 'quote-paste'          : 'paste';
+    const editSrc = isAiFam ? 'ai-edited'    : isQuoteFam ? 'quote-paste-edited'   : 'paste-edited';
+    const intSrc  = isAiFam ? 'ai-internal'  : isQuoteFam ? 'quote-paste-internal' : 'paste-internal';
     const intact = blockChars.filter(m=>m.source===origSrc).length;
     const editKept = blockChars.filter(m=>m.source===editSrc).length;
     const internal = blockChars.filter(m=>m.source===intSrc).length;
