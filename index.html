@@ -367,9 +367,14 @@
   body[data-view="write"][data-reinspect="on"] #reinspectBanner{display:flex;}
   #reinspectBanner button{background:#fff;color:#0075FF;border:1px solid #B6ECFF;padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;}
   #reinspectBanner button:hover{background:#EFFAFF;}
-  /* 검사 결과 새 탭 companion 배너 */
+  /* 검사 결과 새 창(popup) companion 배너 + LNB/헤더 제거 */
   #inspCompanionBanner{display:none;background:#EFFAFF;color:#0075FF;padding:10px 40px;font-size:12.5px;font-weight:600;text-align:center;border-bottom:1px solid #DEF4FF;}
   body.is-inspect-companion #inspCompanionBanner{display:block;}
+  body.is-inspect-companion #lnb,
+  body.is-inspect-companion #header-write,
+  body.is-inspect-companion #header-report{display:none !important;}
+  body.is-inspect-companion #view-inspect-result{padding-left:0 !important;padding-top:0 !important;}
+  body.is-inspect-companion .insp-actions{left:0 !important;}
   #reinspectPanel{position:fixed;right:0;top:56px;bottom:0;width:340px;background:#fff;border-left:1px solid var(--ck-secondary-200);z-index:40;padding:16px 18px;overflow-y:auto;}
   .rip-title{font-size:13px;font-weight:700;color:var(--ck-gray-900);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--ck-secondary-100);}
   .rip-close{background:none;border:none;color:var(--ck-gray-400);font-size:18px;cursor:pointer;line-height:1;}
@@ -828,8 +833,8 @@
     <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
   </header>
   <div id="reinspectBanner">
-    <span>📌 AI 검사 결과가 새 탭으로 열려 있어요. 참고하며 아래 에디터에서 수정 후 [재검사]를 눌러주세요.</span>
-    <button type="button" onclick="reopenInspectCompanion()">참고 탭 다시 열기</button>
+    <span>📌 AI 검사 결과가 별도 창으로 열려 있어요. 참고하며 아래 에디터에서 수정 후 [재검사]를 눌러주세요.</span>
+    <button type="button" onclick="reopenInspectCompanion()">참고 창 다시 열기</button>
   </div>
 
   <div class="editor-grid">
@@ -1844,7 +1849,7 @@
 
 <!-- ============ 검사 결과 (SC-06 view-inspect-result) ============ -->
 <section id="view-inspect-result">
-  <div id="inspCompanionBanner">📌 이 탭은 재검사 참고용입니다. 원래 탭 에디터에서 수정 후 [재검사]를 누르면 이 탭이 자동 갱신됩니다.</div>
+  <div id="inspCompanionBanner">📌 이 창은 재검사 참고용입니다. 원래 창의 에디터에서 수정 후 [재검사]를 누르면 이 창이 자동 갱신됩니다.</div>
   <div class="insp-wrap">
     <div class="insp-header">
       <span class="insp-title" id="inspDocTitle">문서 제목.hwpx</span>
@@ -4247,9 +4252,15 @@ function enterReinspect(){
 
 function openInspectCompanionTab(){
   const url = window.location.pathname + '?rs=1&t=' + Date.now();
-  window.__inspectWin = window.open(url, 'ksv_inspect_result');
+  // popup=1 + width/height 지정 → 브라우저가 탭이 아닌 별도 창으로 오픈
+  const w = Math.min(1240, Math.max(900, Math.round(window.screen.availWidth * 0.7)));
+  const h = Math.min(940, Math.max(700, Math.round(window.screen.availHeight * 0.85)));
+  const left = Math.max(0, Math.round((window.screen.availWidth - w) / 2));
+  const top  = Math.max(0, Math.round((window.screen.availHeight - h) / 2));
+  const features = `popup=1,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes,location=no,toolbar=no,menubar=no,status=no`;
+  window.__inspectWin = window.open(url, 'ksv_inspect_result', features);
   if(!window.__inspectWin){
-    if(typeof showToast === 'function') showToast('팝업이 차단되었습니다. 팝업 허용 후 [참고 탭 다시 열기] 를 눌러주세요.');
+    if(typeof showToast === 'function') showToast('팝업이 차단되었습니다. 팝업 허용 후 [참고 창 다시 열기] 를 눌러주세요.');
   } else {
     try { window.__inspectWin.focus(); } catch(e){}
   }
@@ -4331,7 +4342,7 @@ function runReinspection(){
   } else {
     openInspectCompanionTab();
   }
-  if(typeof showToast === 'function') showToast('재검사 완료 — 참고 탭이 갱신되었어요.');
+  if(typeof showToast === 'function') showToast('재검사 완료 — 참고 창이 갱신되었어요.');
 }
 
 /* 새 탭 페이지 로드 시 localStorage 로부터 데이터 로드 + 참고용 렌더 */
@@ -4344,7 +4355,7 @@ function initInspectCompanionTab(){
   document.body.classList.add('is-inspect-companion');
   if(!data || !data.inspection){
     const inspBody = document.getElementById('inspBody');
-    if(inspBody) inspBody.innerHTML = '<div style="padding:60px 40px;text-align:center;color:#94A3B8;font-size:13px;">이 탭은 재검사 참고용입니다.<br><span style="font-size:11.5px;">원래 탭에서 [수정하러 가기] 버튼으로 다시 열어주세요.</span></div>';
+    if(inspBody) inspBody.innerHTML = '<div style="padding:60px 40px;text-align:center;color:#94A3B8;font-size:13px;">이 창은 재검사 참고용입니다.<br><span style="font-size:11.5px;">원래 창에서 [수정하러 가기] 버튼으로 다시 열어주세요.</span></div>';
     return;
   }
   currentInspection = data.inspection;
@@ -4357,7 +4368,7 @@ function initInspectCompanionTab(){
   // 하단 [결과지로 돌아가기] → [탭 닫기] 로 재라벨
   const backBtn = document.querySelector('.insp-back');
   if(backBtn){
-    backBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 탭 닫기';
+    backBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 창 닫기';
     backBtn.onclick = () => window.close();
   }
   // storage 이벤트 리스닝 — 원래 탭이 재검사 시 localStorage 갱신하면 자동 refresh
