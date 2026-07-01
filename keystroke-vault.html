@@ -4216,11 +4216,24 @@ function closeInspection(){
 }
 
 /* CTA [수정하러 가기] — 새 탭으로 검사 결과 참고창 열고, 원래 탭은 에디터 100% 폭 유지 */
+const COMPANION_STORE = 'ksv_companion_data';
+
+function saveCompanionData(){
+  if(!currentInspection) return;
+  const data = {
+    inspection: currentInspection,
+    model: model.map(m => ({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
+    ts: Date.now()
+  };
+  try { localStorage.setItem(COMPANION_STORE, JSON.stringify(data)); } catch(e){ console.warn('companion save fail', e); }
+}
+
 function enterReinspect(){
   document.body.dataset.reinspect = 'on';
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
   sessionFrozen = false;
+  saveCompanionData();
   openInspectCompanionTab();
   window.scrollTo(0,0);
 }
@@ -4304,7 +4317,8 @@ function runReinspection(){
   //    현재 프로토타입은 별도 flag 없이 검사 실행 시점에 report 데이터가 최신이 되어 있음.
   // 3) 검사 실행 — view 전환 없이 (원래 탭은 에디터 유지)
   runInspection({navigate:false});
-  // 4) 참고 탭이 열려 있으면 reload, 아니면 새로 오픈
+  // 4) 참고 탭 데이터 갱신 후 reload/오픈
+  saveCompanionData();
   if(window.__inspectWin && !window.__inspectWin.closed){
     try { window.__inspectWin.location.reload(); } catch(e){ openInspectCompanionTab(); }
   } else {
@@ -4313,21 +4327,22 @@ function runReinspection(){
   if(typeof showToast === 'function') showToast('재검사 완료 — 참고 탭이 갱신되었어요.');
 }
 
-/* 새 탭 페이지 로드 시 opener 로부터 데이터 복제 + 참고용 렌더 */
+/* 새 탭 페이지 로드 시 localStorage 로부터 데이터 로드 + 참고용 렌더 */
 function initInspectCompanionTab(){
-  const op = window.opener;
-  if(!op || !op.currentInspection){
-    const wrap = document.getElementById('view-inspect-result');
-    if(wrap) wrap.innerHTML = '<div style="padding:60px 40px;text-align:center;color:#94A3B8;font-size:13px;">이 탭은 재검사 참고용입니다.<br><span style="font-size:11.5px;">원래 탭에서 [수정하러 가기] 버튼으로 다시 열어주세요.</span></div>';
-    document.body.dataset.view = 'inspect-result';
-    return;
-  }
-  currentInspection = JSON.parse(JSON.stringify(op.currentInspection));
-  model.length = 0;
-  op.model.forEach(m => model.push({...m}));
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(COMPANION_STORE) || 'null'); } catch(e){}
+  // 문서 view 진입 우선
   document.body.dataset.view = 'inspect-result';
   document.body.dataset.writeVariant = 'extra';
   document.body.classList.add('is-inspect-companion');
+  if(!data || !data.inspection){
+    const inspBody = document.getElementById('inspBody');
+    if(inspBody) inspBody.innerHTML = '<div style="padding:60px 40px;text-align:center;color:#94A3B8;font-size:13px;">이 탭은 재검사 참고용입니다.<br><span style="font-size:11.5px;">원래 탭에서 [수정하러 가기] 버튼으로 다시 열어주세요.</span></div>';
+    return;
+  }
+  currentInspection = data.inspection;
+  model.length = 0;
+  (data.model || []).forEach(m => model.push({...m}));
   renderInspectionResult();
   // CTA 는 참고 모드에서 숨김
   const cta = document.getElementById('inspCta');
@@ -4338,13 +4353,23 @@ function initInspectCompanionTab(){
     backBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 탭 닫기';
     backBtn.onclick = () => window.close();
   }
+  // storage 이벤트 리스닝 — 원래 탭이 재검사 시 localStorage 갱신하면 자동 refresh
+  window.addEventListener('storage', (e) => {
+    if(e.key === COMPANION_STORE) initInspectCompanionTab();
+  });
 }
-// URL param ?rs=1 이면 companion 초기화
+// URL param ?rs=1 이면 companion 초기화 — readyState 체크로 즉시/지연 실행 분기
 (function(){
   try {
     const params = new URLSearchParams(window.location.search);
     if(params.get('rs') === '1'){
-      window.addEventListener('load', () => setTimeout(initInspectCompanionTab, 50));
+      const run = () => setTimeout(initInspectCompanionTab, 30);
+      if(document.readyState === 'complete' || document.readyState === 'interactive'){
+        run();
+      } else {
+        window.addEventListener('DOMContentLoaded', run);
+        window.addEventListener('load', run);
+      }
     }
   } catch(e) {}
 })();
