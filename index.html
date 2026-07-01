@@ -292,6 +292,110 @@
   .col-survive{display:none;}
   body[data-write-variant="extra"] th.col-survive{display:table-cell;}
   body[data-write-variant="extra"] td.col-survive{display:table-cell;}
+
+  /* ============ view-inspect-result (SC-06) ============ */
+  #view-inspect-result{display:none;}
+  body[data-view="inspect-result"] #view-inspect-result{display:block;}
+  body[data-view="inspect-result"] #view-write,
+  body[data-view="inspect-result"] #view-report,
+  body[data-view="inspect-result"] #view-box,
+  body[data-view="inspect-result"] #view-doc,
+  body[data-view="inspect-result"] #header-write,
+  body[data-view="inspect-result"] #header-report{display:none !important;}
+  body[data-view="inspect-result"] #lnb{display:flex;}
+  body[data-view="inspect-result"]{background:#F8FAFC;}
+  body[data-view="inspect-result"] #view-inspect-result{padding-left:275px;padding-top:0;padding-bottom:88px;min-height:100vh;}
+  .insp-wrap{max-width:1280px;margin:0 auto;padding:24px 40px 0;}
+  .insp-header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 14px;}
+  .insp-title{font-size:16px;font-weight:700;color:var(--ck-gray-900);}
+  .insp-tips{background:var(--ck-primary-50);color:var(--ck-primary-700);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
+  .insp-tips .tip-icon{background:var(--ck-primary-500);color:#fff;padding:1px 6px;border-radius:4px;font-size:10px;letter-spacing:0.5px;}
+  .insp-tabs{display:flex;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px 10px 0 0;overflow:hidden;}
+  .insp-tab{flex:1;padding:14px 18px;background:#F8FAFC;font-size:13.5px;font-weight:600;color:var(--ck-gray-500);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .12s;}
+  .insp-tab:hover{background:#F1F5F9;}
+  .insp-tab.is-active{background:#fff;color:var(--ck-gray-900);border-bottom:2px solid var(--ck-primary-500);}
+  .insp-tab .chk{color:var(--ck-primary-500);font-weight:700;}
+  .insp-body{background:#fff;border:1px solid var(--ck-secondary-200);border-top:none;border-radius:0 0 10px 10px;padding:24px 28px;}
+  .insp-ratio{background:#FEF2F2;border-radius:8px;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .insp-ratio-label{font-size:13.5px;font-weight:700;color:var(--ck-gray-900);white-space:nowrap;}
+  .insp-ratio-bar{flex:1;height:10px;background:#FECACA;border-radius:6px;overflow:hidden;position:relative;}
+  .insp-ratio-fill{height:100%;background:linear-gradient(90deg,#EF4444,#DC2626);border-radius:6px;transition:width .4s;}
+  .insp-ratio-value{font-size:24px;font-weight:800;color:#DC2626;min-width:80px;text-align:right;}
+  .insp-ratio-desc{font-size:12.5px;color:var(--ck-gray-500);line-height:1.5;margin-top:2px;}
+  .insp-content-wrap{display:flex;gap:20px;align-items:flex-start;}
+  .insp-content{flex:1;min-width:0;font-size:14px;line-height:1.85;color:var(--ck-gray-800);max-height:640px;overflow-y:auto;padding-right:8px;}
+  .insp-content p{margin:0 0 12px;position:relative;}
+  .insp-content p.ai-suspect{background:#EDE9FE;padding:10px 14px 10px 16px;border-radius:6px;border-left:3px solid #7C3AED;}
+  .insp-content p.ai-suspect.is-flash{background:#DDD6FE;transition:background .3s;}
+  .insp-content p.ai-acknowledged{padding:10px 14px;border-radius:6px;border-bottom:2px solid #10B981;background:#ECFDF5;position:relative;}
+  .ack-badge{display:inline-block;font-size:10px;font-weight:700;color:#047857;background:#D1FAE5;padding:3px 8px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+  .insp-sidebar{width:320px;flex-shrink:0;border-left:1px solid var(--ck-secondary-100);padding-left:20px;}
+  .insp-sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .insp-sidebar-title{font-size:13px;font-weight:700;color:var(--ck-gray-800);display:inline-flex;align-items:center;gap:6px;}
+  .insp-sidebar-title .chk{color:var(--ck-primary-500);}
+  .insp-level-legend{font-size:10.5px;color:var(--ck-gray-500);display:inline-flex;align-items:center;gap:4px;}
+  .insp-level-legend .dot{width:6px;height:6px;border-radius:50%;background:#CBD5E1;display:inline-block;}
+  .insp-level-legend .dot.on{background:var(--ck-primary-500);}
+  .suspect-card{border:1px solid var(--ck-secondary-200);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:border-color .12s,box-shadow .12s;}
+  .suspect-card:hover{border-color:var(--ck-primary-300);box-shadow:0 4px 12px rgba(124,58,237,0.06);}
+  .suspect-card.is-selected{border-color:var(--ck-primary-500);background:var(--ck-primary-50);}
+  .suspect-card.is-ack{border-color:#10B981;background:#ECFDF5;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .card-title{font-size:12.5px;font-weight:700;color:var(--ck-primary-700);display:inline-flex;align-items:center;gap:4px;}
+  .suspect-card.is-ack .card-title{color:#047857;}
+  .level-dots{display:inline-flex;gap:3px;align-items:center;font-size:10.5px;color:var(--ck-gray-500);}
+  .level-dots .d{width:6px;height:6px;border-radius:50%;background:#CBD5E1;}
+  .level-dots.dot-low .d:nth-child(1){background:var(--ck-primary-500);}
+  .level-dots.dot-mid .d:nth-child(-n+2){background:var(--ck-primary-500);}
+  .level-dots.dot-high .d{background:var(--ck-primary-500);}
+  .card-preview{font-size:12.5px;color:var(--ck-gray-700);line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .card-ack{margin-top:6px;font-size:10.5px;color:#047857;font-weight:700;}
+  .card-features{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;}
+  .feature-tag{background:#F5F3FF;color:var(--ck-primary-700);padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:600;border:1px solid #DDD6FE;}
+  .insp-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
+  .insp-actions .insp-back{margin-right:auto;}
+  .insp-cta{display:none;background:linear-gradient(90deg,var(--ck-primary-500),var(--ck-brand-gk-500));color:#fff;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .insp-cta:hover{filter:brightness(1.05);}
+  body.has-suspect .insp-cta{display:inline-flex;}
+  .insp-empty{text-align:center;padding:32px 20px;color:var(--ck-gray-500);font-size:13px;}
+
+  /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 우측 컨텍스트 패널 ============ */
+  #reinspectPanel{display:none;}
+  body[data-reinspect="on"] #reinspectPanel{display:flex;flex-direction:column;}
+  body[data-reinspect="on"] #view-write .write-shell{margin-right:340px;transition:margin .2s;}
+  body[data-reinspect="on"] .write-actions,
+  body[data-reinspect="on"] .doc-actions{padding-right:calc(20px + 340px);}
+  body[data-reinspect="on"] .write-pagetitle::after{content:' · 재검사';color:var(--ck-primary-500);}
+  #reinspectPanel{position:fixed;right:0;top:56px;bottom:0;width:340px;background:#fff;border-left:1px solid var(--ck-secondary-200);z-index:40;padding:16px 18px;overflow-y:auto;}
+  .rip-title{font-size:13px;font-weight:700;color:var(--ck-gray-900);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--ck-secondary-100);}
+  .rip-close{background:none;border:none;color:var(--ck-gray-400);font-size:18px;cursor:pointer;line-height:1;}
+  .rip-close:hover{color:var(--ck-gray-700);}
+  .rip-section-label{font-size:10.5px;font-weight:700;color:var(--ck-gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;}
+  .rip-cards{max-height:280px;overflow-y:auto;}
+  .mini-card{border:1px solid var(--ck-secondary-200);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;background:#fff;}
+  .mini-card:hover{border-color:var(--ck-primary-300);}
+  .mini-card.is-selected{border-color:var(--ck-primary-500);background:var(--ck-primary-50);}
+  .mini-card.is-ack{border-color:#10B981;background:#ECFDF5;}
+  .mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .mini-preview{font-size:12px;color:var(--ck-gray-700);line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .mini-dots{display:inline-flex;gap:2px;align-items:center;}
+  .mini-dots .d{width:5px;height:5px;border-radius:50%;background:#CBD5E1;display:inline-block;}
+  .mini-dots.dot-low .d:nth-child(1){background:var(--ck-primary-500);}
+  .mini-dots.dot-mid .d:nth-child(-n+2){background:var(--ck-primary-500);}
+  .mini-dots.dot-high .d{background:var(--ck-primary-500);}
+  .rip-detail{border-top:1px solid var(--ck-secondary-100);padding-top:12px;margin-top:8px;}
+  .rip-detail-title{font-size:10.5px;font-weight:700;color:var(--ck-gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+  .rip-detail-text{background:#F8FAFC;border-left:3px solid #7C3AED;padding:10px 12px;border-radius:6px;font-size:12.5px;line-height:1.7;color:var(--ck-gray-800);max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;}
+  .rip-features{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
+  .rip-empty{text-align:center;padding:24px 10px;color:var(--ck-gray-400);font-size:12.5px;}
+  .rip-guide{background:var(--ck-primary-50);color:var(--ck-primary-700);padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.5;margin-top:10px;}
+  /* 재검사 액션바 [재검사] 버튼 */
+  body[data-reinspect="on"] #btnReinspect{display:inline-flex;}
+  #btnReinspect{display:none;background:var(--ck-primary-500);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;align-items:center;gap:6px;}
+  #btnReinspect:hover{background:var(--ck-primary-600);}
+  /* 결과지 액션바 [문서 검사하기] 버튼 — extra 한정 */
+  .ra-btn-inspect{display:none !important;}
+  body[data-write-variant="extra"] .ra-btn-inspect{display:inline-flex !important;}
   /* 외부 유입 로그 — 원본 보존율 컬럼은 extra variant에서 숨김 (잔존 텍스트로 대체) */
   body[data-write-variant="extra"] th.col-origret{display:none;}
   body[data-write-variant="extra"] td.col-origret{display:none;}
@@ -810,10 +914,26 @@
         <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>작성 증명 리포트 확인</button>
+        <button id="btnReinspect" type="button" onclick="runReinspection()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
+          재검사
+        </button>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ============ 재검사 컨텍스트 패널 (SC-07) ============ -->
+<aside id="reinspectPanel">
+  <div class="rip-title">
+    <span>검사 참고</span>
+    <button class="rip-close" type="button" onclick="closeReinspect()" title="닫기">×</button>
+  </div>
+  <div class="rip-guide">AI 의심 문단을 참고해 에디터에서 직접 다듬어보세요. [재검사]를 누르면 저장·리포트 발급·검사가 함께 진행됩니다.</div>
+  <div class="rip-section-label">AI 의심 카드</div>
+  <div class="rip-cards" id="reinspectCards"></div>
+  <div class="rip-detail" id="reinspectDetail"></div>
+</aside>
 
 <!-- ============ REPORT VIEW (기존 결과지) ============ -->
 <section id="view-report">
@@ -833,6 +953,10 @@
     <button class="ra-btn ra-btn-primary" type="button" onclick="issueCert()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       PDF 다운로드
+    </button>
+    <button class="ra-btn ra-btn-primary ra-btn-inspect" type="button" onclick="runInspection()" style="background:var(--ck-brand-gk-500);border-color:var(--ck-brand-gk-500);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 7v4l3 2"/></svg>
+      문서 검사하기
     </button>
   </div>
 </div>
@@ -1705,6 +1829,50 @@
 </main>
 </div>
 </section><!-- /view-report -->
+
+<!-- ============ 검사 결과 (SC-06 view-inspect-result) ============ -->
+<section id="view-inspect-result">
+  <div class="insp-wrap">
+    <div class="insp-header">
+      <span class="insp-title" id="inspDocTitle">문서 제목.hwpx</span>
+      <span class="insp-tips"><span class="tip-icon">TIPS</span>카피킬러 AI생성검사, 이렇게 활용해보세요!</span>
+    </div>
+    <div class="insp-tabs" role="tablist">
+      <button class="insp-tab" data-insp-tab="plagiarism" onclick="switchInspTab('plagiarism')"><span class="chk">✓</span> 표절검사</button>
+      <button class="insp-tab is-active" data-insp-tab="ai" onclick="switchInspTab('ai')"><span class="chk">✓</span> AI생성검사</button>
+    </div>
+    <div class="insp-body" id="inspBody">
+      <div class="insp-ratio">
+        <div>
+          <div class="insp-ratio-label">문서 AI작성률</div>
+          <div class="insp-ratio-desc">전체 글 중에서 AI가 작성한 것으로 의심되는 부분의 비중입니다. 각 영역을 클릭해서 AI생성의 특징을 확인해 보세요.</div>
+        </div>
+        <div class="insp-ratio-bar"><div class="insp-ratio-fill" id="inspRatioFill" style="width:0%"></div></div>
+        <div class="insp-ratio-value"><span id="inspRatioValue">0</span>%</div>
+      </div>
+      <div class="insp-content-wrap">
+        <div class="insp-content" id="inspContent"></div>
+        <aside class="insp-sidebar">
+          <div class="insp-sidebar-head">
+            <span class="insp-sidebar-title"><span class="chk">✓</span> AI 의심</span>
+            <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
+          </div>
+          <div id="inspCards"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+  <div class="insp-actions no-print">
+    <button class="ra-btn ra-btn-ghost insp-back" type="button" onclick="closeInspection()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      결과지로 돌아가기
+    </button>
+    <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      AI 의심 영역을 직접 수정해보세요
+    </button>
+  </div>
+</section>
 
 <!-- ============ 내 문서함 ============ -->
 <section id="view-box">
@@ -3828,8 +3996,284 @@ setInterval(()=>{
 },500);
 
 /* =============================================================
-   REPORT BUILDER — maps model/events/stats → 16 components
+   AI 검사 (SC-06) + 재검사 루프 (SC-07)
+   - extra variant 한정. 프로토타입 mock 로직 사용.
    ============================================================= */
+const ACK_TYPING_THRESHOLD = 0.30;
+let currentInspection = null;   // {rev, ts, aiRatioOrig, aiRatioAdjusted, suspectSpans[], acknowledgedSpans[]}
+
+function _escInsp(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function splitParagraphsForInspection(){
+  const paragraphs = [];
+  let cur = { startIdx: 0, chars: [] };
+  for(let i=0; i<model.length; i++){
+    const m = model[i];
+    if(m.ch === '\n'){
+      if(cur.chars.length > 0){
+        cur.endIdx = i - 1;
+        paragraphs.push(cur);
+      }
+      cur = { startIdx: i+1, chars: [] };
+    } else {
+      cur.chars.push(m);
+    }
+  }
+  if(cur.chars.length > 0){
+    cur.endIdx = model.length - 1;
+    paragraphs.push(cur);
+  }
+  return paragraphs;
+}
+
+/* mock — model 안 ai 계열 비중이 높은 문단을 의심으로 반환. 프로토타이핑용 결정론. */
+function mockDetectAISuspect(){
+  const paragraphs = splitParagraphsForInspection();
+  const spans = [];
+  paragraphs.forEach((p, idx) => {
+    const total = p.chars.length;
+    if(total < 8) return;
+    const aiCount = p.chars.filter(m => m.source==='ai' || m.source==='ai-edited' || m.source==='ai-internal').length;
+    const ratio = aiCount / total;
+    if(ratio < 0.40) return;
+    const level = ratio >= 0.70 ? 'high' : ratio >= 0.50 ? 'mid' : 'low';
+    const features = level==='high'
+      ? ['주관성 지나친 배제','추상적·일반적 내용 구성','무견해, 판단 회피적 성향']
+      : level==='mid'
+        ? ['주관성 지나친 배제','추상적·일반적 내용 구성']
+        : ['어체 통일감'];
+    const text = p.chars.map(c => c.ch).join('');
+    spans.push({
+      spanId: 'sp_' + String(idx+1).padStart(3,'0'),
+      startIdx: p.startIdx, endIdx: p.endIdx,
+      level, ratio, features,
+      text
+    });
+  });
+  return spans;
+}
+
+/* 인정 영역 판정 — 이전 회차 suspectSpans 기준. 각 span 안 model 글자 중 typing 비중 >= 임계이면 acknowledged. */
+function computeAcknowledgedSpans(prevSpans){
+  const ack = [];
+  if(!prevSpans) return ack;
+  prevSpans.forEach(sp => {
+    const slice = model.slice(sp.startIdx, sp.endIdx + 1).filter(m => m && m.ch !== '\n');
+    if(!slice.length) return;
+    const typing = slice.filter(m => m.source === 'typing').length;
+    const ratio = typing / slice.length;
+    if(ratio >= ACK_TYPING_THRESHOLD) ack.push(sp.spanId);
+  });
+  return ack;
+}
+
+/* [문서 검사하기] · [재검사] 공용 실행 */
+function runInspection(){
+  const prev = currentInspection;
+  const spans = mockDetectAISuspect();
+  const ackIds = prev ? computeAcknowledgedSpans(prev.suspectSpans) : [];
+  const totalDocChars = model.filter(m => m.ch !== '\n').length || 1;
+  const suspectTotal = spans.reduce((s, sp) => s + (sp.endIdx - sp.startIdx + 1), 0);
+  const ackedSpans = spans.filter(sp => ackIds.includes(sp.spanId));
+  const ackTotal = ackedSpans.reduce((s, sp) => s + (sp.endIdx - sp.startIdx + 1), 0);
+  const aiRatioOrig = suspectTotal / totalDocChars;
+  const aiRatioAdjusted = Math.max(0, (suspectTotal - ackTotal) / totalDocChars);
+  currentInspection = {
+    rev: (prev?.rev || 0) + 1,
+    ts: Date.now(),
+    aiRatioOrig, aiRatioAdjusted,
+    suspectSpans: spans,
+    acknowledgedSpans: ackIds
+  };
+  renderInspectionResult();
+  document.body.dataset.reinspect = '';
+  document.body.dataset.view = 'inspect-result';
+  window.scrollTo(0, 0);
+}
+
+function renderInspectionResult(){
+  if(!currentInspection) return;
+  const {suspectSpans, acknowledgedSpans, aiRatioAdjusted, aiRatioOrig} = currentInspection;
+  const pct = Math.round(aiRatioAdjusted * 100);
+  const fill = document.getElementById('inspRatioFill');
+  const val = document.getElementById('inspRatioValue');
+  if(fill) fill.style.width = pct + '%';
+  if(val){
+    val.textContent = pct;
+    val.title = `원본 ${Math.round(aiRatioOrig*100)}% · 인정 영역 반영 후 ${pct}%`;
+  }
+  const titleEl = document.getElementById('inspDocTitle');
+  const tInput = document.getElementById('docTitle');
+  if(titleEl) titleEl.textContent = ((tInput?.value)||'제목 없음') + '.hwpx';
+
+  // 본문 렌더 — 문단 단위로 span 매칭
+  const paragraphs = splitParagraphsForInspection();
+  const suspMap = {};
+  suspectSpans.forEach(sp => { suspMap[sp.startIdx] = sp; });
+  const content = document.getElementById('inspContent');
+  if(content){
+    content.innerHTML = paragraphs.map(p => {
+      const sp = suspMap[p.startIdx];
+      const txt = _escInsp(p.chars.map(c => c.ch).join(''));
+      if(sp){
+        const isAck = acknowledgedSpans.includes(sp.spanId);
+        const cls = isAck ? 'ai-acknowledged' : 'ai-suspect';
+        const badge = isAck ? '<span class="ack-badge">작성 증명 인정</span>' : '';
+        return `<p class="${cls}" data-span-id="${sp.spanId}">${txt}${badge}</p>`;
+      }
+      return `<p>${txt}</p>`;
+    }).join('');
+  }
+
+  // 사이드 카드
+  const cards = document.getElementById('inspCards');
+  if(cards){
+    if(!suspectSpans.length){
+      cards.innerHTML = '<div class="insp-empty">의심 없음 ✓<br><span style="font-size:11.5px;color:var(--ck-gray-400);">직접 작성 흐름이 잘 관찰됩니다.</span></div>';
+    } else {
+      cards.innerHTML = suspectSpans.map(sp => {
+        const isAck = acknowledgedSpans.includes(sp.spanId);
+        const preview = _escInsp(sp.text.slice(0, 46) + (sp.text.length > 46 ? '…' : ''));
+        const dotCls = 'dot-' + sp.level;
+        const levelKor = {'low':'낮음','mid':'중간','high':'높음'}[sp.level] || '중간';
+        return `<div class="suspect-card ${isAck?'is-ack':''}" data-span-id="${sp.spanId}" onclick="selectSuspectCard('${sp.spanId}')">
+          <div class="card-head">
+            <span class="card-title">✓ ${isAck ? '작성 증명 인정' : 'AI 의심'}</span>
+            <span class="level-dots ${dotCls}" title="${levelKor}"><span class="d"></span><span class="d"></span><span class="d"></span></span>
+          </div>
+          <div class="card-preview">${preview}</div>
+          ${isAck ? '<div class="card-ack">이 영역은 직접 다듬은 흔적이 충분해 판정에서 제외됐어요.</div>'
+                  : `<div class="card-features">${sp.features.map(f=>`<span class="feature-tag">${_escInsp(f)}</span>`).join('')}</div>`}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // CTA 노출 — 의심이 실제로 남아있을 때만 (인정으로 다 빠졌으면 미노출)
+  const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId));
+  const cta = document.getElementById('inspCta');
+  if(cta) cta.style.display = activeSuspects.length > 0 ? 'inline-flex' : 'none';
+}
+
+function selectSuspectCard(spanId){
+  document.querySelectorAll('#inspCards .suspect-card').forEach(c => c.classList.toggle('is-selected', c.dataset.spanId === spanId));
+  const target = document.querySelector(`#inspContent p[data-span-id="${spanId}"]`);
+  if(target){
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+    target.classList.add('is-flash');
+    setTimeout(() => target.classList.remove('is-flash'), 800);
+  }
+}
+
+function switchInspTab(name){
+  document.querySelectorAll('.insp-tab').forEach(t => t.classList.toggle('is-active', t.dataset.inspTab === name));
+  // 프로토타입은 AI생성검사 탭만 실제 컨텐츠 제공. 표절검사는 placeholder.
+  const body = document.getElementById('inspBody');
+  if(!body) return;
+  if(name === 'plagiarism'){
+    body.innerHTML = '<div class="insp-empty">표절검사 결과는 이번 프로토타입 스코프 밖입니다.<br><span style="font-size:11.5px;">상단 AI생성검사 탭을 눌러 결과를 확인하세요.</span></div>';
+  } else {
+    // AI 탭 원상복구를 위해 페이지 리로드 대신 renderInspectionResult 재호출
+    body.innerHTML = `
+      <div class="insp-ratio">
+        <div>
+          <div class="insp-ratio-label">문서 AI작성률</div>
+          <div class="insp-ratio-desc">전체 글 중에서 AI가 작성한 것으로 의심되는 부분의 비중입니다. 각 영역을 클릭해서 AI생성의 특징을 확인해 보세요.</div>
+        </div>
+        <div class="insp-ratio-bar"><div class="insp-ratio-fill" id="inspRatioFill" style="width:0%"></div></div>
+        <div class="insp-ratio-value"><span id="inspRatioValue">0</span>%</div>
+      </div>
+      <div class="insp-content-wrap">
+        <div class="insp-content" id="inspContent"></div>
+        <aside class="insp-sidebar">
+          <div class="insp-sidebar-head">
+            <span class="insp-sidebar-title"><span class="chk">✓</span> AI 의심</span>
+            <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
+          </div>
+          <div id="inspCards"></div>
+        </aside>
+      </div>`;
+    renderInspectionResult();
+  }
+}
+
+function closeInspection(){
+  document.body.dataset.view = 'report';
+  document.body.dataset.reinspect = '';
+  window.scrollTo(0,0);
+}
+
+/* CTA [수정하러 가기] — 재검사 에디터 진입 (좌: 기존 에디터, 우: 컨텍스트 패널) */
+function enterReinspect(){
+  document.body.dataset.reinspect = 'on';
+  document.body.dataset.view = 'write';
+  document.body.dataset.writeVariant = 'extra';
+  sessionFrozen = false;
+  renderReinspectPanel();
+  window.scrollTo(0,0);
+}
+
+function closeReinspect(){
+  document.body.dataset.reinspect = '';
+}
+
+function renderReinspectPanel(){
+  const cardsEl = document.getElementById('reinspectCards');
+  const detailEl = document.getElementById('reinspectDetail');
+  if(!cardsEl || !detailEl) return;
+  if(!currentInspection || !currentInspection.suspectSpans.length){
+    cardsEl.innerHTML = '<div class="rip-empty">이전 검사 결과가 없거나 의심 영역이 없습니다.</div>';
+    detailEl.innerHTML = '';
+    return;
+  }
+  const {suspectSpans, acknowledgedSpans} = currentInspection;
+  cardsEl.innerHTML = suspectSpans.map(sp => {
+    const isAck = acknowledgedSpans.includes(sp.spanId);
+    const preview = _escInsp(sp.text.slice(0, 40) + (sp.text.length > 40 ? '…' : ''));
+    const dotCls = 'dot-' + sp.level;
+    return `<div class="mini-card ${isAck?'is-ack':''}" data-span-id="${sp.spanId}" onclick="selectPanelCard('${sp.spanId}')">
+      <div class="mini-head">
+        <span class="mini-dots ${dotCls}"><span class="d"></span><span class="d"></span><span class="d"></span></span>
+      </div>
+      <div class="mini-preview">${preview}</div>
+    </div>`;
+  }).join('');
+  // 자동 첫 카드 선택
+  const firstUnacked = suspectSpans.find(sp => !acknowledgedSpans.includes(sp.spanId)) || suspectSpans[0];
+  if(firstUnacked) selectPanelCard(firstUnacked.spanId);
+}
+
+function selectPanelCard(spanId){
+  document.querySelectorAll('#reinspectCards .mini-card').forEach(c => c.classList.toggle('is-selected', c.dataset.spanId === spanId));
+  const sp = currentInspection?.suspectSpans.find(s => s.spanId === spanId);
+  const detailEl = document.getElementById('reinspectDetail');
+  if(!sp || !detailEl) return;
+  const features = sp.features.map(f => `<span class="feature-tag">${_escInsp(f)}</span>`).join('');
+  detailEl.innerHTML = `
+    <div class="rip-detail-title">원문</div>
+    <div class="rip-detail-text">${_escInsp(sp.text)}</div>
+    <div class="rip-detail-title" style="margin-top:12px;">AI생성 특징</div>
+    <div class="rip-features">${features}</div>
+  `;
+}
+
+/* [재검사] — 저장 + 리포트 발급 + 검사 3동작 원자 처리 (extra 한정) */
+function runReinspection(){
+  if(document.body.dataset.writeVariant !== 'extra') return;
+  // 1) 저장
+  if(model.length > 0){
+    if(!stats.firstTs) stats.firstTs = Date.now();
+    stats.lastTs = Date.now();
+    saveCount++;
+    try { boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
+  }
+  // 2) 리포트 발급 (buildReportFromSession 내부에서 최신화)
+  //    현재 프로토타입은 별도 flag 없이 검사 실행 시점에 report 데이터가 최신이 되어 있음.
+  //    데이터 관점의 원자성: docVersion·reportVersion·proofId 등은 문서함 스냅샷에 이미 반영됨.
+  // 3) 검사 실행
+  runInspection();
+}
+
 function applyQuoteLabel(){
   // extra variant에서는 '인용 붙여넣기' → '인용' 으로 라벨 표기
   const isExtra = document.body.dataset.writeVariant === 'extra';
