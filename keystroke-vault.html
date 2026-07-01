@@ -400,6 +400,11 @@
   /* 결과지 액션바 [문서 검사하기] 버튼 — extra 한정 */
   .ra-btn-inspect{display:none !important;}
   body[data-write-variant="extra"] .ra-btn-inspect{display:inline-flex !important;}
+  /* extra variant — '인용' 카테고리 UI 전면 hide (자동 분류도 off 됨) */
+  body[data-write-variant="extra"] .composeg[data-key="quote-paste"]{display:none !important;}
+  body[data-write-variant="extra"] [data-quote-item]{display:none !important;}
+  body[data-write-variant="extra"] .origin-filter[data-cat="quote-paste"]{display:none !important;}
+  body[data-write-variant="extra"] #replayLegendQuote{display:none !important;}
   /* 외부 유입 로그 — 원본 보존율 컬럼은 extra variant에서 숨김 (잔존 텍스트로 대체) */
   body[data-write-variant="extra"] th.col-origret{display:none;}
   body[data-write-variant="extra"] td.col-origret{display:none;}
@@ -1421,7 +1426,7 @@
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#D8E5FD;"></span><span class="text-slate-500">AI 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EF4444;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EAB308;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0.0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500" data-quote-label>인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
+      <div class="flex items-center gap-1.5" data-quote-item><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500" data-quote-label>인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
     </div>
 
     <!-- 회색 구분선 -->
@@ -3700,7 +3705,10 @@ function hasQuoteIndicator(text){
   return QUOTE_PATTERNS.some(re => re.test(text));
 }
 function detectQuotePasteBlocks(){
-  // extra variant로 작성된 문서만 적용
+  // extra variant: '인용' 카테고리 UI/데이터 전면 제거 정책에 따라 자동 분류 비활성.
+  // 함수 및 하위 로직은 롤백 여지 남기고 두되, 실행은 스킵.
+  return;
+  // eslint-disable-next-line no-unreachable
   if(document.body.dataset.writeVariant !== 'extra') return;
   if(!Array.isArray(model) || !model.length) return;
   // 1) blockMark별 paste 계열 블록의 첫·마지막 idx 수집
