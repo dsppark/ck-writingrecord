@@ -295,6 +295,77 @@
   body[data-write-variant="extra"] th.col-survive{display:table-cell;}
   body[data-write-variant="extra"] td.col-survive{display:table-cell;}
 
+  /* ============ view-inspect-upload (SC-04) — 문서 검사 등록 ============ */
+  #view-inspect-upload{display:none;}
+  body[data-view="inspect-upload"] #view-inspect-upload{display:block;}
+  body[data-view="inspect-upload"] #view-write,
+  body[data-view="inspect-upload"] #view-report,
+  body[data-view="inspect-upload"] #view-box,
+  body[data-view="inspect-upload"] #view-doc,
+  body[data-view="inspect-upload"] #view-inspect-result,
+  body[data-view="inspect-upload"] #header-write,
+  body[data-view="inspect-upload"] #header-report{display:none !important;}
+  body[data-view="inspect-upload"] #lnb{display:flex;}
+  body[data-view="inspect-upload"]{background:#fff;}
+  body[data-view="inspect-upload"] #view-inspect-upload{padding-left:275px;padding-bottom:88px;min-height:100vh;}
+  .inspup-wrap{max-width:920px;margin:0 auto;padding:32px 40px 20px;}
+  .inspup-group{width:100%;height:48px;padding:0 44px 0 16px;border:1px solid var(--ck-secondary-200);border-radius:10px;font-size:14px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/%3E%3C/svg%3E") no-repeat right 14px center;color:var(--ck-gray-800);}
+  .inspup-group:focus{outline:none;border-color:var(--ck-primary-400);}
+  .inspup-drop{margin-top:16px;border:1.5px dashed var(--ck-secondary-300);border-radius:12px;padding:44px 24px;text-align:center;background:#fff;transition:border-color .15s, background .15s;}
+  .inspup-drop.is-drag{border-color:var(--ck-primary-500);background:var(--ck-primary-50);}
+  .inspup-drop-title{font-size:18px;font-weight:700;color:var(--ck-gray-900);margin-bottom:14px;}
+  .inspup-drop-actions{display:inline-flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .inspup-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:1px solid var(--ck-primary-500);border-radius:8px;background:#fff;color:var(--ck-primary-600);font-size:13px;font-weight:600;cursor:pointer;transition:background .12s;}
+  .inspup-btn:hover{background:var(--ck-primary-50);}
+  .inspup-or{color:var(--ck-gray-400);font-size:12px;}
+  .inspup-drop-info{font-size:12.5px;color:var(--ck-gray-500);line-height:1.7;}
+  .inspup-filelist{margin-top:14px;}
+  .inspup-file-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--ck-secondary-200);border-radius:10px;background:#fff;}
+  .inspup-file-name{flex:1;font-size:13.5px;font-weight:600;color:var(--ck-gray-800);}
+  .inspup-file-ok{font-size:12px;font-weight:700;color:var(--ck-primary-600);}
+  .inspup-file-del{padding:4px 10px;border:1px solid #EC4899;border-radius:14px;background:#fff;color:#EC4899;font-size:11px;font-weight:700;cursor:pointer;}
+  .inspup-file-del:hover{background:#FCE7F3;}
+  .inspup-file-meta{margin-top:8px;padding:0 4px;font-size:11.5px;color:var(--ck-gray-500);display:flex;justify-content:space-between;}
+  .inspup-notice{margin-top:20px;background:var(--ck-secondary-50);border:1px solid var(--ck-secondary-200);border-radius:10px;padding:14px 18px;font-size:12.5px;color:var(--ck-gray-700);line-height:1.7;}
+  .inspup-notice-title{font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--ck-gray-800);}
+  .inspup-notice-body{margin-top:10px;padding-top:10px;border-top:1px solid var(--ck-secondary-200);}
+  .inspup-notice-body ul{padding-left:16px;}
+  .inspup-notice-body li{margin-bottom:4px;list-style-type:disc;}
+  .inspup-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
+  .inspup-actions .inspup-back{margin-right:auto;}
+  .inspup-actions .ra-btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);}
+  .inspup-actions .ra-btn-primary:disabled{background:var(--ck-secondary-200);border-color:var(--ck-secondary-200);cursor:not-allowed;color:var(--ck-gray-500);}
+
+  /* ============ 검사 설정 슬라이드 (SC-05) ============ */
+  #inspSettingsBackdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:70;justify-content:center;align-items:center;padding:24px;}
+  #inspSettingsBackdrop.open{display:flex;}
+  #inspSettingsSlide{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+  .isp-header{padding:20px 24px 12px;}
+  .isp-header h3{font-size:17px;font-weight:800;color:var(--ck-gray-900);}
+  .isp-body{padding:0 24px 12px;}
+  .isp-section-label{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--ck-gray-800);margin:14px 0 8px;}
+  .isp-section-label .info-tooltip{margin-left:2px;}
+  .isp-type-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .isp-type-card{border:1.5px solid var(--ck-secondary-200);border-radius:10px;padding:14px 16px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--ck-gray-600);display:flex;align-items:center;gap:8px;transition:border-color .12s,background .12s;}
+  .isp-type-card .chk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ck-secondary-300);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:transparent;}
+  .isp-type-card.is-selected[data-insptype="plagiarism"]{border-color:var(--ck-primary-500);background:var(--ck-primary-50);color:var(--ck-primary-700);}
+  .isp-type-card.is-selected[data-insptype="plagiarism"] .chk{background:var(--ck-primary-500);border-color:var(--ck-primary-500);color:#fff;}
+  .isp-type-card.is-selected[data-insptype="ai"]{border-color:var(--ck-brand-gk-500);background:var(--ck-brand-gk-50);color:var(--ck-brand-gk-700);}
+  .isp-type-card.is-selected[data-insptype="ai"] .chk{background:var(--ck-brand-gk-500);border-color:var(--ck-brand-gk-500);color:#fff;}
+  .isp-select{width:200px;height:38px;padding:0 10px;border:1px solid var(--ck-secondary-200);border-radius:8px;font-size:13px;background:#fff;color:var(--ck-gray-800);}
+  .isp-actions{padding:16px 24px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--ck-secondary-100);}
+  .isp-btn-ghost{padding:9px 18px;border:1px solid var(--ck-secondary-200);border-radius:8px;background:#fff;color:var(--ck-gray-700);font-size:13px;font-weight:700;cursor:pointer;}
+  .isp-btn-primary{padding:9px 18px;border:1px solid var(--ck-primary-500);border-radius:8px;background:var(--ck-primary-500);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .isp-btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* 직접 입력 모달 */
+  #inspDirectModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:80;justify-content:center;align-items:center;padding:24px;}
+  #inspDirectModal.open{display:flex;}
+  .ind-box{background:#fff;border-radius:14px;width:100%;max-width:640px;padding:20px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+  .ind-box h3{font-size:16px;font-weight:800;color:var(--ck-gray-900);margin-bottom:10px;}
+  .ind-box textarea{width:100%;min-height:280px;padding:12px 14px;border:1px solid var(--ck-secondary-200);border-radius:8px;font-size:13px;font-family:'Pretendard',sans-serif;line-height:1.7;resize:vertical;}
+  .ind-actions{margin-top:14px;display:flex;justify-content:flex-end;gap:8px;}
+
   /* ============ view-inspect-result (SC-06) ============ */
   #view-inspect-result{display:none;}
   body[data-view="inspect-result"] #view-inspect-result{display:block;}
@@ -754,7 +825,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       <span>카피킬러</span>
     </div>
-    <div class="lnb-sub">문서 검사</div>
+    <div class="lnb-sub" data-menu="inspect-upload" onclick="openInspUpload()">문서 검사</div>
     <div class="lnb-sub">참고문헌 유효성 검증<span class="lnb-badge lnb-badge-free">Free</span></div>
     <div class="lnb-sub">표이미지 표절검사</div>
     <div class="lnb-sub">생활기록부 검사</div>
@@ -1848,6 +1919,116 @@
 </main>
 </div>
 </section><!-- /view-report -->
+
+<!-- ============ 검사 문서 등록 (SC-04 view-inspect-upload) ============ -->
+<section id="view-inspect-upload">
+  <div class="inspup-wrap">
+    <input class="inspup-group" placeholder="그룹명을 입력해 주세요. 예) 레포트 관련 문서, 프로젝트 자료 등" id="inspGroup" />
+    <div class="inspup-drop" id="inspDrop">
+      <div class="inspup-drop-title">파일을 여기에 드래그 &amp; 드롭 하거나</div>
+      <div class="inspup-drop-actions">
+        <input type="file" id="inspFileInput" style="display:none" accept=".txt,.hwp,.hwpx,.doc,.docx,.pdf,.rtf" />
+        <button class="inspup-btn" onclick="document.getElementById('inspFileInput').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          파일 첨부
+        </button>
+        <span class="inspup-or">또는</span>
+        <button class="inspup-btn" onclick="openDirectInputModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          직접 입력
+        </button>
+      </div>
+      <div class="inspup-drop-info">
+        <div>업로드 가능 용량 : 2048.00MB</div>
+        <div>업로드 가능 확장자 : *.hwp; *.hwpx; *.doc; *.docx; *.txt; *.pdf; *.rtf;</div>
+      </div>
+    </div>
+    <div class="inspup-filelist" id="inspFileList"></div>
+    <details class="inspup-notice">
+      <summary class="inspup-notice-title">
+        <span>카피킬러 활용 안내 및 유의사항</span>
+        <span class="chev">⌄</span>
+      </summary>
+      <div class="inspup-notice-body">
+        <ul>
+          <li><b>그룹명은 결과확인서에 출력되므로 한 번 더 확인해 주세요.</b></li>
+          <li>검사 문서 내 이름, 전화번호와 같은 <b>개인정보 포함 여부</b>를 미리 점검해 주세요.</li>
+          <li>업로드하는 파일명에 <b>특수기호가 있으면 검사가 불가</b>하므로 파일명을 수정한 뒤 업로드해주세요.</li>
+        </ul>
+        <ul style="margin-top:8px;">
+          <li>1인 1계정 사용을 원칙으로 하고있습니다. 정확한 표절률 확인을 위해 본인 ID 하나만 사용해주세요.</li>
+          <li>카피킬러 표절검사는 검사 문서와 비교 문서의 문장별 유사성을 표절률로 표시합니다.</li>
+          <li>GPT킬러는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다.</li>
+          <li>분석 정확도를 높이기 위해 최소 300자 이상의 문서 검사를 권장합니다.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+  <div class="inspup-actions no-print">
+    <button class="ra-btn ra-btn-ghost inspup-back" type="button" onclick="closeInspUpload()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      뒤로
+    </button>
+    <button class="ra-btn ra-btn-primary" id="btnInspStart" type="button" onclick="openInspSettingsSlide()" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      문서 검사
+    </button>
+  </div>
+</section>
+
+<!-- ============ 검사 설정 슬라이드 (SC-05) ============ -->
+<div id="inspSettingsBackdrop" onclick="if(event.target===this) closeInspSettingsSlide()">
+  <div id="inspSettingsSlide">
+    <div class="isp-header"><h3>문서 검사 설정</h3></div>
+    <div class="isp-body">
+      <label class="isp-section-label">검사 유형 <span class="info-tooltip" data-tip="선택한 검사 유형에 따라 결과 화면 구성이 달라집니다.">i</span></label>
+      <div class="isp-type-cards">
+        <div class="isp-type-card is-selected" data-insptype="plagiarism" onclick="toggleInspType('plagiarism')">
+          <span class="chk">✓</span> 표절검사
+        </div>
+        <div class="isp-type-card is-selected" data-insptype="ai" onclick="toggleInspType('ai')">
+          <span class="chk">✓</span> AI생성검사
+        </div>
+      </div>
+      <label class="isp-section-label">문서 유형 <span class="info-tooltip" data-tip="문서 유형에 따라 검사 기준·비교 대상 문서군이 달라집니다.">i</span></label>
+      <select class="isp-select" id="inspDocType">
+        <option>자기소개서</option>
+        <option>과제물</option>
+        <option>학위논문</option>
+        <option>학술논문</option>
+        <option>연구/정책보고서</option>
+        <option>연구대회/공모자료</option>
+        <option>독후감</option>
+        <option>보도자료</option>
+        <option>블로그</option>
+        <option>생활기록부</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="isp-actions">
+      <button class="isp-btn-ghost" type="button" onclick="closeInspSettingsSlide()">취소</button>
+      <button class="isp-btn-primary" type="button" onclick="startInspectionFromUpload()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        검사 시작
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 직접 입력 모달 ============ -->
+<div id="inspDirectModal" onclick="if(event.target===this) closeDirectInputModal()">
+  <div class="ind-box">
+    <h3>텍스트 직접 입력</h3>
+    <textarea id="inspDirectText" placeholder="검사할 텍스트를 붙여넣거나 직접 입력해 주세요. (최소 300자 권장)"></textarea>
+    <div class="ind-actions">
+      <button class="isp-btn-ghost" type="button" onclick="closeDirectInputModal()">취소</button>
+      <button class="isp-btn-primary" type="button" onclick="submitDirectInput()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        등록
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ 검사 결과 (SC-06 view-inspect-result) ============ -->
 <section id="view-inspect-result">
@@ -4234,8 +4415,13 @@ function switchInspTab(name){
 }
 
 function closeInspection(){
-  document.body.dataset.view = 'report';
   document.body.dataset.reinspect = '';
+  // 플로우 2 (업로드) 진입이면 upload 화면으로, 플로우 1 이면 report 로
+  if(document.body.dataset.inspSource === 'upload'){
+    document.body.dataset.view = 'inspect-upload';
+  } else {
+    document.body.dataset.view = 'report';
+  }
   window.scrollTo(0,0);
 }
 
@@ -4356,6 +4542,193 @@ function runReinspection(){
   }
   if(typeof showToast === 'function') showToast('재검사 완료 — 참고 창이 갱신되었어요.');
 }
+
+/* ============ 플로우 2 — 문서 검사 등록 (SC-04) ============ */
+let uploadedText = '';
+let uploadedFilename = '';
+
+function openInspUpload(){
+  document.body.dataset.view = 'inspect-upload';
+  document.body.dataset.writeVariant = 'extra';
+  document.body.dataset.reinspect = '';
+  document.body.classList.remove('is-inspect-companion');
+  // LNB active 토글
+  document.querySelectorAll('#lnb .lnb-sub[data-menu], #lnb .lnb-item[data-menu]').forEach(el=>el.classList.remove('is-active'));
+  const active = document.querySelector('#lnb [data-menu="inspect-upload"]');
+  if(active) active.classList.add('is-active');
+  // 상태 초기화
+  uploadedText = '';
+  uploadedFilename = '';
+  const list = document.getElementById('inspFileList');
+  if(list) list.innerHTML = '';
+  const btn = document.getElementById('btnInspStart');
+  if(btn) btn.disabled = true;
+  const groupInput = document.getElementById('inspGroup');
+  if(groupInput) groupInput.value = '';
+  window.scrollTo(0, 0);
+}
+
+function closeInspUpload(){
+  document.body.dataset.view = 'box';
+  if(typeof renderBoxList === 'function') renderBoxList();
+  window.scrollTo(0, 0);
+}
+
+function _readInspFile(file){
+  if(!file) return;
+  uploadedFilename = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const txt = String(e.target.result || '');
+    uploadedText = txt;
+    _renderInspFileCard(file.name, txt.length);
+  };
+  reader.onerror = () => {
+    if(typeof showToast === 'function') showToast('파일을 읽을 수 없습니다');
+  };
+  reader.readAsText(file);
+}
+
+function _renderInspFileCard(name, chars){
+  const list = document.getElementById('inspFileList');
+  if(!list) return;
+  const kb = (chars * 2 / 1024).toFixed(2);
+  list.innerHTML = `
+    <div class="inspup-file-row">
+      <span class="inspup-file-name">${_escInsp(name)} <span style="color:var(--ck-gray-400);font-weight:500;">(100%)</span></span>
+      <span class="inspup-file-ok">✓ 검사 가능</span>
+      <button class="inspup-file-del" type="button" onclick="_removeInspFile()">삭제</button>
+    </div>
+    <div class="inspup-file-meta"><span>${kb}KB / 2048MB</span><span>1 / 1 건</span></div>
+  `;
+  const btn = document.getElementById('btnInspStart');
+  if(btn) btn.disabled = false;
+}
+
+function _removeInspFile(){
+  uploadedText = '';
+  uploadedFilename = '';
+  const list = document.getElementById('inspFileList');
+  if(list) list.innerHTML = '';
+  const btn = document.getElementById('btnInspStart');
+  if(btn) btn.disabled = true;
+}
+
+function openDirectInputModal(){
+  const m = document.getElementById('inspDirectModal');
+  if(m) m.classList.add('open');
+  const ta = document.getElementById('inspDirectText');
+  if(ta){ ta.value = ''; setTimeout(()=>ta.focus(), 30); }
+}
+function closeDirectInputModal(){
+  document.getElementById('inspDirectModal')?.classList.remove('open');
+}
+function submitDirectInput(){
+  const ta = document.getElementById('inspDirectText');
+  const text = (ta?.value || '').trim();
+  if(!text){
+    if(typeof showToast === 'function') showToast('텍스트를 입력해 주세요');
+    return;
+  }
+  uploadedText = text;
+  uploadedFilename = '직접 입력 문서.txt';
+  _renderInspFileCard(uploadedFilename, text.length);
+  closeDirectInputModal();
+}
+
+function openInspSettingsSlide(){
+  const bd = document.getElementById('inspSettingsBackdrop');
+  if(bd) bd.classList.add('open');
+}
+function closeInspSettingsSlide(){
+  document.getElementById('inspSettingsBackdrop')?.classList.remove('open');
+}
+function toggleInspType(type){
+  const card = document.querySelector(`.isp-type-card[data-insptype="${type}"]`);
+  if(card) card.classList.toggle('is-selected');
+}
+
+function startInspectionFromUpload(){
+  if(!uploadedText){
+    if(typeof showToast === 'function') showToast('등록된 문서가 없습니다');
+    return;
+  }
+  const aiSelected = document.querySelector('.isp-type-card[data-insptype="ai"]')?.classList.contains('is-selected');
+  if(!aiSelected){
+    if(typeof showToast === 'function') showToast('본 프로토타입은 AI생성검사 결과 화면만 제공합니다. AI생성검사를 선택해주세요.');
+    return;
+  }
+  // 업로드 텍스트를 model 에 채움 — 프로토타이핑: 문단 인덱스 % 2 === 1 이면 ai source (mock 의심 후보)
+  model.length = 0;
+  events.length = 0;
+  editOps.length = 0;
+  Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
+  const paras = uploadedText.split(/\r?\n/);
+  let ts = Date.now() - paras.length * 1000;
+  let bm = 0;
+  paras.forEach((p, idx) => {
+    if(idx > 0){
+      model.push({ch:'\n', source:'typing', ts:++ts});
+    }
+    const isAiPara = (idx % 2 === 1);
+    if(isAiPara){
+      bm++;
+      const size = p.length;
+      for(let i=0; i<p.length; i++){
+        model.push({ch:p[i], source:'ai', ts:++ts, blockMark:bm, blockSize:size});
+      }
+    } else {
+      for(const ch of p){
+        model.push({ch, source:'typing', ts:++ts});
+      }
+    }
+  });
+  stats.firstTs = ts - paras.length * 1000;
+  stats.lastTs = ts;
+  // extra variant 확실히 세팅 (결과지 슬림화 규칙)
+  document.body.dataset.writeVariant = 'extra';
+  document.body.dataset.inspSource = 'upload';
+  // 새 검사 회차
+  currentInspection = null;
+  closeInspSettingsSlide();
+  runInspection();  // view=inspect-result 로 전환
+  // 결과 상단 파일명 표시
+  const titleEl = document.getElementById('inspDocTitle');
+  if(titleEl) titleEl.textContent = uploadedFilename || '업로드 문서';
+}
+
+// 파일 input + 드래그앤드롭 이벤트 바인딩 (DOM 로드 이후)
+(function bindInspUploadListeners(){
+  const bind = () => {
+    const fi = document.getElementById('inspFileInput');
+    if(fi && !fi.dataset.bound){
+      fi.dataset.bound = '1';
+      fi.addEventListener('change', e => {
+        const f = e.target.files?.[0];
+        if(f) _readInspFile(f);
+      });
+    }
+    const zone = document.getElementById('inspDrop');
+    if(zone && !zone.dataset.bound){
+      zone.dataset.bound = '1';
+      ['dragenter','dragover'].forEach(ev => {
+        zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('is-drag'); });
+      });
+      ['dragleave','drop'].forEach(ev => {
+        zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('is-drag'); });
+      });
+      zone.addEventListener('drop', e => {
+        const f = e.dataTransfer?.files?.[0];
+        if(f) _readInspFile(f);
+      });
+    }
+  };
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
 
 /* 새 탭 페이지 로드 시 localStorage 로부터 데이터 로드 + 참고용 렌더 */
 function initInspectCompanionTab(){
