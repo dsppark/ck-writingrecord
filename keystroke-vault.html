@@ -281,7 +281,9 @@
   /* ============ Froala-style 에디터 툴바 (data-write-variant='extra') ============ */
   .ft-toolbar{display:none;flex-direction:column;gap:6px;padding:8px 12px;background:#FAFBFC;border-bottom:1px solid var(--ck-secondary-200);}
   body[data-write-variant="extra"] .ft-toolbar{display:flex;}
-  body[data-write-variant="extra"] .editor-toolbar{display:none;}
+  /* editor-toolbar 는 유지하되(작성 기록중 배지 노출), 데모 버튼만 숨김 */
+  body[data-write-variant="extra"] .editor-toolbar .tool-btn{display:none;}
+  body[data-write-variant="extra"] .editor-toolbar{justify-content:flex-end;background:transparent;border-bottom:none;padding:6px 12px 0;}
   /* 에디터 추가 버전 결과지 — 사이드 TOC / 세션요약 / 보존율 영역 제거 */
   body[data-view="report"][data-write-variant="extra"] #view-report > div.flex > aside{display:none !important;}
   body[data-view="report"][data-write-variant="extra"] #sec-01{display:none !important;}
@@ -3861,6 +3863,13 @@ function newWrite(variant){
   const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
+  // 상단 통계 카운터를 즉시 0 으로 갱신 (이전 세션 잔존값 제거)
+  if(typeof updateStats === 'function') updateStats();
+  // 작성 기록중 배지 초기화 — 첫 입력 시 다시 showRec()
+  const _rb = document.getElementById('recBadge');
+  if(_rb) _rb.style.display = 'none';
+  const _rc = document.getElementById('recClock');
+  if(_rc) _rc.textContent = '00:00';
   window.scrollTo(0,0);
 }
 function _fmtSaved(ts){
