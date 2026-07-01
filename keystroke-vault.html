@@ -3296,25 +3296,33 @@ editor.addEventListener('focus',showRec);
 editor.addEventListener('compositionstart',()=>{ composing=true; });
 editor.addEventListener('compositionend',()=>{
   composing=false;
-  requestAnimationFrame(()=>{
+  // IME 확정 → DOM 반영이 완전히 끝난 뒤 처리하도록 다음 두 tick 대기
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
     reconcile('typing');
-    // 보류된 Enter가 있으면 composition 종료 후 \n 삽입
+    // 보류된 Enter 처리 — 조합이 다시 시작됐으면 스킵
     if(pendingEnter && !composing){
       pendingEnter = false;
-      const sel=window.getSelection();
-      if(sel && sel.rangeCount){
-        const range=sel.getRangeAt(0);
-        range.deleteContents();
-        const tn=document.createTextNode('\n');
-        range.insertNode(tn);
-        range.setStartAfter(tn);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+      const isExtra = document.body.dataset.writeVariant === 'extra';
+      if(isExtra){
+        // extra 변형: 브라우저 표준 방식으로 개행 → IME 확정된 자모 상태 보존
+        try { document.execCommand('insertParagraph'); } catch(e){}
         reconcile('typing');
+      } else {
+        const sel=window.getSelection();
+        if(sel && sel.rangeCount){
+          const range=sel.getRangeAt(0);
+          range.deleteContents();
+          const tn=document.createTextNode('\n');
+          range.insertNode(tn);
+          range.setStartAfter(tn);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          reconcile('typing');
+        }
       }
     }
-  });
+  }));
 });
 
 /* paste */
@@ -3336,18 +3344,13 @@ editor.addEventListener('beforeinput',e=>{
       pendingEnter = true;
       return;
     }
-    // extra variant: list / heading / blockquote / pre 안에서는 브라우저 기본 동작 허용
-    // (새 <li>·<p> 생성, 빈 줄에서 list 종료 등) — reconcile은 글자만 추적하므로 OK.
+    // extra variant: Enter 는 브라우저 기본 동작(insertParagraph) 그대로 허용.
+    // - list/heading/blockquote/pre 안 → 새 <li>/<p>
+    // - 일반 본문 → <div><br></div>
+    // reconcile 이 innerText 로 개행을 model 에 동기화하므로 안전하고,
+    // 특히 IME 확정 직후 우리가 텍스트노드 삽입으로 자모 분리 시키는 문제가 사라짐.
     if(isExtra){
-      const sel0 = window.getSelection();
-      if(sel0 && sel0.rangeCount){
-        let node = sel0.getRangeAt(0).startContainer;
-        const inBlockTag = /^(LI|UL|OL|H1|H2|H3|H4|H5|H6|BLOCKQUOTE|PRE)$/i;
-        while(node && node !== editor){
-          if(node.nodeName && inBlockTag.test(node.nodeName)) return; // 기본 동작 허용
-          node = node.parentNode;
-        }
-      }
+      return;
     }
     // Chrome's contenteditable refuses to render literal "\n" via execCommand,
     // and the default insertParagraph creates <div>/<br> blocks that diverge from our model.
