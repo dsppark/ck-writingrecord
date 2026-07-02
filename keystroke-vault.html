@@ -495,11 +495,17 @@
   .sec02-face.is-active[data-face="half"]{color:#F59E0B;}
   .sec02-face.is-active[data-face="neutral"]{color:#0891B2;}
   .sec02-face.is-active[data-face="human"]{color:#10B981;}
-  /* 판정명 + 보조 설명 */
-  .sec02-verdict{display:none;margin-top:12px;text-align:center;padding:0 8px;}
+  /* 판정명 (칩) + 보조 설명 */
+  .sec02-verdict{display:none;margin-top:14px;text-align:center;padding:0 8px;}
   body[data-write-variant="extra"] .sec02-verdict{display:block;}
-  .verdict-name{font-size:14px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;}
-  .verdict-desc{margin-top:5px;font-size:11.5px;font-weight:500;color:var(--ck-gray-500);line-height:1.55;max-width:280px;margin-left:auto;margin-right:auto;}
+  .verdict-name{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:18px;font-size:12.5px;font-weight:700;letter-spacing:-0.01em;background:var(--ck-secondary-100);color:var(--ck-gray-700);}
+  .verdict-name[data-verdict="bot"]{background:#FEE2E2;color:#B91C1C;}
+  .verdict-name[data-verdict="half"]{background:#FEF3C7;color:#92400E;}
+  .verdict-name[data-verdict="neutral"]{background:#CFFAFE;color:#0E7490;}
+  .verdict-name[data-verdict="human"]{background:#D1FAE5;color:#047857;}
+  .verdict-desc{margin-top:10px;font-size:13.5px;font-weight:500;color:var(--ck-gray-700);line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto;}
+  /* extra: SEC-02 하단 해석 박스 hide (칩+안내로 대체) */
+  body[data-write-variant="extra"] #sec02InterpretBox{display:none !important;}
   /* extra: 게이지 진행바 단색화 (그라디언트 override) */
   body[data-write-variant="extra"] #gaugeFill{stroke:var(--ck-secondary-700) !important;}
   /* extra: '/ 100' → '%' 접미사 */
@@ -1182,7 +1188,7 @@
   <div class="card p-6">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 증명 요약">작성 증명 지수</h2>
+        <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 검증 결과">작성 증명 지수</h2>
         <p class="text-sm text-slate-500 mt-1">독립적 기여도 0~100점 · 3개 영역 · 8개 항목 가중 평균</p>
       </div>
       <button onclick="openCriteriaModal()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
@@ -1299,7 +1305,7 @@
           </div>
         </div>
 
-        <div class="mt-4 p-3 rounded-lg bg-slate-50 text-[12.5px] text-slate-600 leading-relaxed border border-slate-100">
+        <div id="sec02InterpretBox" class="mt-4 p-3 rounded-lg bg-slate-50 text-[12.5px] text-slate-600 leading-relaxed border border-slate-100">
           <span class="font-semibold text-slate-800">해석</span> · <span class="sec02-interpret">독자적인 글쓰기 — 작성자의 사고 흐름과 퇴고 행동이 충분히 관찰됩니다. AI 또는 외부 유입 텍스트가 있더라도 적극적으로 다듬어진 흔적이 뚜렷해, 자율적으로 작성된 글로 판단할 수 있습니다.</span>
         </div>
       </div>
@@ -2288,7 +2294,7 @@
     <div class="flex items-start justify-between">
       <div>
         <div class="text-xs text-slate-500">INDEX</div>
-        <h3 class="text-lg font-bold text-slate-900" data-orig-label="작성 증명 지수 산정 기준" data-extra-label="작성 증명 요약 산정 기준">작성 증명 지수 산정 기준</h3>
+        <h3 class="text-lg font-bold text-slate-900" data-orig-label="작성 증명 지수 산정 기준" data-extra-label="작성 검증 결과 산정 기준">작성 증명 지수 산정 기준</h3>
         <p class="text-[12.5px] text-slate-500 mt-1">각 항목의 가중치를 조정하면 결과 지수가 즉시 재계산됩니다.</p>
       </div>
       <button onclick="closeCriteriaModal()" class="text-slate-400 hover:text-slate-700">✕</button>
@@ -2650,7 +2656,7 @@ function renderScore(score){
   });
   const vn = document.getElementById('sec02VerdictName');
   const vd = document.getElementById('sec02VerdictDesc');
-  if(vn) vn.textContent = verdictName;
+  if(vn){ vn.textContent = verdictName; vn.setAttribute('data-verdict', faceKey); }
   if(vd) vd.textContent = verdictDesc;
   const labelEl=document.querySelector('#sec-02 .sec02-tier');
   const interpEl=document.querySelector('#sec-02 .sec02-interpret');
