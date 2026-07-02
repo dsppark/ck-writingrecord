@@ -4179,22 +4179,30 @@ function _bindMuhaEvents(){
   let _syncTimer = null;
   const _readText = () => (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
   const _scheduleSync = () => {
-    // debounce: 마지막 입력 이후 400ms 조용해지면 한 번에 sync
+    // debounce: 마지막 입력 이후 500ms 조용해지면 한 번에 sync
     if(_syncTimer) clearTimeout(_syncTimer);
     _syncTimer = setTimeout(() => {
       _syncTimer = null;
       const text = _readText();
-      // 편집 중 tiptap 이 잠깐 DOM 을 비웠다가 다시 채우는 순간이 있음.
-      // 이전 model 은 있는데 이번 read 가 empty 면 flash 로 간주 — 250ms 뒤 재확인.
+      // empty flash 방어: 이전 model 이 있는데 이번 read 가 empty 면 250ms 뒤 재확인
       if(text.length === 0 && model.length > 0){
         setTimeout(() => {
           const t2 = _readText();
-          if(t2.length === 0) _syncMuhaModel(t2); // 진짜 다 지운 경우만 반영
+          if(t2.length === 0) _syncMuhaModel('');
+        }, 250);
+        return;
+      }
+      // 삭제 급감 방어: 새 text 가 이전 modelText 보다 절반 이상 짧으면 flash 의심 → 250ms 재확인
+      const modelLen = model.filter(m => m.ch !== '\n').length;
+      if(modelLen > 5 && text.length < modelLen * 0.5){
+        setTimeout(() => {
+          const t2 = _readText();
+          if(t2.length < modelLen * 0.5) _syncMuhaModel(t2);
         }, 250);
         return;
       }
       _syncMuhaModel(text);
-    }, 400);
+    }, 500);
   };
   el.addEventListener('input', _scheduleSync);
   try {
@@ -4250,7 +4258,10 @@ function _syncMuhaModel(text){
   if(addedText.length > 0){
     let src = 'typing';
     let bm = null, bsize = null;
-    // paste 매칭 (pendingPasteText 와 정확히 일치하거나, 15자+ 대량 삽입)
+    // paste 매칭 — pendingPasteText 세팅 후 2초 이내에만 유효. 그 이후엔 stale 로 clear.
+    if(_pendingPasteText && (Date.now() - _pendingPasteTs) > 2000){
+      _pendingPasteText = null; _pendingPasteTs = 0;
+    }
     if(_pendingPasteText && addedText.indexOf(_pendingPasteText) !== -1){
       src = 'paste';
       bm = ++blockSeq;
