@@ -4150,10 +4150,16 @@ function _findMuhaEditable(){
   return mount.querySelector('.ProseMirror') || mount.querySelector('[contenteditable="true"]');
 }
 
+let _muhaBindRetries = 0;
 function _bindMuhaEvents(){
   const el = _findMuhaEditable();
-  if(!el || el.dataset.ksvBound) return;
+  if(!el){
+    if(_muhaBindRetries++ < 30){ setTimeout(_bindMuhaEvents, 120); }
+    return;
+  }
+  if(el.dataset.ksvBound) return;
   el.dataset.ksvBound = '1';
+  _muhaBindRetries = 0;
   // 키스트로크 카운트 (modifier 단독·복사/붙여넣기 단축키 제외)
   el.addEventListener('keydown', (e) => {
     if(sessionFrozen) return;
@@ -4163,11 +4169,30 @@ function _bindMuhaEvents(){
     if(!stats.firstTs) stats.firstTs = Date.now();
     stats.lastTs = Date.now();
   });
-  // paste 감지 — text/plain 캡처. onChange diff 에서 이 텍스트와 매칭되면 paste source.
+  // paste 감지 — text/plain 캡처. input diff 에서 이 텍스트와 매칭되면 paste source.
   el.addEventListener('paste', (e) => {
     const t = e.clipboardData?.getData('text/plain') || '';
     if(t){ _pendingPasteText = t; _pendingPasteTs = Date.now(); }
   });
+  // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
+  let _syncScheduled = false;
+  const _scheduleSync = () => {
+    window.__scFire = (window.__scFire||0) + 1;
+    if(_syncScheduled) return;
+    _syncScheduled = true;
+    setTimeout(() => {
+      _syncScheduled = false;
+      const text = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+      window.__scText = text;
+      _syncMuhaModel(text);
+    }, 32);
+  };
+  el.addEventListener('input', _scheduleSync);
+  try {
+    const mo = new MutationObserver(() => { window.__moFire = (window.__moFire||0) + 1; _scheduleSync(); });
+    mo.observe(el, {childList:true, subtree:true, characterData:true});
+    window.__moBound = 1;
+  } catch(e){ console.warn('mo fail', e); }
   // 포커스·클릭 시 '작성 기록중' 배지
   el.addEventListener('focusin', () => { if(typeof showRec === 'function') showRec(); });
   el.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
@@ -4289,11 +4314,16 @@ function ensureMuhaEditor(){
       placeholder: '여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다.',
       onChange: function(body){
         try {
+          window.__muhaCB = (window.__muhaCB||0) + 1;
           const text = _muhaBodyToText(body);
+          window.__muhaLastText = text;
           _syncMuhaModel(text);
         } catch(e){ console.warn('muha onChange sync fail', e); }
       },
     });
+    // mount 이후 실제 .ProseMirror 노드가 DOM 에 붙기까지 잠깐 걸림 — 지연 후 bind
+    _muhaBindRetries = 0;
+    setTimeout(_bindMuhaEvents, 120);
   }catch(e){
     console.warn('muha mount fail', e);
     muhaHandle = null;
