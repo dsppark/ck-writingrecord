@@ -6,6 +6,34 @@
 <title>카피킬러 문서작성v2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<!-- Muha Editor (Tiptap v3) 로컬 번들 — extra variant 문서 작성 에디터 -->
+<link rel="stylesheet" href="./muha-editor/assets/v3-C-Y1L5XF.css" />
+<script type="module" crossorigin src="./muha-editor/assets/v3-BqsdM_sV.js"></script>
+<script>
+  // muha-editor 는 자체 시드 콘텐츠를 초기 렌더함 — 마운트 즉시 clear
+  (function(){
+    function tryClear(){
+      const pm = document.querySelector('#muhaHost .ProseMirror');
+      if(!pm || !pm.editor) return false;
+      try {
+        pm.editor.commands.clearContent(true);
+        document.body.dataset.muhaCleared = '1';
+        return true;
+      } catch(e){ return false; }
+    }
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', watch);
+    } else {
+      watch();
+    }
+    function watch(){
+      if(tryClear()) return;
+      const mo = new MutationObserver(() => { if(tryClear()) mo.disconnect(); });
+      mo.observe(document.body, {childList:true, subtree:true});
+      setTimeout(() => { tryClear(); mo.disconnect(); }, 8000);
+    }
+  })();
+</script>
 <style>
   :root{
     /* ===== ck-ui foundation tokens (subset) ===== */
@@ -532,11 +560,13 @@
   body[data-write-variant="extra"] .ft-row{gap:5px;}
   /* Muha 본문 톤 — legacy 문서 작성용 (extra 는 iframe 사용) */
   body[data-write-variant="legacy"] .editor-area{font-family:'Noto Sans KR','Pretendard',system-ui,sans-serif;font-size:16px;line-height:1.75;color:#1F2329;padding:32px 44px;background:#fff;}
-  /* Muha Editor iframe — extra variant 한정 노출 */
-  #muhaEditor{display:none;width:100%;min-height:640px;border:0;background:#fff;}
-  body[data-write-variant="extra"] #muhaEditor{display:block;flex:1;height:auto;min-height:560px;}
+  /* Muha Editor (Tiptap v3) 마운트 지점 — extra variant 한정 노출 */
+  #muhaHost{display:none;width:100%;min-height:560px;background:#fff;}
+  body[data-write-variant="extra"] #muhaHost{display:block;flex:1;}
   body[data-write-variant="extra"] .editor-area{display:none;}
   body[data-write-variant="extra"] .ft-toolbar{display:none !important;}
+  /* muha-editor 마운트 전 시드 콘텐츠 flash 방지 */
+  body:not([data-muha-cleared="1"]) #muhaHost .ProseMirror{visibility:hidden;}
   /* 에디터 내부 리스트/제목/인용/코드 스타일 — Tailwind preflight override */
   .editor-area ul{list-style:disc outside;padding-left:1.6em;margin:0.5em 0;}
   .editor-area ol{list-style:decimal outside;padding-left:1.6em;margin:0.5em 0;}
@@ -1057,7 +1087,8 @@
           </div>
         </div>
         <div class="editor-area" id="editor" contenteditable="true" data-ph="여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다."></div>
-        <iframe id="muhaEditor" title="Muha Editor" src="about:blank" loading="lazy"></iframe>
+        <!-- Muha Editor (Tiptap v3) 마운트 지점 — extra variant 한정 노출 -->
+        <div id="muhaHost"><div id="root"></div></div>
       </div>
       <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
       <div class="doc-actions">
@@ -4156,13 +4187,10 @@ function newWrite(variant){
   const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
-  // extra 변형 — 실제 muha-editor(Tiptap v3) iframe 지연 로드 (한 번만)
+  // extra 변형 — muha-editor 는 페이지 로드 시 이미 마운트됨. 재검사 후 재진입 시 clear.
   if(variant === 'extra'){
-    const mf = document.getElementById('muhaEditor');
-    if(mf && !mf.dataset.loaded){
-      mf.src = './muha-editor/index.html';
-      mf.dataset.loaded = '1';
-    }
+    const pm = document.querySelector('#muhaHost .ProseMirror');
+    try { pm && pm.editor && pm.editor.commands.clearContent(true); } catch(e){}
   }
   // 상단 통계 카운터를 즉시 0 으로 갱신 (이전 세션 잔존값 제거)
   if(typeof updateStats === 'function') updateStats();
