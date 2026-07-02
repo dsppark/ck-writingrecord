@@ -483,6 +483,9 @@
   body[data-write-variant="extra"] [data-quote-item]{display:none !important;}
   body[data-write-variant="extra"] .origin-filter[data-cat="quote-paste"]{display:none !important;}
   body[data-write-variant="extra"] #replayLegendQuote{display:none !important;}
+  /* extra variant — 문서 성장 증거 그룹 · 산정 기준 growth 슬라이더 hide */
+  body[data-write-variant="extra"] .bd-group[data-group="growth"]{display:none !important;}
+  body[data-write-variant="extra"] .w-row[data-key="growth"]{display:none !important;}
   /* 외부 유입 로그 — 원본 보존율 컬럼은 extra variant에서 숨김 (잔존 텍스트로 대체) */
   body[data-write-variant="extra"] th.col-origret{display:none;}
   body[data-write-variant="extra"] td.col-origret{display:none;}
@@ -1240,8 +1243,8 @@
           </div>
         </div>
 
-        <!-- 그룹 3: 문서 성장 (신규) -->
-        <div class="bd-group">
+        <!-- 그룹 3: 문서 성장 (신규) — extra variant 에서는 hide -->
+        <div class="bd-group" data-group="growth">
           <div class="bd-group-head" data-orig-label="📈 문서 성장" data-extra-label="📈 문서 성장 증거">📈 문서 성장</div>
           <div class="bd-grid">
             <div>
@@ -3352,7 +3355,10 @@ try{ const saved=localStorage.getItem('ksv_weights'); if(saved) weights = {...DE
 let lastScoreInputs = null;
 
 function normalizeWeights(w){
-  const total = (w.typing||0)+(w.rewrite||0)+(w.depth||0)+(w.nav||0)+(w.idle||0)+(w.growth||0);
+  // extra variant: 문서 성장 증거 그룹 미제공 → growth 가중치는 0 으로 강제 후 나머지 5개로 재정규화
+  const isExtra = document.body.dataset.writeVariant === 'extra';
+  const growthW = isExtra ? 0 : (w.growth||0);
+  const total = (w.typing||0)+(w.rewrite||0)+(w.depth||0)+(w.nav||0)+(w.idle||0)+growthW;
   if(total===0) return {...DEFAULT_WEIGHTS};
   return {
     typing: (w.typing||0)*100/total,
@@ -3360,7 +3366,7 @@ function normalizeWeights(w){
     depth:  (w.depth||0)*100/total,
     nav:    (w.nav||0)*100/total,
     idle:   (w.idle||0)*100/total,
-    growth: (w.growth||0)*100/total,
+    growth: growthW*100/total,
   };
 }
 function computeScoreFromInputs(inp, w){
