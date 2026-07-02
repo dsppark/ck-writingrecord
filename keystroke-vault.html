@@ -836,12 +836,12 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 7.5l-9 9-5.5-5.5"/><path d="M9 3h6v4H9z"/></svg>
       <span>카피킬러 eXtension</span>
     </div>
-    <div class="lnb-item is-active" data-menu="write" onclick="newWrite()">
+    <div class="lnb-item is-active" data-menu="write-extra" onclick="newWrite('extra')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <span>문서 작성</span>
       <span class="lnb-chevron">›</span>
     </div>
-    <div class="lnb-sub" data-menu="write-extra" onclick="newWrite('extra')">에디터 추가 버전</div>
+    <div class="lnb-sub" data-menu="write-legacy" onclick="newWrite()">초기 기획안</div>
     <div class="lnb-item">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H3z"/><path d="M7 12h2M11 12h6"/></svg>
       <span>이용권 관리</span>
@@ -4037,13 +4037,13 @@ function newWrite(variant){
   selectedType = null;
   const t = document.getElementById('docTitle'); if(t) t.value = '';
   if(typeof renderEditor === 'function') renderEditor();
-  // variant 분기 — LNB '에디터 추가 버전' 진입 시 페이지 헤더 라벨 분기
+  // variant 분기 — 상위 '문서 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
   document.body.dataset.writeVariant = variant || '';
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
-  if(ph) ph.textContent = (variant === 'extra') ? '문서 작성 · 에디터 추가 버전' : '문서 작성';
-  // LNB 활성 메뉴 토글 — 일반 ↔ 에디터 추가 버전
-  document.querySelectorAll('#lnb [data-menu="write"], #lnb [data-menu="write-extra"]').forEach(el=>el.classList.remove('is-active'));
-  const activeKey = variant === 'extra' ? 'write-extra' : 'write';
+  if(ph) ph.textContent = (variant === 'extra') ? '문서 작성' : '문서 작성 · 초기 기획안';
+  // LNB 활성 메뉴 토글 — extra=상위, legacy=하위
+  document.querySelectorAll('#lnb [data-menu="write-extra"], #lnb [data-menu="write-legacy"]').forEach(el=>el.classList.remove('is-active'));
+  const activeKey = variant === 'extra' ? 'write-extra' : 'write-legacy';
   const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
