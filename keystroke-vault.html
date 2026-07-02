@@ -4177,12 +4177,22 @@ function _bindMuhaEvents(){
   // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
   let _syncScheduled = false;
   let _syncTimer = null;
+  const _readText = () => (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
   const _scheduleSync = () => {
     // debounce: 마지막 입력 이후 400ms 조용해지면 한 번에 sync
     if(_syncTimer) clearTimeout(_syncTimer);
     _syncTimer = setTimeout(() => {
       _syncTimer = null;
-      const text = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+      const text = _readText();
+      // 편집 중 tiptap 이 잠깐 DOM 을 비웠다가 다시 채우는 순간이 있음.
+      // 이전 model 은 있는데 이번 read 가 empty 면 flash 로 간주 — 250ms 뒤 재확인.
+      if(text.length === 0 && model.length > 0){
+        setTimeout(() => {
+          const t2 = _readText();
+          if(t2.length === 0) _syncMuhaModel(t2); // 진짜 다 지운 경우만 반영
+        }, 250);
+        return;
+      }
       _syncMuhaModel(text);
     }, 400);
   };
