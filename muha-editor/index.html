@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>editor-standalone — Tiptap v3 엔진 데모</title>
+    <script type="module" crossorigin src="./assets/v3-BqsdM_sV.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/v3-C-Y1L5XF.css">
+    <style>
+      html, body { margin:0; padding:0; background:#fff; height:100%; }
+      body { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // parent(keystroke-vault) 에 마운트 완료를 알림
+      (function(){
+        function notifyReady(){
+          try {
+            window.parent && window.parent.postMessage({type:'muha-editor:ready'}, '*');
+          } catch(e){}
+        }
+        const check = () => {
+          const content = document.querySelector('.body-editor-content, .ProseMirror, [contenteditable="true"]');
+          if(content){ notifyReady(); return true; }
+          return false;
+        };
+        if(!check()){
+          const mo = new MutationObserver(() => { if(check()) mo.disconnect(); });
+          mo.observe(document.body, {childList:true, subtree:true});
+          setTimeout(() => mo.disconnect(), 5000);
+        }
+      })();
+    </script>
+  </body>
+</html>
