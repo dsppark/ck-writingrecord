@@ -6,6 +6,8 @@
 <title>카피킬러 문서작성v2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<!-- muha-editor (Tiptap v3 기반 vanilla mount, extra variant 에서 Froala-style 툴바 대체) -->
+<link rel="stylesheet" href="https://muhayu.github.io/muha-editor/vanilla/editor.css" />
 <style>
   :root{
     /* ===== ck-ui foundation tokens (subset) ===== */
@@ -280,7 +282,12 @@
 
   /* ============ Froala-style 에디터 툴바 (data-write-variant='extra') ============ */
   .ft-toolbar{display:none;flex-direction:column;gap:6px;padding:8px 12px;background:#FAFBFC;border-bottom:1px solid var(--ck-secondary-200);}
-  body[data-write-variant="extra"] .ft-toolbar{display:flex;}
+  /* muha-editor 통합 이후 Froala 툴바는 항상 hide, editor-area 도 hide */
+  body[data-write-variant="extra"] .ft-toolbar{display:none;}
+  body[data-write-variant="extra"] .editor-area{display:none !important;}
+  /* muha-editor 마운트 컨테이너 */
+  #muhaMount{display:none;min-height:420px;padding:0;background:#fff;border-radius:10px;}
+  body[data-write-variant="extra"] #muhaMount{display:block;}
   /* editor-toolbar 는 유지하되(작성 기록중 배지 노출), 데모 버튼만 숨김 */
   body[data-write-variant="extra"] .editor-toolbar .tool-btn{display:none;}
   body[data-write-variant="extra"] .editor-toolbar{justify-content:flex-end;background:transparent;border-bottom:none;padding:6px 12px 0;}
@@ -1028,6 +1035,8 @@
           </div>
         </div>
         <div class="editor-area" id="editor" contenteditable="true" data-ph="여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다."></div>
+        <!-- extra variant 전용: muha-editor UMD 마운트 컨테이너 (Froala-style 툴바+에디터 대체) -->
+        <div id="muhaMount"></div>
       </div>
       <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
       <div class="doc-actions">
@@ -4107,6 +4116,79 @@ function boxSaveCurrentDoc(){
 }
 
 // 새 문서 작성 진입 — 세션 초기화
+/* =============================================================
+   muha-editor (Tiptap v3 기반 vanilla UMD) 통합
+   - extra variant 진입 시 mount, onChange 로 model 동기화
+   ============================================================= */
+let muhaHandle = null;
+
+function _muhaBodyToText(body){
+  // Tiptap doc JSON → 순수 텍스트 (개행 포함)
+  if(!body) return '';
+  if(typeof body === 'string') return body;
+  const out = [];
+  function walk(n){
+    if(!n) return;
+    if(typeof n.text === 'string') out.push(n.text);
+    if(Array.isArray(n.content)) n.content.forEach(walk);
+    // 블록 노드 끝에서 개행 추가 (paragraph/heading/list-item 등)
+    const blockTypes = {paragraph:1, heading:1, listItem:1, blockquote:1, codeBlock:1, horizontalRule:1};
+    if(n.type && blockTypes[n.type]) out.push('\n');
+  }
+  walk(body);
+  return out.join('').replace(/\n+$/,'').replace(/\n\n+/g,'\n');
+}
+
+function _syncMuhaModel(text){
+  if(document.body.dataset.writeVariant !== 'extra') return;
+  const prevLen = model.length;
+  const nowText = text || '';
+  const modelText = model.map(m=>m.ch).join('');
+  if(nowText === modelText){ updateStats(); return; }
+  const ts = Date.now();
+  if(!stats.firstTs) stats.firstTs = ts;
+  stats.lastTs = ts;
+  // 프로토타이핑 편의: 전체를 typing source 로 재구성 (paste/AI 흐름은 muha 내부에서 별도 감지 필요, 이번 스코프 밖)
+  model.length = 0;
+  for(const ch of nowText){
+    model.push({ch, source:'typing', ts});
+  }
+  // keystrokes 근사치: 텍스트 길이 증가분만큼 카운트
+  if(nowText.length > prevLen) stats.keystrokes += (nowText.length - prevLen);
+  updateStats();
+  // '작성 기록중' 배지 노출
+  if(typeof showRec === 'function' && nowText.length > 0) showRec();
+}
+
+function ensureMuhaEditor(){
+  if(muhaHandle) return muhaHandle;
+  if(!window.MuhayuEditorFull || typeof window.MuhayuEditorFull.mount !== 'function') return null;
+  const mountEl = document.getElementById('muhaMount');
+  if(!mountEl) return null;
+  const storage = {
+    loadSnapshot: () => Promise.resolve({body:null, revision:0}),
+    appendOp:     () => Promise.resolve({revision:1}),
+    compactSnapshot: () => Promise.resolve(),
+  };
+  try{
+    muhaHandle = window.MuhayuEditorFull.mount(mountEl, {
+      documentId: 'ksv-extra-doc',
+      storage,
+      placeholder: '여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다.',
+      onChange: function(body){
+        try {
+          const text = _muhaBodyToText(body);
+          _syncMuhaModel(text);
+        } catch(e){ console.warn('muha onChange sync fail', e); }
+      },
+    });
+  }catch(e){
+    console.warn('muha mount fail', e);
+    muhaHandle = null;
+  }
+  return muhaHandle;
+}
+
 function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
@@ -4126,6 +4208,10 @@ function newWrite(variant){
   const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
+  // extra 변형이면 muha-editor 마운트 (script 로드 완료 후)
+  if(variant === 'extra' && typeof ensureMuhaEditor === 'function'){
+    try { ensureMuhaEditor(); } catch(e){ console.warn('muha ensure fail', e); }
+  }
   // 상단 통계 카운터를 즉시 0 으로 갱신 (이전 세션 잔존값 제거)
   if(typeof updateStats === 'function') updateStats();
   // 작성 기록중 배지 초기화 — 첫 입력 시 다시 showRec()
@@ -6044,6 +6130,21 @@ function seedDemo(){
   }catch(e){}
 })();
 
+</script>
+<!-- muha-editor UMD 로드 후, extra variant 에디터가 mount 대기 상태이면 마운트 -->
+<script src="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js"></script>
+<script>
+(function(){
+  function tryMount(){
+    if(!window.MuhayuEditorFull || typeof window.MuhayuEditorFull.mount !== 'function') return;
+    if(typeof ensureMuhaEditor === 'function') ensureMuhaEditor();
+  }
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    setTimeout(tryMount, 40);
+  } else {
+    window.addEventListener('load', ()=>setTimeout(tryMount, 40));
+  }
+})();
 </script>
 </body>
 </html>
