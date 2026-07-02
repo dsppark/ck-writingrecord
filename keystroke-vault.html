@@ -6023,6 +6023,21 @@ function seedDemo(){
   }catch(e){}
 })();
 
+/* 초기 진입 — LNB '문서 작성'(상위, extra) 이 기본 활성 상태이므로
+   실제 흐름도 extra variant 로 자동 세팅 (rs=1 companion / demo 진입은 예외) */
+(function autoInitVariant(){
+  try{
+    const params = new URLSearchParams(location.search);
+    if(params.get('rs') === '1') return;         // 참고 팝업 창
+    if(params.get('demo')) return;                // 데모 자동 시드가 처리
+    setTimeout(()=>{
+      // 이미 다른 view 로 진입한 경우(예: 문서함) 는 건드리지 않음
+      if(document.body.dataset.view && document.body.dataset.view !== 'write') return;
+      if(typeof newWrite === 'function') newWrite('extra');
+    }, 60);
+  }catch(e){}
+})();
+
 </script>
 </body>
 </html>
