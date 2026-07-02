@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>카피킬러 문서작성v2</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
     /* ===== ck-ui foundation tokens (subset) ===== */
@@ -279,7 +279,8 @@
   .box-meta-sep{color:var(--ck-gray-300);margin:0 4px;}
 
   /* ============ Froala-style 에디터 툴바 (data-write-variant='extra') ============ */
-  .ft-toolbar{display:none;flex-direction:column;gap:6px;padding:8px 12px;background:#FAFBFC;border-bottom:1px solid var(--ck-secondary-200);}
+  /* Muha Editor(Tiptap v3) 스타일 이식 — 툴바 컨테이너 */
+  .ft-toolbar{display:none;flex-direction:column;gap:4px;padding:10px 14px;background:#fff;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;}
   body[data-write-variant="extra"] .ft-toolbar{display:flex;}
   /* editor-toolbar 는 유지하되(작성 기록중 배지 노출), 데모 버튼만 숨김 */
   body[data-write-variant="extra"] .editor-toolbar .tool-btn{display:none;}
@@ -517,12 +518,20 @@
   body[data-write-variant="extra"] th.col-origret{display:none;}
   body[data-write-variant="extra"] td.col-origret{display:none;}
   .ft-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
-  .ft-sep{width:1px;height:18px;background:var(--ck-secondary-200);margin:0 4px;}
-  .ft-btn{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 6px;border:1px solid transparent;background:transparent;color:var(--ck-gray-800);font-size:13px;font-weight:600;border-radius:5px;cursor:pointer;transition:background .12s,border-color .12s;position:relative;}
-  .ft-btn:hover{background:#fff;border-color:var(--ck-secondary-300);}
-  .ft-btn:active{background:var(--ck-primary-50);}
+  /* Muha Editor 스타일 이식 — 툴바 요소 (extra 한정, 기존 기능 로직은 그대로) */
+  .ft-sep{width:1px;height:20px;background:#E5E7EB;margin:0 4px;}
+  .ft-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1px solid #E5E7EB;background:#fff;color:#18181B;font-size:15px;font-weight:600;border-radius:8px;cursor:pointer;transition:background .12s,border-color .12s,color .12s;position:relative;}
+  .ft-btn:hover{background:#F9FAFB;border-color:#D1D5DB;}
+  .ft-btn:active,.ft-btn.is-active{background:#E4E4E7;}
   .ft-btn b,.ft-btn i,.ft-btn u,.ft-btn s{font-size:14px;}
-  .ft-select{height:28px;padding:0 8px;border:1px solid var(--ck-secondary-300);background:#fff;color:var(--ck-gray-800);font-size:12px;border-radius:5px;cursor:pointer;font-family:inherit;}
+  .ft-select{height:32px;padding:0 10px;border:1px solid #E5E7EB;background:#fff;color:#18181B;font-size:12.5px;font-weight:600;border-radius:8px;cursor:pointer;font-family:inherit;min-width:80px;}
+  .ft-select:hover{background:#F9FAFB;border-color:#D1D5DB;}
+  /* 색상 picker (color input) */
+  .ft-color{width:32px;height:32px;border:1px solid #E5E7EB;border-radius:8px;padding:2px;background:#fff;cursor:pointer;}
+  /* 툴바 안 row gap 조정 */
+  body[data-write-variant="extra"] .ft-row{gap:5px;}
+  /* Muha 본문 톤 — extra 한정 */
+  body[data-write-variant="extra"] .editor-area{font-family:'Noto Sans KR','Pretendard',system-ui,sans-serif;font-size:16px;line-height:1.75;color:#1F2329;padding:32px 44px;background:#fff;}
   .ft-color{width:28px;height:28px;padding:1px;border:1px solid var(--ck-secondary-300);border-radius:5px;background:#fff;cursor:pointer;}
   /* 표 picker */
   .ft-table-btn{position:relative;}
