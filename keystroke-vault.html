@@ -288,6 +288,8 @@
   /* muha-editor 마운트 컨테이너 */
   #muhaMount{display:none;min-height:420px;padding:0;background:#fff;border-radius:10px;}
   body[data-write-variant="extra"] #muhaMount{display:block;}
+  /* muha 자체 헤더(제목·부제) 숨김 — 카피킬러 페이지 헤더로 이미 표기 */
+  #muhaMount .muhayu-full-editor__header{display:none !important;}
   /* editor-toolbar 는 유지하되(작성 기록중 배지 노출), 데모 버튼만 숨김 */
   body[data-write-variant="extra"] .editor-toolbar .tool-btn{display:none;}
   body[data-write-variant="extra"] .editor-toolbar{justify-content:flex-end;background:transparent;border-bottom:none;padding:6px 12px 0;}
@@ -4165,6 +4167,12 @@ function ensureMuhaEditor(){
   if(!window.MuhayuEditorFull || typeof window.MuhayuEditorFull.mount !== 'function') return null;
   const mountEl = document.getElementById('muhaMount');
   if(!mountEl) return null;
+  // muha 안 클릭·포커스 시 '작성 기록중' 배지 노출
+  if(!mountEl.dataset.recBound){
+    mountEl.dataset.recBound = '1';
+    mountEl.addEventListener('focusin', () => { if(typeof showRec === 'function') showRec(); });
+    mountEl.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
+  }
   const storage = {
     loadSnapshot: () => Promise.resolve({body:null, revision:0}),
     appendOp:     () => Promise.resolve({revision:1}),
