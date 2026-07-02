@@ -4176,16 +4176,15 @@ function _bindMuhaEvents(){
   });
   // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
   let _syncScheduled = false;
+  let _syncTimer = null;
   const _scheduleSync = () => {
-    window.__scFire = (window.__scFire||0) + 1;
-    if(_syncScheduled) return;
-    _syncScheduled = true;
-    setTimeout(() => {
-      _syncScheduled = false;
+    // debounce: 마지막 입력 이후 400ms 조용해지면 한 번에 sync
+    if(_syncTimer) clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(() => {
+      _syncTimer = null;
       const text = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
-      window.__scText = text;
       _syncMuhaModel(text);
-    }, 32);
+    }, 400);
   };
   el.addEventListener('input', _scheduleSync);
   try {
@@ -4248,12 +4247,8 @@ function _syncMuhaModel(text){
       bsize = addedText.length;
       events.push({ts:_pendingPasteTs || ts, type:'paste', srcFamily:'paste', n:addedText.length, isInsert:true, meta:{blockMark:bm, blockSize:bsize, text:addedText}});
       _pendingPasteText = null; _pendingPasteTs = 0;
-    } else if(addedText.length >= 15 && !_pendingPasteText){
-      src = 'paste';
-      bm = ++blockSeq;
-      bsize = addedText.length;
-      events.push({ts, type:'paste', srcFamily:'paste', n:addedText.length, isInsert:true, meta:{blockMark:bm, blockSize:bsize, text:addedText}});
     }
+    // (자동 15자+ paste 승격은 debounce 로 여러 글자가 묶여도 typing 유지되도록 제거)
 
     // paste/ai 블록 안 타이핑 → -internal 승격 (기존 reconcile 룰 재현)
     const leftSrc  = s > 0 ? model[s-1]?.source : null;
