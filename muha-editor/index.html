@@ -9,27 +9,32 @@
     <style>
       html, body { margin:0; padding:0; background:#fff; height:100%; }
       body { min-height: 100vh; }
+      /* 마운트 완료 전 시드 텍스트가 잠깐 보이는 것을 방지 — clear 후에만 표시 */
+      body:not([data-cleared="1"]) .ProseMirror{visibility:hidden;}
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script>
-      // parent(keystroke-vault) 에 마운트 완료를 알림
       (function(){
         function notifyReady(){
-          try {
-            window.parent && window.parent.postMessage({type:'muha-editor:ready'}, '*');
-          } catch(e){}
+          try { window.parent && window.parent.postMessage({type:'muha-editor:ready'}, '*'); } catch(e){}
         }
-        const check = () => {
-          const content = document.querySelector('.body-editor-content, .ProseMirror, [contenteditable="true"]');
-          if(content){ notifyReady(); return true; }
-          return false;
-        };
-        if(!check()){
-          const mo = new MutationObserver(() => { if(check()) mo.disconnect(); });
+        function clearSeed(){
+          const pm = document.querySelector('.ProseMirror');
+          if(!pm || !pm.editor) return false;
+          try {
+            pm.editor.commands.clearContent(true);
+            document.body.dataset.cleared = '1';
+            notifyReady();
+            return true;
+          } catch(e){ return false; }
+        }
+        // Tiptap SPA 는 root 안에 실제 에디터 DOM 을 mount → MutationObserver 로 대기
+        if(!clearSeed()){
+          const mo = new MutationObserver(() => { if(clearSeed()) mo.disconnect(); });
           mo.observe(document.body, {childList:true, subtree:true});
-          setTimeout(() => mo.disconnect(), 5000);
+          setTimeout(() => { clearSeed(); mo.disconnect(); }, 6000);
         }
       })();
     </script>
