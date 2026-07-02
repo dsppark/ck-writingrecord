@@ -4141,25 +4141,129 @@ function _muhaBodyToText(body){
   return out.join('').replace(/\n+$/,'').replace(/\n\n+/g,'\n');
 }
 
+let _pendingPasteText = null;   // muha paste 이벤트 시 저장, 곧 onChange diff 매칭에 사용
+let _pendingPasteTs   = 0;
+
+function _findMuhaEditable(){
+  const mount = document.getElementById('muhaMount');
+  if(!mount) return null;
+  return mount.querySelector('.ProseMirror') || mount.querySelector('[contenteditable="true"]');
+}
+
+function _bindMuhaEvents(){
+  const el = _findMuhaEditable();
+  if(!el || el.dataset.ksvBound) return;
+  el.dataset.ksvBound = '1';
+  // 키스트로크 카운트 (modifier 단독·복사/붙여넣기 단축키 제외)
+  el.addEventListener('keydown', (e) => {
+    if(sessionFrozen) return;
+    if(['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'].includes(e.key)) return;
+    if((e.ctrlKey || e.metaKey) && ['v','V','c','C','x','X','a','A'].includes(e.key)) return;
+    stats.keystrokes++;
+    if(!stats.firstTs) stats.firstTs = Date.now();
+    stats.lastTs = Date.now();
+  });
+  // paste 감지 — text/plain 캡처. onChange diff 에서 이 텍스트와 매칭되면 paste source.
+  el.addEventListener('paste', (e) => {
+    const t = e.clipboardData?.getData('text/plain') || '';
+    if(t){ _pendingPasteText = t; _pendingPasteTs = Date.now(); }
+  });
+  // 포커스·클릭 시 '작성 기록중' 배지
+  el.addEventListener('focusin', () => { if(typeof showRec === 'function') showRec(); });
+  el.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
+}
+
 function _syncMuhaModel(text){
   if(document.body.dataset.writeVariant !== 'extra') return;
-  const prevLen = model.length;
-  const nowText = text || '';
+  _bindMuhaEvents();
+  const newText = text || '';
   const modelText = model.map(m=>m.ch).join('');
-  if(nowText === modelText){ updateStats(); return; }
+  if(newText === modelText){ updateStats(); return; }
+
+  // 공통 prefix / suffix 매칭 → 변경 구간(s..eOld / s..eNew) 산출
+  let s = 0;
+  const minLen = Math.min(newText.length, modelText.length);
+  while(s < minLen && newText[s] === modelText[s]) s++;
+  let eNew = newText.length, eOld = modelText.length;
+  while(eNew > s && eOld > s && newText[eNew-1] === modelText[eOld-1]){ eNew--; eOld--; }
+
+  const removedLen = eOld - s;
+  const addedText  = newText.slice(s, eNew);
   const ts = Date.now();
   if(!stats.firstTs) stats.firstTs = ts;
   stats.lastTs = ts;
-  // 프로토타이핑 편의: 전체를 typing source 로 재구성 (paste/AI 흐름은 muha 내부에서 별도 감지 필요, 이번 스코프 밖)
-  model.length = 0;
-  for(const ch of nowText){
-    model.push({ch, source:'typing', ts});
+
+  // 편집 op 기록 (삭제가 포함된 오퍼레이션)
+  if(removedLen > 0){
+    const isContent = (removedLen >= 3) || (addedText.length >= 2);
+    editOps.push({deleted:removedLen, inserted:addedText.length, isContent, ts});
   }
-  // keystrokes 근사치: 텍스트 길이 증가분만큼 카운트
-  if(nowText.length > prevLen) stats.keystrokes += (nowText.length - prevLen);
+  // 삭제 처리
+  if(removedLen > 0){
+    const removedChars = model.splice(s, removedLen);
+    stats.deletes += removedLen;
+    const famCount = {typing:0, ai:0, paste:0};
+    removedChars.forEach(m=>{
+      if(m.source==='typing'){ stats.typingDeleted++; famCount.typing++; }
+      else if(m.source==='ai'||m.source==='ai-edited'||m.source==='ai-internal'){ stats.aiDeleted++; famCount.ai++; }
+      else if(m.source==='paste'||m.source==='paste-edited'||m.source==='paste-internal'){ stats.pasteDeleted++; famCount.paste++; }
+    });
+    Object.entries(famCount).forEach(([fam, n]) => {
+      if(n>0) events.push({ts, type:'delete', srcFamily:fam, n, isInsert:false});
+    });
+  }
+  // 삽입 처리
+  if(addedText.length > 0){
+    let src = 'typing';
+    let bm = null, bsize = null;
+    // paste 매칭 (pendingPasteText 와 정확히 일치하거나, 15자+ 대량 삽입)
+    if(_pendingPasteText && addedText.indexOf(_pendingPasteText) !== -1){
+      src = 'paste';
+      bm = ++blockSeq;
+      bsize = addedText.length;
+      events.push({ts:_pendingPasteTs || ts, type:'paste', srcFamily:'paste', n:addedText.length, isInsert:true, meta:{blockMark:bm, blockSize:bsize, text:addedText}});
+      _pendingPasteText = null; _pendingPasteTs = 0;
+    } else if(addedText.length >= 15 && !_pendingPasteText){
+      src = 'paste';
+      bm = ++blockSeq;
+      bsize = addedText.length;
+      events.push({ts, type:'paste', srcFamily:'paste', n:addedText.length, isInsert:true, meta:{blockMark:bm, blockSize:bsize, text:addedText}});
+    }
+
+    // paste/ai 블록 안 타이핑 → -internal 승격 (기존 reconcile 룰 재현)
+    const leftSrc  = s > 0 ? model[s-1]?.source : null;
+    const rightSrc = model[s]?.source;
+    const aiFam    = v => v==='ai'||v==='ai-edited'||v==='ai-internal';
+    const pasteFam = v => v==='paste'||v==='paste-edited'||v==='paste-internal';
+    let promoted = src;
+    let inheritBM = bm, inheritBSize = bsize;
+    if(src === 'typing'){
+      if(aiFam(leftSrc) && aiFam(rightSrc)) promoted = 'ai-internal';
+      else if(pasteFam(leftSrc) && pasteFam(rightSrc)) promoted = 'paste-internal';
+      if(promoted === 'ai-internal' || promoted === 'paste-internal'){
+        const adj = (aiFam(leftSrc)||pasteFam(leftSrc)) ? model[s-1] : model[s];
+        if(adj?.blockMark){ inheritBM = adj.blockMark; inheritBSize = adj.blockSize; }
+      }
+      // 블록 경계 타이핑 → 인접 블록을 edited 로 마킹
+      if((aiFam(leftSrc) ^ aiFam(rightSrc)) || (pasteFam(leftSrc) ^ pasteFam(rightSrc))){
+        if(typeof markEditedAround === 'function') markEditedAround(s);
+      }
+    }
+
+    const ins = [];
+    for(let i=0; i<addedText.length; i++){
+      const item = {ch: addedText[i], source: promoted, ts: ts + i*0.5};
+      if(inheritBM){ item.blockMark = inheritBM; item.blockSize = inheritBSize; }
+      ins.push(item);
+    }
+    model.splice(s, 0, ...ins);
+    if(src === 'typing' && (promoted === 'typing' || promoted === 'ai-internal' || promoted === 'paste-internal')){
+      events.push({ts, type:'typing', srcFamily:'typing', n:addedText.length, isInsert:true});
+    }
+  }
+
   updateStats();
-  // '작성 기록중' 배지 노출
-  if(typeof showRec === 'function' && nowText.length > 0) showRec();
+  if(typeof showRec === 'function' && newText.length > 0) showRec();
 }
 
 function ensureMuhaEditor(){
