@@ -677,7 +677,7 @@
   #write-pageheader .write-demobtn{font-size:12px;font-weight:600;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:8px;padding:7px 12px;cursor:pointer;}
   #write-pageheader .write-demobtn:hover{background:var(--ck-primary-50);}
   /* editor-grid: 흰 배경 + height 자동 */
-  body[data-view="write"] .editor-grid{background:#fff;max-width:none;height:auto;min-height:calc(100vh - 200px);padding:0 40px 20px;}
+  body[data-view="write"] .editor-grid{background:#fff;max-width:none;padding:0 40px 0;flex:1 1 auto;min-height:0;height:auto;overflow:hidden;}
   body[data-view="write"] .ed-panel{border:1px solid var(--ck-secondary-300);}
   /* 액션 바 LNB 우측 전체 너비 fixed bottom */
   body[data-view="write"] .doc-actions{
@@ -697,7 +697,22 @@
   body[data-view="report"] #lnb{display:flex;}
   #lnb{display:none;position:fixed;left:0;top:0;bottom:0;width:240px;background:#fff;border-right:1px solid var(--ck-secondary-200);z-index:60;flex-direction:column;font-size:14px;color:var(--ck-gray-700);}
   body[data-view="write"] #header-write{left:240px;}
-  body[data-view="write"] #view-write{padding-left:240px;}
+  body[data-view="write"]{overflow:hidden !important;height:100vh;}
+  html:has(body[data-view="write"]){overflow:hidden;height:100vh;}
+  body[data-view="write"] #view-write{padding-left:240px;display:flex;flex-direction:column;height:100vh;overflow:hidden;padding-bottom:72px;}
+  body[data-view="write"] #write-pageheader{flex-shrink:0;}
+  body[data-view="write"] #reinspectBanner{flex-shrink:0;}
+  /* doc-panel 은 자기 안에서 스크롤 안 함 — muhaMount 안으로 위임 */
+  body[data-view="write"] .doc-panel{overflow:hidden !important;min-height:0;}
+  body[data-view="write"] .type-panel{min-height:0;}
+  body[data-view="write"] .chat-msgs{min-height:0;}
+  /* editor-shell 은 자식을 밖으로 못 밀어냄 */
+  body[data-view="write"] .editor-shell{flex:1 1 0%;min-height:0 !important;overflow:hidden !important;}
+  /* muhaMount 가 editor-shell 안에서 남은 공간 채우고 자기 안에서 스크롤 */
+  body[data-view="write"] #muhaMount{flex:1 1 0% !important;min-height:0 !important;height:auto !important;overflow-y:auto !important;}
+  body[data-view="write"] #muhaMount .full-body-editor-shell{min-height:0 !important;height:auto !important;}
+  body[data-view="write"] #muhaMount .body-editor-stage{min-height:0 !important;}
+  body[data-view="write"] #muhaMount .ProseMirror{min-height:0 !important;}
   /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
   body[data-view="report"] #view-report{padding-left:240px;}
   body[data-view="report"] .report-actions{left:240px;}
