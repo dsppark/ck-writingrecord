@@ -4162,7 +4162,8 @@ function _computeTallyFromMuha(){
   for(let i = 0; i < N; i++){
     const isNL = raw[i] === '\n';
     if(!isNL) totalNoBreak++;
-    if(isNL) continue;
+    // 개행도 1자로 카운트 (사용자 요청: 공백/개행 모두 1자). 문단 사이 이중
+    // 개행은 위 normalize 에서 이미 하나로 압축돼 있음.
     if(src[i] === 'ai') ai++;
     else if(src[i] === 'paste') paste++;
     else if(inRange[i]) revised++;
