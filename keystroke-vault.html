@@ -4323,11 +4323,15 @@ function _bindMuhaEvents(){
     if(['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'].includes(e.key)) return;
     if((e.ctrlKey || e.metaKey) && ['v','V','c','C','x','X','a','A'].includes(e.key)) return;
     stats.keystrokes++;
-    if(!stats.firstTs) stats.firstTs = Date.now();
-    stats.lastTs = Date.now();
+    const _nowTs = Date.now();
+    if(!stats.firstTs) stats.firstTs = _nowTs;
+    stats.lastTs = _nowTs;
     // 편집키(Backspace/Delete/화살표) 는 typing 카운트에 넣지 않음
     const editKey = e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow');
     if(!editKey){
+      // 실 사용자 keystroke 이벤트 기록 — 최장 무중단 타이핑 계산에 사용
+      // (diff 기반 typing 이벤트는 n 이 커질 수 있어 부풀림 방지)
+      events.push({ts:_nowTs, type:'keystroke', srcFamily:'typing', n:1, isInsert:true});
       // caret 위치가 AI/paste 블록의 텍스트 안이면 revised, 아니면 typing
       if(_caretInsideExternalBlock()) _tally.revised++;
       else _tally.typing++;
@@ -5712,17 +5716,22 @@ async function buildReportFromSession(){
   const editsCount = editOps.length + externalIns;
   // 4. 총 삭제 횟수 — delete events 수 (한 번의 액션 = 1)
   const deletesCount = events.filter(e=>e.type==='delete').length;
-  // 5. 최장 무중단 타이핑 — typing events 중 2초 이내 연속 run 의 최장
+  // 5. 최장 무중단 타이핑 — 실 keydown 시퀀스(type:'keystroke') 기준으로 2초 이내
+  //    연속 run 의 최장. 각 keystroke 는 사용자가 물리적으로 누른 키 1회에 대응하며
+  //    n=1 로 저장돼 있어 부풀림 없음. legacy 세션(keystroke 이벤트 없음)의 경우
+  //    typing 이벤트 fallback 을 사용하되 n 대신 1 로 취급.
   const RUN_THRESH = 2000;
+  const ksEv = events.filter(e=>e.type==='keystroke').sort((a,b)=>a.ts-b.ts);
+  const runSrc = ksEv.length > 0 ? ksEv : tEv.map(e => ({ts:e.ts}));
   let longest = {chars:0, durMs:0};
   let curChars=0, curStart=0, curEnd=0;
-  for(let i=0;i<tEv.length;i++){
-    const e = tEv[i], prev = tEv[i-1];
+  for(let i=0;i<runSrc.length;i++){
+    const e = runSrc[i], prev = runSrc[i-1];
     if(!prev || (e.ts - prev.ts) > RUN_THRESH){
       if(curChars>longest.chars) longest = {chars:curChars, durMs:curEnd-curStart};
-      curChars = e.n; curStart = e.ts; curEnd = e.ts;
+      curChars = 1; curStart = e.ts; curEnd = e.ts;
     } else {
-      curChars += e.n; curEnd = e.ts;
+      curChars += 1; curEnd = e.ts;
     }
   }
   if(curChars>longest.chars) longest = {chars:curChars, durMs:curEnd-curStart};
