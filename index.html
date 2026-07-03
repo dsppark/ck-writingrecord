@@ -4093,44 +4093,24 @@ function counts(){
 const _tally = {typing:0, ai:0, paste:0, revised:0};
 function _tallyReset(){ _tally.typing=0; _tally.ai=0; _tally.paste=0; _tally.revised=0; }
 
-// muha innerText 기반 실시간 tally 계산 — keystroke 이 아닌 실제 남아있는 글자 수 기준
-// (IME 조합 keydown 이나 삭제된 텍스트에 의한 counter 부풀림 방지)
+// UI 카운터 실시간 계산.
+//  · ai / paste = _tally 유지 (이벤트 기반 — 삽입 +len, 원본 편집키로 삭제 시 -1)
+//    → AI/paste 텍스트가 일부만 편집돼도 잔여 글자수 정확 반영. innerText 완전일치
+//     매칭에 의존하지 않아 '일부 수정 시 AI=0' 문제 없음.
+//  · revised = _tally 유지 (AI/paste 블록 내 사용자 편집 keystroke 누적)
+//  · typing = muha innerText 실 글자수(공백/개행 포함) - ai - paste - revised
+//    → 실제 남아있는 글자 기준. IME 조합 keydown 부풀림·편집키 잔존 무시.
 function _computeTallyFromMuha(){
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   if(!el) return null;
   const raw = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
   const N = raw.length;
-  if(N === 0) return {typing:0, ai:0, paste:0, totalNoBreak:0};
-  const src = new Array(N).fill('typing');
-  const externals = (events||[])
-    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
-    .sort((a,b) => (a.ts||0) - (b.ts||0));
-  const usedRanges = [];
-  const overlap = (a, b) => !(a[1] <= b[0] || b[1] <= a[0]);
-  for(const e of externals){
-    const t = (e.meta && e.meta.text) ? e.meta.text : '';
-    if(!t) continue;
-    let searchFrom = 0;
-    while(searchFrom <= N){
-      const idx = raw.indexOf(t, searchFrom);
-      if(idx === -1) break;
-      const r = [idx, idx + t.length];
-      if(!usedRanges.some(u => overlap(u, r))){
-        for(let i = r[0]; i < r[1]; i++) src[i] = e.type;
-        usedRanges.push(r);
-        break;
-      }
-      searchFrom = idx + 1;
-    }
-  }
-  let typing = 0, ai = 0, paste = 0, totalNoBreak = 0;
-  for(let i = 0; i < N; i++){
-    if(raw[i] !== '\n') totalNoBreak++;
-    if(src[i] === 'ai') ai++;
-    else if(src[i] === 'paste') paste++;
-    else typing++;
-  }
-  return {typing, ai, paste, totalNoBreak};
+  const totalNoBreak = raw.replace(/\n/g, '').length;
+  const ai      = Math.max(0, (_tally.ai|0));
+  const paste   = Math.max(0, (_tally.paste|0));
+  const revised = Math.max(0, (_tally.revised|0));
+  const typing  = Math.max(0, N - ai - paste - revised);
+  return {typing, ai, paste, revised, totalNoBreak};
 }
 
 function updateStats(){
@@ -4143,7 +4123,7 @@ function updateStats(){
       document.getElementById('stWrite').textContent   = t.typing;
       document.getElementById('stAi').textContent      = t.ai;
       document.getElementById('stPaste').textContent   = t.paste;
-      document.getElementById('stRevised').textContent = _tally.revised;
+      document.getElementById('stRevised').textContent = t.revised;
       extraTotalNoBreak = t.totalNoBreak;
     } else {
       document.getElementById('stWrite').textContent   = 0;
