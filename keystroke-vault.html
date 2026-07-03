@@ -5411,12 +5411,12 @@ function applyQuoteLabel(){
  * 매칭 안 되는(=삭제된) 텍스트는 무시. 나머지 글자는 모두 typing.
  */
 function _rebuildModelFromMuha(){
-  // 결과지 진입 직전 model 을 muha innerText 기반으로 재구성.
-  // _computeTallyFromMuha 와 동일한 substring halving + paste 우선 매칭을 사용해
-  // 상단 breakdown 지표와 하단 텍스트 유입 세그먼트가 완전히 일치하도록.
-  //   · 매칭된 위치 → 'ai' | 'paste'
-  //   · 이벤트 range 안 미매칭 위치 → 'ai-internal' | 'paste-internal' (편집 흔적)
-  //   · 그 외 → 'typing'
+  // 결과지 진입 직전 model 재구성. 각 AI/paste 이벤트의 원본 텍스트를
+  // innerText 안에서 가장 긴 연속 공통 substring (LCS) 로 매칭한다.
+  //   · halving 은 짧은 fragment 가 새 문단으로 튀어 사용자 typing 을
+  //     AI/paste 로 흡수하는 문제가 있어 LCS 로 대체.
+  //   · 매칭된 위치 → 'ai'/'paste', range 안 미매칭 → 'ai-internal'/
+  //     'paste-internal' (편집 흔적), 그 외 → 'typing'.
   if(document.body.dataset.writeVariant !== 'extra') return;
   const el = _findMuhaEditable();
   if(!el) return;
@@ -5435,45 +5435,41 @@ function _rebuildModelFromMuha(){
       return (a.ts||0) - (b.ts||0);
     });
   const rangesByType = { ai: [], paste: [] };
-  const MIN_CHUNK = 3;
-  function halvingMatch(T, type, bm, bs){
-    const stack = [T];
-    let minFirst = -1, maxLast = -1;
-    while(stack.length){
-      const sub = stack.pop();
-      if(!sub || sub.length < MIN_CHUNK) continue;
-      let pos = 0, found = -1;
-      while(pos <= N - sub.length){
-        const idx = raw.indexOf(sub, pos);
-        if(idx === -1) break;
-        let ok = true;
-        for(let k = idx; k < idx + sub.length; k++){
-          if(used[k]){ ok = false; break; }
+  const MIN_LCS = 4;
+  function findLCS(T){
+    // T 와 raw 의 가장 긴 공통 substring (raw 안 used 아닌 위치) 찾기.
+    // O(M*N) DP, row-wise 메모리 O(N).
+    const M = T.length;
+    if(M < MIN_LCS) return null;
+    let prev = new Array(N + 1).fill(0);
+    let cur  = new Array(N + 1).fill(0);
+    let maxLen = 0, iEndBest = 0;
+    for(let i = 1; i <= M; i++){
+      for(let j = 1; j <= N; j++){
+        if(!used[j-1] && T[i-1] === raw[j-1]){
+          cur[j] = prev[j-1] + 1;
+          if(cur[j] > maxLen){ maxLen = cur[j]; iEndBest = j; }
+        } else {
+          cur[j] = 0;
         }
-        if(ok){ found = idx; break; }
-        pos = idx + 1;
       }
-      if(found !== -1){
-        for(let k = found; k < found + sub.length; k++){
-          used[k] = true; src[k] = type; bmArr[k] = bm; bsArr[k] = bs;
-        }
-        if(minFirst === -1 || found < minFirst) minFirst = found;
-        if(found + sub.length - 1 > maxLast) maxLast = found + sub.length - 1;
-      } else {
-        const mid = sub.length >> 1;
-        stack.push(sub.slice(0, mid));
-        stack.push(sub.slice(mid));
-      }
+      const tmp = prev; prev = cur; cur = tmp;
+      for(let k = 0; k <= N; k++) cur[k] = 0;
     }
-    return (minFirst === -1) ? null : {first: minFirst, last: maxLast};
+    if(maxLen < MIN_LCS) return null;
+    return { iStart: iEndBest - maxLen, iEnd: iEndBest, len: maxLen };
   }
   for(const e of externals){
     const T = normalize(e.meta && e.meta.text ? e.meta.text : '');
     if(!T) continue;
     const bm = e.meta && e.meta.blockMark;
     const bs = (e.meta && e.meta.blockSize) || T.length;
-    const r = halvingMatch(T, e.type, bm, bs);
-    if(r){ r.bm = bm; r.bs = bs; rangesByType[e.type].push(r); }
+    const lcs = findLCS(T);
+    if(!lcs) continue;
+    for(let k = lcs.iStart; k < lcs.iEnd; k++){
+      used[k] = true; src[k] = e.type; bmArr[k] = bm; bsArr[k] = bs;
+    }
+    rangesByType[e.type].push({ first: lcs.iStart, last: lcs.iEnd - 1, bm, bs });
   }
   const inAiRange    = new Array(N).fill(null);
   const inPasteRange = new Array(N).fill(null);
