@@ -715,6 +715,17 @@
   body[data-view="write"] #muhaMount .full-body-editor-shell{min-height:0 !important;height:auto !important;}
   body[data-view="write"] #muhaMount .body-editor-stage{min-height:0 !important;}
   body[data-view="write"] #muhaMount .ProseMirror{min-height:0 !important;}
+  /* muha 하단 상태바(글자수/문서/저장됨) 숨김 — extra 는 우리 카운터 사용 */
+  body[data-write-variant="extra"] #muhaMount .status-bar{display:none !important;}
+  /* muhaMount 안 shell 을 flex column 로 만들어 편집 영역이 남은 공간 확장 */
+  body[data-write-variant="extra"] #muhaMount .full-body-editor-shell{
+    display:flex !important;flex-direction:column !important;
+    height:100% !important;min-height:0 !important;
+  }
+  body[data-write-variant="extra"] #muhaMount .body-editor-toolbar-region{flex-shrink:0;}
+  body[data-write-variant="extra"] #muhaMount .muhayu-full-editor__body{
+    flex:1 1 0% !important;min-height:0 !important;overflow-y:auto !important;
+  }
   /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
   body[data-view="report"] #view-report{padding-left:240px;}
   body[data-view="report"] .report-actions{left:240px;}
@@ -864,7 +875,7 @@
   .variant-tab.is-active{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);font-weight:600;}
 </style>
 </head>
-<body data-view="write" data-report-tab="main">
+<body data-view="write" data-write-variant="extra" data-report-tab="main">
 
 <!-- ============ WRITE 뷰 헤더 ============ -->
 <!-- ============ LNB (좌측 사이드바) — '새 문서 작성' 화면 한정 ============ -->
