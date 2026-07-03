@@ -712,26 +712,16 @@
   body[data-view="write"] .chat-msgs{min-height:0;}
   /* editor-shell 은 자식을 밖으로 못 밀어냄 */
   body[data-view="write"] .editor-shell{flex:1 1 0%;min-height:0 !important;overflow:hidden !important;}
-  /* muhaMount 부터 편집 영역까지 flex column 을 완전히 이어붙여
-     편집 캔버스가 editor-shell 남은 공간 전체를 채우도록 강제 */
+  /* muhaMount 는 editor-shell 안에서 flex:1 로 크게 확장. 스크롤은 muhaMount
+     자체가 담당. 안쪽 shell/body/stage/ProseMirror 는 muha 자체 페이지 layout
+     (A4 시각)을 유지하도록 flex 로 강제하지 않는다 — 강제 시 편집 캔버스가
+     축소 렌더링되는 부작용이 있음. */
   body[data-view="write"] #muhaMount{
-    display:flex !important; flex-direction:column !important;
     flex:1 1 0% !important; min-height:0 !important; height:auto !important;
-    overflow:hidden !important;  /* 스크롤은 안쪽 body 가 담당 */
-  }
-  body[data-view="write"] #muhaMount .full-body-editor-shell{
-    display:flex !important; flex-direction:column !important;
-    flex:1 1 0% !important; min-height:0 !important; height:auto !important;
-  }
-  body[data-view="write"] #muhaMount .body-editor-toolbar-region{flex-shrink:0 !important;}
-  body[data-view="write"] #muhaMount .muhayu-full-editor__body{
-    display:flex !important; flex-direction:column !important;
-    flex:1 1 0% !important; min-height:0 !important;
     overflow-y:auto !important;
   }
-  body[data-view="write"] #muhaMount .body-editor-stage{
-    flex:1 1 auto !important; min-height:0 !important;
-  }
+  body[data-view="write"] #muhaMount .full-body-editor-shell{min-height:0 !important;height:auto !important;}
+  body[data-view="write"] #muhaMount .body-editor-stage{min-height:0 !important;}
   body[data-view="write"] #muhaMount .ProseMirror{min-height:0 !important;}
   /* muha 하단 상태바(글자수/문서/저장됨) 숨김 — extra 는 우리 카운터 사용 */
   body[data-write-variant="extra"] #muhaMount .status-bar{display:none !important;}
