@@ -3858,7 +3858,40 @@ function insertAtCaret(text, source){
 }
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
-  // append at end
+  if(isExtra){
+    // muha 에 직접 삽입 — pendingAi 로 마킹해 _syncMuhaModel 이 source=ai 로 처리
+    _pendingAiText   = text;
+    _pendingAiTs     = Date.now();
+    _pendingAiPrompt = promptHint || '';
+    const el = _findMuhaEditable();
+    if(el){
+      el.focus();
+      // caret 을 문서의 마지막 텍스트 노드 끝으로 정확히 이동 — selectNodeContents 는 tiptap 이
+      // 앞 내용을 대체 selection 으로 인식할 수 있어 유실 위험
+      const range = document.createRange();
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let last = null;
+      while(walker.nextNode()) last = walker.currentNode;
+      if(last){
+        range.setStart(last, last.textContent.length);
+      } else {
+        range.setStart(el, el.childNodes.length);
+      }
+      range.collapse(true);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      // 앞에 개행 필요 시 추가 후 텍스트 삽입 (execCommand 로 tiptap 이 인식)
+      const cur = (el.innerText || '').replace(/\u00A0/g, ' ');
+      const prefix = (cur.length > 0 && !cur.endsWith('\n')) ? '\n' : '';
+      document.execCommand('insertText', false, prefix + text);
+    }
+    if(!stats.firstTs) stats.firstTs = Date.now();
+    stats.lastTs = Date.now();
+    if(typeof showRec === 'function') showRec();
+    return;
+  }
+  // ── legacy(#editor) 경로 ─────────────────────
   const pos=model.length;
   const mark=++blockSeq;
   const ts=Date.now();
@@ -3872,23 +3905,8 @@ function appendToEditor(text, source, promptHint){
   events.push({ts,type:'ai',srcFamily:'ai',n:text.length,isInsert:true,meta:{blockMark:mark,blockSize:text.length,text:text,prompt:promptHint||''}});
   if(!stats.firstTs) stats.firstTs=Date.now();
   stats.lastTs=Date.now();
-  if(isExtra){
-    // 본문 끝에 새 단락으로 텍스트 삽입 — 기존 서식 보존
-    if(needsBreak){
-      editor.appendChild(document.createElement('br'));
-    }
-    editor.appendChild(document.createTextNode(text));
-    // caret을 본문 끝으로
-    const range = document.createRange();
-    range.selectNodeContents(editor);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  } else {
-    renderEditor();
-    setCaretByPos(pos+ins.length);
-  }
+  renderEditor();
+  setCaretByPos(pos+ins.length);
   updateStats();
   showRec();
 }
@@ -4143,6 +4161,9 @@ function _muhaBodyToText(body){
 
 let _pendingPasteText = null;   // muha paste 이벤트 시 저장, 곧 onChange diff 매칭에 사용
 let _pendingPasteTs   = 0;
+let _pendingAiText    = null;   // AI 어시스턴트 삽입 텍스트 - _syncMuhaModel 에서 source=ai 마킹
+let _pendingAiTs      = 0;
+let _pendingAiPrompt  = null;
 
 function _findMuhaEditable(){
   const mount = document.getElementById('muhaMount');
@@ -4258,6 +4279,23 @@ function _syncMuhaModel(text){
   if(addedText.length > 0){
     let src = 'typing';
     let bm = null, bsize = null;
+    // AI 매칭 — appendToEditor(extra) 가 pendingAiText 세팅 후 muha 에 execCommand 로 삽입.
+    // diff 의 addedText 안에 그 텍스트가 있으면 source=ai + blockMark 부여.
+    if(_pendingAiText && (Date.now() - _pendingAiTs) > 3000){
+      _pendingAiText = null; _pendingAiTs = 0; _pendingAiPrompt = null;
+    }
+    // AI 매칭 — addedText 안에 _pendingAiText 만 정확히 ai 마킹, 앞뒤 잔여(개행 등) 는 typing
+    let _aiInsertPlan = null;
+    if(_pendingAiText){
+      const aiIdx = addedText.indexOf(_pendingAiText);
+      if(aiIdx !== -1){
+        const aiLen = _pendingAiText.length;
+        const aiBm = ++blockSeq;
+        events.push({ts:_pendingAiTs || ts, type:'ai', srcFamily:'ai', n:aiLen, isInsert:true, meta:{blockMark:aiBm, blockSize:aiLen, text:_pendingAiText, prompt:_pendingAiPrompt || ''}});
+        _aiInsertPlan = {prefixLen:aiIdx, aiLen, aiBm};
+        _pendingAiText = null; _pendingAiTs = 0; _pendingAiPrompt = null;
+      }
+    }
     // paste 매칭 — pendingPasteText 세팅 후 2초 이내에만 유효. 그 이후엔 stale 로 clear.
     if(_pendingPasteText && (Date.now() - _pendingPasteTs) > 2000){
       _pendingPasteText = null; _pendingPasteTs = 0;
@@ -4293,8 +4331,18 @@ function _syncMuhaModel(text){
 
     const ins = [];
     for(let i=0; i<addedText.length; i++){
-      const item = {ch: addedText[i], source: promoted, ts: ts + i*0.5};
-      if(inheritBM){ item.blockMark = inheritBM; item.blockSize = inheritBSize; }
+      let cSrc = promoted, cBM = inheritBM, cSize = inheritBSize;
+      if(_aiInsertPlan){
+        const pStart = _aiInsertPlan.prefixLen;
+        const pEnd   = _aiInsertPlan.prefixLen + _aiInsertPlan.aiLen;
+        if(i >= pStart && i < pEnd){
+          cSrc = 'ai'; cBM = _aiInsertPlan.aiBm; cSize = _aiInsertPlan.aiLen;
+        } else {
+          cSrc = 'typing'; cBM = null; cSize = null;
+        }
+      }
+      const item = {ch: addedText[i], source: cSrc, ts: ts + i*0.5};
+      if(cBM){ item.blockMark = cBM; item.blockSize = cSize; }
       ins.push(item);
     }
     model.splice(s, 0, ...ins);
