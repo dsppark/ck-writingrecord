@@ -4218,6 +4218,16 @@ function _bindMuhaEvents(){
       updateStats();
     } else if(e.key === 'Backspace' || e.key === 'Delete'){
       stats.deletes = (stats.deletes || 0) + 1;
+      // 삭제 대상 카테고리 판정 후 해당 tally 감소
+      const which = _caretInsideWhichBlock();
+      if(which === 'ai'){
+        if(_tally.ai > 0) _tally.ai--;
+      } else if(which === 'paste'){
+        if(_tally.paste > 0) _tally.paste--;
+      } else {
+        if(_tally.typing > 0) _tally.typing--;
+      }
+      updateStats();
     }
   });
   // paste 감지 — text/plain 캡처. input diff 에서 이 텍스트와 매칭되면 paste source.
@@ -4270,27 +4280,32 @@ function _bindMuhaEvents(){
   el.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
 }
 
-// caret 이 AI/paste 유입 블록의 텍스트 안에 있는지 판정 (heuristic — anchor 조상 textContent 매칭)
-function _caretInsideExternalBlock(){
+// caret 이 AI/paste 유입 블록 안이면 'ai'|'paste' 반환, 아니면 null
+function _caretInsideWhichBlock(){
   try {
     const sel = window.getSelection();
-    if(!sel || !sel.anchorNode) return false;
+    if(!sel || !sel.anchorNode) return null;
     let cur = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
     let combined = '';
     for(let i=0; i<3 && cur; i++){
       combined += (cur.textContent || '');
       cur = cur.parentNode;
     }
-    if(!combined) return false;
+    if(!combined) return null;
     for(const e of events){
       if(e.type !== 'ai' && e.type !== 'paste') continue;
       const t = (e.meta && e.meta.text) ? e.meta.text : '';
       if(t.length < 8) continue;
       const probe = t.slice(0, 30);
-      if(combined.indexOf(probe) !== -1) return true;
+      if(combined.indexOf(probe) !== -1) return e.type;
     }
   } catch(err){}
-  return false;
+  return null;
+}
+// 기존 이름 유지 (typing 판정 등에서 호출)
+// caret 이 AI/paste 유입 블록의 텍스트 안에 있는지 판정 (heuristic)
+function _caretInsideExternalBlock(){
+  return _caretInsideWhichBlock() !== null;
 }
 
 function _syncMuhaModel(text){
