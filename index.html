@@ -677,7 +677,9 @@
   #write-pageheader .write-demobtn{font-size:12px;font-weight:600;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:8px;padding:7px 12px;cursor:pointer;}
   #write-pageheader .write-demobtn:hover{background:var(--ck-primary-50);}
   /* editor-grid: 흰 배경 + height 자동 */
-  body[data-view="write"] .editor-grid{background:#fff;max-width:none;padding:0 40px 0;flex:1 1 auto;min-height:0;height:auto;overflow:hidden;}
+  body[data-view="write"] .editor-grid{background:#fff;max-width:none;padding:0 40px 0;flex:1 1 auto;min-height:0;height:auto;overflow:hidden;grid-template-rows:1fr !important;grid-auto-rows:1fr !important;}
+  body[data-view="write"] .doc-panel,
+  body[data-view="write"] .type-panel{min-height:0 !important;}
   body[data-view="write"] .ed-panel{border:1px solid var(--ck-secondary-300);}
   /* 액션 바 LNB 우측 전체 너비 fixed bottom */
   body[data-view="write"] .doc-actions{
@@ -710,22 +712,29 @@
   body[data-view="write"] .chat-msgs{min-height:0;}
   /* editor-shell 은 자식을 밖으로 못 밀어냄 */
   body[data-view="write"] .editor-shell{flex:1 1 0%;min-height:0 !important;overflow:hidden !important;}
-  /* muhaMount 가 editor-shell 안에서 남은 공간 채우고 자기 안에서 스크롤 */
-  body[data-view="write"] #muhaMount{flex:1 1 0% !important;min-height:0 !important;height:auto !important;overflow-y:auto !important;}
-  body[data-view="write"] #muhaMount .full-body-editor-shell{min-height:0 !important;height:auto !important;}
-  body[data-view="write"] #muhaMount .body-editor-stage{min-height:0 !important;}
+  /* muhaMount 부터 편집 영역까지 flex column 을 완전히 이어붙여
+     편집 캔버스가 editor-shell 남은 공간 전체를 채우도록 강제 */
+  body[data-view="write"] #muhaMount{
+    display:flex !important; flex-direction:column !important;
+    flex:1 1 0% !important; min-height:0 !important; height:auto !important;
+    overflow:hidden !important;  /* 스크롤은 안쪽 body 가 담당 */
+  }
+  body[data-view="write"] #muhaMount .full-body-editor-shell{
+    display:flex !important; flex-direction:column !important;
+    flex:1 1 0% !important; min-height:0 !important; height:auto !important;
+  }
+  body[data-view="write"] #muhaMount .body-editor-toolbar-region{flex-shrink:0 !important;}
+  body[data-view="write"] #muhaMount .muhayu-full-editor__body{
+    display:flex !important; flex-direction:column !important;
+    flex:1 1 0% !important; min-height:0 !important;
+    overflow-y:auto !important;
+  }
+  body[data-view="write"] #muhaMount .body-editor-stage{
+    flex:1 1 auto !important; min-height:0 !important;
+  }
   body[data-view="write"] #muhaMount .ProseMirror{min-height:0 !important;}
   /* muha 하단 상태바(글자수/문서/저장됨) 숨김 — extra 는 우리 카운터 사용 */
   body[data-write-variant="extra"] #muhaMount .status-bar{display:none !important;}
-  /* muhaMount 안 shell 을 flex column 로 만들어 편집 영역이 남은 공간 확장 */
-  body[data-write-variant="extra"] #muhaMount .full-body-editor-shell{
-    display:flex !important;flex-direction:column !important;
-    height:100% !important;min-height:0 !important;
-  }
-  body[data-write-variant="extra"] #muhaMount .body-editor-toolbar-region{flex-shrink:0;}
-  body[data-write-variant="extra"] #muhaMount .muhayu-full-editor__body{
-    flex:1 1 0% !important;min-height:0 !important;overflow-y:auto !important;
-  }
   /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
   body[data-view="report"] #view-report{padding-left:240px;}
   body[data-view="report"] .report-actions{left:240px;}
