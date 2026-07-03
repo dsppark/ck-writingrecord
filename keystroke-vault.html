@@ -4728,6 +4728,8 @@ function computeAcknowledgedSpans(prevSpans){
 /* [문서 검사하기] · [재검사] 공용 실행. opts.navigate=false 이면 view 전환 스킵 */
 function runInspection(opts){
   opts = opts || {};
+  // 결과지·검사 진입 직전 — muha 실제 텍스트 기반으로 model 재구성
+  _rebuildModelFromMuha();
   const prev = currentInspection;
   const spans = mockDetectAISuspect();
   const ackIds = prev ? computeAcknowledgedSpans(prev.suspectSpans) : [];
@@ -5238,7 +5240,63 @@ function applyQuoteLabel(){
     if(target != null) el.textContent = target;
   });
 }
+/**
+ * 결과지·검사 진입 직전에 호출되는 model 재구성 함수.
+ * extra variant 에서 muha 의 실제 innerText 를 최종 소스 오브 트루스 로 삼고,
+ * events 의 AI/paste 텍스트를 그 안에서 매칭해 해당 구간에 source 를 부여.
+ * 매칭 안 되는(=삭제된) 텍스트는 무시. 나머지 글자는 모두 typing.
+ */
+function _rebuildModelFromMuha(){
+  if(document.body.dataset.writeVariant !== 'extra') return;
+  const el = _findMuhaEditable();
+  if(!el) return;
+  const raw = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+  const N = raw.length;
+  if(N === 0){ model.length = 0; return; }
+  const srcArr  = new Array(N).fill('typing');
+  const bmArr   = new Array(N).fill(null);
+  const bsArr   = new Array(N).fill(null);
+  // AI/paste 이벤트를 ts 오름차순으로 순회 → 각 텍스트를 raw 안에서 첫 매치 위치에 마킹
+  const externals = (events||[]).filter(e => e && (e.type === 'ai' || e.type === 'paste'))
+                                .sort((a,b) => (a.ts||0) - (b.ts||0));
+  const usedRanges = [];
+  const rangeOverlap = (a, b) => !(a[1] <= b[0] || b[1] <= a[0]);
+  for(const e of externals){
+    const t = (e.meta && e.meta.text) ? e.meta.text : '';
+    if(!t) continue;
+    // 이미 사용된 range 를 피해 검색
+    let searchFrom = 0;
+    while(searchFrom <= N){
+      const idx = raw.indexOf(t, searchFrom);
+      if(idx === -1) break;
+      const r = [idx, idx + t.length];
+      if(!usedRanges.some(u => rangeOverlap(u, r))){
+        // 이 range 에 source 마킹
+        const src = e.type; // 'ai' | 'paste'
+        const bm  = e.meta.blockMark;
+        const bs  = e.meta.blockSize || t.length;
+        for(let i = idx; i < idx + t.length; i++){
+          srcArr[i] = src; bmArr[i] = bm; bsArr[i] = bs;
+        }
+        usedRanges.push(r);
+        break;
+      }
+      searchFrom = idx + 1;
+    }
+  }
+  // model 재구성
+  const now = Date.now();
+  model.length = 0;
+  for(let i = 0; i < N; i++){
+    const item = { ch: raw[i], source: srcArr[i], ts: now + i * 0.1 };
+    if(bmArr[i] != null){ item.blockMark = bmArr[i]; item.blockSize = bsArr[i]; }
+    model.push(item);
+  }
+}
+
 async function buildReportFromSession(){
+  // 결과지 진입 직전 — muha 실제 텍스트 기반으로 model 재구성 (extra 한정)
+  _rebuildModelFromMuha();
   // 인용 붙여넣기 자동 분류 (extra variant 한정) — 후처리로 model.source 변환
   detectQuotePasteBlocks();
   applyQuoteLabel();
