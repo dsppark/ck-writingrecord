@@ -4095,23 +4095,79 @@ function counts(){
 const _tally = {typing:0, ai:0, paste:0, revised:0};
 function _tallyReset(){ _tally.typing=0; _tally.ai=0; _tally.paste=0; _tally.revised=0; }
 
-// UI 카운터 실시간 계산.
-//  · ai / paste = _tally 유지 (이벤트 기반 — 삽입 +len, 원본 편집키로 삭제 시 -1)
-//    → AI/paste 텍스트가 일부만 편집돼도 잔여 글자수 정확 반영. innerText 완전일치
-//     매칭에 의존하지 않아 '일부 수정 시 AI=0' 문제 없음.
-//  · revised = _tally 유지 (AI/paste 블록 내 사용자 편집 keystroke 누적)
-//  · typing = muha innerText 실 글자수(공백/개행 포함) - ai - paste - revised
-//    → 실제 남아있는 글자 기준. IME 조합 keydown 부풀림·편집키 잔존 무시.
+// UI 카운터 — muha innerText 기반, AI/paste 원본을 substring 단위로 매칭.
+// 완전일치 실패 시 반으로 잘라 재귀적으로 각각 시도 (recursive halving) — 삭제된
+// 부분은 자동으로 skip. 매칭 된 range 만 ai/paste 로 카운트, 매칭된 range 최소외곽
+// (min~max) 안의 미매칭 글자 = revised (사용자가 그 블록에 추가한 것).
+//   개행: '\n{2,}' 는 innerText 관례상 문단 경계 이중 개행이므로 1개로 압축.
+//        개행 자체는 카운트 대상에서 제외.
 function _computeTallyFromMuha(){
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   if(!el) return null;
-  const raw = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+  const normalize = (t) => (t || '').replace(/\u00A0/g, ' ').replace(/\n{2,}/g, '\n');
+  const raw = normalize(el.innerText || el.textContent || '');
   const N = raw.length;
-  const totalNoBreak = raw.replace(/\n/g, '').length;
-  const ai      = Math.max(0, (_tally.ai|0));
-  const paste   = Math.max(0, (_tally.paste|0));
-  const revised = Math.max(0, (_tally.revised|0));
-  const typing  = Math.max(0, N - ai - paste - revised);
+  if(N === 0) return {typing:0, ai:0, paste:0, revised:0, totalNoBreak:0};
+  const src = new Array(N).fill('typing');
+  const used = new Array(N).fill(false);
+  const externals = (events||[])
+    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
+    .sort((a,b) => (a.ts||0) - (b.ts||0));
+  const eventRanges = [];  // 이벤트별 [minFirst, maxLast]
+  const MIN_CHUNK = 3;
+  function halvingMatch(T, type){
+    // 완전 substring 매칭 시도 → 실패 시 반으로 잘라 재귀
+    const stack = [T];
+    let minFirst = -1, maxLast = -1;
+    while(stack.length){
+      const sub = stack.pop();
+      if(!sub || sub.length < MIN_CHUNK) continue;
+      // 사용 안 된 위치에서 sub 찾기
+      let pos = 0, found = -1;
+      while(pos <= N - sub.length){
+        const idx = raw.indexOf(sub, pos);
+        if(idx === -1) break;
+        let ok = true;
+        for(let k = idx; k < idx + sub.length; k++){
+          if(used[k]){ ok = false; break; }
+        }
+        if(ok){ found = idx; break; }
+        pos = idx + 1;
+      }
+      if(found !== -1){
+        for(let k = found; k < found + sub.length; k++){
+          used[k] = true; src[k] = type;
+        }
+        if(minFirst === -1 || found < minFirst) minFirst = found;
+        if(found + sub.length - 1 > maxLast) maxLast = found + sub.length - 1;
+      } else {
+        const mid = sub.length >> 1;
+        stack.push(sub.slice(0, mid));
+        stack.push(sub.slice(mid));
+      }
+    }
+    return (minFirst === -1) ? null : {first: minFirst, last: maxLast, type};
+  }
+  for(const e of externals){
+    const T = normalize(e.meta && e.meta.text ? e.meta.text : '');
+    if(!T){ eventRanges.push(null); continue; }
+    eventRanges.push(halvingMatch(T, e.type));
+  }
+  const inRange = new Array(N).fill(false);
+  for(const r of eventRanges){
+    if(!r) continue;
+    for(let i = r.first; i <= r.last; i++) inRange[i] = true;
+  }
+  let ai=0, paste=0, typing=0, revised=0, totalNoBreak=0;
+  for(let i = 0; i < N; i++){
+    const isNL = raw[i] === '\n';
+    if(!isNL) totalNoBreak++;
+    if(isNL) continue;
+    if(src[i] === 'ai') ai++;
+    else if(src[i] === 'paste') paste++;
+    else if(inRange[i]) revised++;
+    else typing++;
+  }
   return {typing, ai, paste, revised, totalNoBreak};
 }
 
