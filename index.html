@@ -691,6 +691,8 @@
   body[data-view="write"] .doc-actions #btnBackToList{margin-right:auto !important;}
   body[data-view="write"] .doc-actions #btnComplete{margin-left:0 !important;}
   body[data-view="write"] .doc-actions #btnSaveOnly{margin-left:0 !important;}
+  /* extra variant 는 저장 액션을 primary 버튼 하나로 통합 → btnSaveOnly 숨김 */
+  body[data-view="write"][data-write-variant="extra"] .doc-actions #btnSaveOnly{display:none !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb,
@@ -1057,7 +1059,7 @@
       </div>
       <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
       <div class="doc-actions">
-        <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
+        <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="onBackToListClick()">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>작성 증명 리포트 확인</button>
         <button id="btnReinspect" type="button" onclick="runReinspection()">
@@ -4080,14 +4082,64 @@ function counts(){
 const _tally = {typing:0, ai:0, paste:0, revised:0};
 function _tallyReset(){ _tally.typing=0; _tally.ai=0; _tally.paste=0; _tally.revised=0; }
 
+// muha innerText 기반 실시간 tally 계산 — keystroke 이 아닌 실제 남아있는 글자 수 기준
+// (IME 조합 keydown 이나 삭제된 텍스트에 의한 counter 부풀림 방지)
+function _computeTallyFromMuha(){
+  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+  if(!el) return null;
+  const raw = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+  const N = raw.length;
+  if(N === 0) return {typing:0, ai:0, paste:0, totalNoBreak:0};
+  const src = new Array(N).fill('typing');
+  const externals = (events||[])
+    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
+    .sort((a,b) => (a.ts||0) - (b.ts||0));
+  const usedRanges = [];
+  const overlap = (a, b) => !(a[1] <= b[0] || b[1] <= a[0]);
+  for(const e of externals){
+    const t = (e.meta && e.meta.text) ? e.meta.text : '';
+    if(!t) continue;
+    let searchFrom = 0;
+    while(searchFrom <= N){
+      const idx = raw.indexOf(t, searchFrom);
+      if(idx === -1) break;
+      const r = [idx, idx + t.length];
+      if(!usedRanges.some(u => overlap(u, r))){
+        for(let i = r[0]; i < r[1]; i++) src[i] = e.type;
+        usedRanges.push(r);
+        break;
+      }
+      searchFrom = idx + 1;
+    }
+  }
+  let typing = 0, ai = 0, paste = 0, totalNoBreak = 0;
+  for(let i = 0; i < N; i++){
+    if(raw[i] !== '\n') totalNoBreak++;
+    if(src[i] === 'ai') ai++;
+    else if(src[i] === 'paste') paste++;
+    else typing++;
+  }
+  return {typing, ai, paste, totalNoBreak};
+}
+
 function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
+  let extraTotalNoBreak = null;
   if(isExtra){
-    // extra: tally 기반
-    document.getElementById('stWrite').textContent   = _tally.typing;
-    document.getElementById('stAi').textContent      = _tally.ai;
-    document.getElementById('stPaste').textContent   = _tally.paste;
-    document.getElementById('stRevised').textContent = _tally.revised;
+    // extra: muha 실 문서 innerText 기반. 개행/공백 포함, keystroke 아님.
+    const t = _computeTallyFromMuha();
+    if(t){
+      document.getElementById('stWrite').textContent   = t.typing;
+      document.getElementById('stAi').textContent      = t.ai;
+      document.getElementById('stPaste').textContent   = t.paste;
+      document.getElementById('stRevised').textContent = _tally.revised;
+      extraTotalNoBreak = t.totalNoBreak;
+    } else {
+      document.getElementById('stWrite').textContent   = 0;
+      document.getElementById('stAi').textContent      = 0;
+      document.getElementById('stPaste').textContent   = 0;
+      document.getElementById('stRevised').textContent = 0;
+    }
   } else {
     // legacy: model.source 기반 (기존 동작 유지)
     const c=counts();
@@ -4096,7 +4148,7 @@ function updateStats(){
     document.getElementById('stPaste').textContent=c.paste+c.pasteEdited;
     document.getElementById('stRevised').textContent=c.aiInternal+c.pasteInternal;
   }
-  const totalChars=model.filter(m=>m.ch!=='\n').length;
+  const totalChars = (extraTotalNoBreak != null) ? extraTotalNoBreak : model.filter(m=>m.ch!=='\n').length;
   document.getElementById('stCount').textContent=totalChars.toLocaleString();
   document.getElementById('stKs').textContent=stats.keystrokes.toLocaleString();
   // speed
@@ -4496,6 +4548,9 @@ function newWrite(variant){
   document.body.dataset.writeVariant = variant || '';
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
   if(ph) ph.textContent = (variant === 'extra') ? '문서 작성' : '문서 작성 · 초기 기획안';
+  // btnComplete 텍스트 — extra 는 저장 겸 리포트 진입 문구
+  const bc = document.getElementById('btnComplete');
+  if(bc) bc.textContent = (variant === 'extra') ? '저장 후 작성 검증 결과 확인' : '작성 증명 리포트 확인';
   // LNB 활성 메뉴 토글 — extra=상위, legacy=하위
   document.querySelectorAll('#lnb [data-menu="write-extra"], #lnb [data-menu="write-legacy"]').forEach(el=>el.classList.remove('is-active'));
   const activeKey = variant === 'extra' ? 'write-extra' : 'write-legacy';
@@ -4632,6 +4687,11 @@ document.getElementById('btnComplete').onclick=()=>{
   // 작성 완료 시점에 lastTs 확정 + freeze (이후 결과지 조회 동안 시간 누적 X)
   if(!stats.firstTs) stats.firstTs=Date.now();
   stats.lastTs=Date.now();
+  // extra variant — 결과 진입 전에 내 문서함에 실제 저장까지 완료
+  const isExtra = document.body.dataset.writeVariant === 'extra';
+  if(isExtra){
+    try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('boxSaveCurrentDoc fail', e); }
+  }
   saveCount++; // 작성 완료도 저장 1회로 카운트
   sessionFrozen=true;
   buildReportFromSession();
@@ -4639,6 +4699,26 @@ document.getElementById('btnComplete').onclick=()=>{
   document.body.dataset.reportTab='main'; // 진입 시 항상 메인 탭
   window.scrollTo(0,0);
 };
+
+// 목록으로 이동 — extra 는 저장 여부 확인 다이얼로그 필요
+function onBackToListClick(){
+  const goList = () => { document.body.dataset.view='box'; if(typeof renderBoxList==='function') renderBoxList(); window.scrollTo(0,0); };
+  const isExtra = document.body.dataset.writeVariant === 'extra';
+  if(!isExtra){ goList(); return; }
+  // 제목 유무 + 본문 공백 제외 1자 이상 여부로 저장 컨펌 표시
+  const titleVal = (document.getElementById('docTitle')||{}).value || '';
+  const titleFilled = titleVal.trim().length > 0;
+  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+  const raw = el ? ((el.innerText || el.textContent || '')) : '';
+  const nonSpace = raw.replace(/\s/g, '').length;
+  if(titleFilled && nonSpace >= 1){
+    if(window.confirm('작성하신 내용을 저장하시겠습니까?')){
+      try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('boxSaveCurrentDoc fail', e); }
+    }
+  }
+  // 제목 미입력 또는 본문 공백 제외 0자 → 별도 컨펌 없이 저장 안 하고 이동
+  goList();
+}
 // 작성 완료 시점에 패널을 빈 상태로 초기화
 function _resetOnReport(){ try{ resetSegPanel(); }catch(e){} }
 
