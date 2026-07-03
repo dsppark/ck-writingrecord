@@ -4359,15 +4359,22 @@ function _bindMuhaEvents(){
       updateStats();
     }
   });
-  // paste 감지 — text/plain 캡처. input diff 에서 이 텍스트와 매칭되면 paste source.
+  // paste 감지 — capture 단계에서 실행해 tiptap 자체 paste handler 보다 먼저 clipboard
+  //              캡처. input diff 매칭 실패 대비, paste 이벤트도 즉시 events 에 push.
   el.addEventListener('paste', (e) => {
     const t = e.clipboardData?.getData('text/plain') || '';
     if(t){
       _pendingPasteText = t; _pendingPasteTs = Date.now();
       _tally.paste += t.length;
+      // 즉시 이벤트 push — _syncMuhaModel diff 매칭에 실패해도 결과 페이지 재구성
+      // 에서 이 이벤트로 innerText 매칭이 가능해짐.
+      try {
+        const _bm = (typeof blockSeq !== 'undefined') ? (++blockSeq) : 0;
+        events.push({ts:_pendingPasteTs, type:'paste', srcFamily:'paste', n:t.length, isInsert:true, meta:{blockMark:_bm, blockSize:t.length, text:t}});
+      } catch(err){ console.warn('paste event push fail', err); }
       updateStats();
     }
-  });
+  }, true);
   // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
   let _syncScheduled = false;
   let _syncTimer = null;
@@ -5404,49 +5411,91 @@ function applyQuoteLabel(){
  * 매칭 안 되는(=삭제된) 텍스트는 무시. 나머지 글자는 모두 typing.
  */
 function _rebuildModelFromMuha(){
+  // 결과지 진입 직전 model 을 muha innerText 기반으로 재구성.
+  // _computeTallyFromMuha 와 동일한 substring halving + paste 우선 매칭을 사용해
+  // 상단 breakdown 지표와 하단 텍스트 유입 세그먼트가 완전히 일치하도록.
+  //   · 매칭된 위치 → 'ai' | 'paste'
+  //   · 이벤트 range 안 미매칭 위치 → 'ai-internal' | 'paste-internal' (편집 흔적)
+  //   · 그 외 → 'typing'
   if(document.body.dataset.writeVariant !== 'extra') return;
   const el = _findMuhaEditable();
   if(!el) return;
-  const raw = (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
+  const normalize = (t) => (t || '').replace(/\u00A0/g, ' ').replace(/\n{2,}/g, '\n');
+  const raw = normalize(el.innerText || el.textContent || '');
   const N = raw.length;
   if(N === 0){ model.length = 0; return; }
-  const srcArr  = new Array(N).fill('typing');
-  const bmArr   = new Array(N).fill(null);
-  const bsArr   = new Array(N).fill(null);
-  // AI/paste 이벤트를 ts 오름차순으로 순회 → 각 텍스트를 raw 안에서 첫 매치 위치에 마킹
-  const externals = (events||[]).filter(e => e && (e.type === 'ai' || e.type === 'paste'))
-                                .sort((a,b) => (a.ts||0) - (b.ts||0));
-  const usedRanges = [];
-  const rangeOverlap = (a, b) => !(a[1] <= b[0] || b[1] <= a[0]);
-  for(const e of externals){
-    const t = (e.meta && e.meta.text) ? e.meta.text : '';
-    if(!t) continue;
-    // 이미 사용된 range 를 피해 검색
-    let searchFrom = 0;
-    while(searchFrom <= N){
-      const idx = raw.indexOf(t, searchFrom);
-      if(idx === -1) break;
-      const r = [idx, idx + t.length];
-      if(!usedRanges.some(u => rangeOverlap(u, r))){
-        // 이 range 에 source 마킹
-        const src = e.type; // 'ai' | 'paste'
-        const bm  = e.meta.blockMark;
-        const bs  = e.meta.blockSize || t.length;
-        for(let i = idx; i < idx + t.length; i++){
-          srcArr[i] = src; bmArr[i] = bm; bsArr[i] = bs;
+  const src = new Array(N).fill('typing');
+  const used = new Array(N).fill(false);
+  const bmArr = new Array(N).fill(null);
+  const bsArr = new Array(N).fill(null);
+  const externals = (events||[])
+    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
+    .sort((a,b) => {
+      if(a.type !== b.type) return a.type === 'paste' ? -1 : 1;
+      return (a.ts||0) - (b.ts||0);
+    });
+  const rangesByType = { ai: [], paste: [] };
+  const MIN_CHUNK = 3;
+  function halvingMatch(T, type, bm, bs){
+    const stack = [T];
+    let minFirst = -1, maxLast = -1;
+    while(stack.length){
+      const sub = stack.pop();
+      if(!sub || sub.length < MIN_CHUNK) continue;
+      let pos = 0, found = -1;
+      while(pos <= N - sub.length){
+        const idx = raw.indexOf(sub, pos);
+        if(idx === -1) break;
+        let ok = true;
+        for(let k = idx; k < idx + sub.length; k++){
+          if(used[k]){ ok = false; break; }
         }
-        usedRanges.push(r);
-        break;
+        if(ok){ found = idx; break; }
+        pos = idx + 1;
       }
-      searchFrom = idx + 1;
+      if(found !== -1){
+        for(let k = found; k < found + sub.length; k++){
+          used[k] = true; src[k] = type; bmArr[k] = bm; bsArr[k] = bs;
+        }
+        if(minFirst === -1 || found < minFirst) minFirst = found;
+        if(found + sub.length - 1 > maxLast) maxLast = found + sub.length - 1;
+      } else {
+        const mid = sub.length >> 1;
+        stack.push(sub.slice(0, mid));
+        stack.push(sub.slice(mid));
+      }
     }
+    return (minFirst === -1) ? null : {first: minFirst, last: maxLast};
   }
-  // model 재구성
+  for(const e of externals){
+    const T = normalize(e.meta && e.meta.text ? e.meta.text : '');
+    if(!T) continue;
+    const bm = e.meta && e.meta.blockMark;
+    const bs = (e.meta && e.meta.blockSize) || T.length;
+    const r = halvingMatch(T, e.type, bm, bs);
+    if(r){ r.bm = bm; r.bs = bs; rangesByType[e.type].push(r); }
+  }
+  const inAiRange    = new Array(N).fill(null);
+  const inPasteRange = new Array(N).fill(null);
+  for(const r of rangesByType.ai){
+    for(let i = r.first; i <= r.last; i++) inAiRange[i] = r;
+  }
+  for(const r of rangesByType.paste){
+    for(let i = r.first; i <= r.last; i++) inPasteRange[i] = r;
+  }
   const now = Date.now();
   model.length = 0;
   for(let i = 0; i < N; i++){
-    const item = { ch: raw[i], source: srcArr[i], ts: now + i * 0.1 };
-    if(bmArr[i] != null){ item.blockMark = bmArr[i]; item.blockSize = bsArr[i]; }
+    let finalSrc, bm = bmArr[i], bs = bsArr[i];
+    if(src[i] === 'ai') finalSrc = 'ai';
+    else if(src[i] === 'paste') finalSrc = 'paste';
+    else if(inPasteRange[i]){
+      finalSrc = 'paste-internal'; bm = inPasteRange[i].bm; bs = inPasteRange[i].bs;
+    } else if(inAiRange[i]){
+      finalSrc = 'ai-internal'; bm = inAiRange[i].bm; bs = inAiRange[i].bs;
+    } else finalSrc = 'typing';
+    const item = { ch: raw[i], source: finalSrc, ts: now + i * 0.1 };
+    if(bm != null){ item.blockMark = bm; item.blockSize = bs; }
     model.push(item);
   }
 }
