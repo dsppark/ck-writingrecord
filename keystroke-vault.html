@@ -722,7 +722,10 @@
   }
   body[data-view="write"] #muhaMount .full-body-editor-shell{min-height:0 !important;height:auto !important;}
   body[data-view="write"] #muhaMount .body-editor-stage{min-height:0 !important;}
-  body[data-view="write"] #muhaMount .ProseMirror{min-height:0 !important;}
+  /* A4 편집 캔버스가 뷰포트에 맞춰 세로로 확장되도록 min-height 를 상대값으로.
+     상단(page header 80 + title 56 + stat 39 + toolbar ~90 + margin 60) + 하단 액션바
+     96 대략 420px 감안. muhaMount 자체 스크롤이 있으므로 뷰포트 초과 시에도 안전. */
+  body[data-view="write"] #muhaMount .ProseMirror{min-height:calc(100vh - 420px) !important;}
   /* muha 하단 상태바(글자수/문서/저장됨) 숨김 — extra 는 우리 카운터 사용 */
   body[data-write-variant="extra"] #muhaMount .status-bar{display:none !important;}
   /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
