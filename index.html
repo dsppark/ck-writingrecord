@@ -3863,6 +3863,12 @@ function appendToEditor(text, source, promptHint){
     _pendingAiText   = text;
     _pendingAiTs     = Date.now();
     _pendingAiPrompt = promptHint || '';
+    _tally.ai += text.length;
+    // AI 이벤트는 즉시 push (SEC-07 외부 유입 로그·리플레이 마커에 필요)
+    const _aiBm = ++blockSeq;
+    events.push({ts:_pendingAiTs, type:'ai', srcFamily:'ai', n:text.length, isInsert:true,
+                 meta:{blockMark:_aiBm, blockSize:text.length, text:text, prompt:_pendingAiPrompt}});
+    if(typeof updateStats === 'function') updateStats();
     const el = _findMuhaEditable();
     if(el){
       el.focus();
@@ -4055,12 +4061,26 @@ function counts(){
   });
   return c;
 }
+// ── UI 카운터 tally: 이벤트 발생 시점에 누적. diff 로 재구성하지 않아 안정적. ──
+const _tally = {typing:0, ai:0, paste:0, revised:0};
+function _tallyReset(){ _tally.typing=0; _tally.ai=0; _tally.paste=0; _tally.revised=0; }
+
 function updateStats(){
-  const c=counts();
-  document.getElementById('stWrite').textContent=c.typing;
-  document.getElementById('stAi').textContent=c.ai+c.aiEdited;
-  document.getElementById('stPaste').textContent=c.paste+c.pasteEdited;
-  document.getElementById('stRevised').textContent=c.aiInternal+c.pasteInternal;
+  const isExtra = document.body.dataset.writeVariant === 'extra';
+  if(isExtra){
+    // extra: tally 기반
+    document.getElementById('stWrite').textContent   = _tally.typing;
+    document.getElementById('stAi').textContent      = _tally.ai;
+    document.getElementById('stPaste').textContent   = _tally.paste;
+    document.getElementById('stRevised').textContent = _tally.revised;
+  } else {
+    // legacy: model.source 기반 (기존 동작 유지)
+    const c=counts();
+    document.getElementById('stWrite').textContent=c.typing;
+    document.getElementById('stAi').textContent=c.ai+c.aiEdited;
+    document.getElementById('stPaste').textContent=c.paste+c.pasteEdited;
+    document.getElementById('stRevised').textContent=c.aiInternal+c.pasteInternal;
+  }
   const totalChars=model.filter(m=>m.ch!=='\n').length;
   document.getElementById('stCount').textContent=totalChars.toLocaleString();
   document.getElementById('stKs').textContent=stats.keystrokes.toLocaleString();
@@ -4189,11 +4209,25 @@ function _bindMuhaEvents(){
     stats.keystrokes++;
     if(!stats.firstTs) stats.firstTs = Date.now();
     stats.lastTs = Date.now();
+    // 편집키(Backspace/Delete/화살표) 는 typing 카운트에 넣지 않음
+    const editKey = e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow');
+    if(!editKey){
+      // caret 위치가 AI/paste 블록의 텍스트 안이면 revised, 아니면 typing
+      if(_caretInsideExternalBlock()) _tally.revised++;
+      else _tally.typing++;
+      updateStats();
+    } else if(e.key === 'Backspace' || e.key === 'Delete'){
+      stats.deletes = (stats.deletes || 0) + 1;
+    }
   });
   // paste 감지 — text/plain 캡처. input diff 에서 이 텍스트와 매칭되면 paste source.
   el.addEventListener('paste', (e) => {
     const t = e.clipboardData?.getData('text/plain') || '';
-    if(t){ _pendingPasteText = t; _pendingPasteTs = Date.now(); }
+    if(t){
+      _pendingPasteText = t; _pendingPasteTs = Date.now();
+      _tally.paste += t.length;
+      updateStats();
+    }
   });
   // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
   let _syncScheduled = false;
@@ -4234,6 +4268,29 @@ function _bindMuhaEvents(){
   // 포커스·클릭 시 '작성 기록중' 배지
   el.addEventListener('focusin', () => { if(typeof showRec === 'function') showRec(); });
   el.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
+}
+
+// caret 이 AI/paste 유입 블록의 텍스트 안에 있는지 판정 (heuristic — anchor 조상 textContent 매칭)
+function _caretInsideExternalBlock(){
+  try {
+    const sel = window.getSelection();
+    if(!sel || !sel.anchorNode) return false;
+    let cur = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
+    let combined = '';
+    for(let i=0; i<3 && cur; i++){
+      combined += (cur.textContent || '');
+      cur = cur.parentNode;
+    }
+    if(!combined) return false;
+    for(const e of events){
+      if(e.type !== 'ai' && e.type !== 'paste') continue;
+      const t = (e.meta && e.meta.text) ? e.meta.text : '';
+      if(t.length < 8) continue;
+      const probe = t.slice(0, 30);
+      if(combined.indexOf(probe) !== -1) return true;
+    }
+  } catch(err){}
+  return false;
 }
 
 function _syncMuhaModel(text){
@@ -4399,6 +4456,7 @@ function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
   Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
+  if(typeof _tallyReset === 'function') _tallyReset();
   saveCount = 0;
   sessionFrozen = false;
   selectedType = null;
