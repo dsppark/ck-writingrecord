@@ -459,20 +459,9 @@
 
   /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 상단 안내 배너 + 새 탭 참고 ============ */
   #reinspectPanel{display:none !important;}  /* 새 탭 방식으로 전환 — 우측 패널 비활성 */
-  body[data-reinspect="on"] .write-pagetitle::after{content:' · 재검사';color:var(--ck-primary-500);font-weight:600;}
   /* 재검사 상단 안내 배너 */
-  #reinspectBanner{display:none;position:sticky;top:56px;z-index:30;background:#EFFAFF;border-bottom:1px solid #DEF4FF;color:#0075FF;padding:10px 24px;font-size:12.5px;font-weight:600;text-align:center;display:none;align-items:center;justify-content:center;gap:8px;}
-  body[data-view="write"][data-reinspect="on"] #reinspectBanner{display:flex;}
-  #reinspectBanner button{background:#fff;color:#0075FF;border:1px solid #B6ECFF;padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;}
-  #reinspectBanner button:hover{background:#EFFAFF;}
   /* 검사 결과 새 창(popup) companion 배너 + LNB/헤더 제거 */
   #inspCompanionBanner{display:none;background:#EFFAFF;color:#0075FF;padding:10px 40px;font-size:12.5px;font-weight:600;text-align:center;border-bottom:1px solid #DEF4FF;}
-  body.is-inspect-companion #inspCompanionBanner{display:block;}
-  body.is-inspect-companion #lnb,
-  body.is-inspect-companion #header-write,
-  body.is-inspect-companion #header-report{display:none !important;}
-  body.is-inspect-companion #view-inspect-result{padding-left:0 !important;padding-top:0 !important;}
-  body.is-inspect-companion .insp-actions{left:0 !important;}
   #reinspectPanel{position:fixed;right:0;top:56px;bottom:0;width:340px;background:#fff;border-left:1px solid var(--ck-secondary-200);z-index:40;padding:16px 18px;overflow-y:auto;}
   .rip-title{font-size:13px;font-weight:700;color:var(--ck-gray-900);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--ck-secondary-100);}
   .rip-close{background:none;border:none;color:var(--ck-gray-400);font-size:18px;cursor:pointer;line-height:1;}
@@ -497,9 +486,6 @@
   .rip-empty{text-align:center;padding:24px 10px;color:var(--ck-gray-400);font-size:12.5px;}
   .rip-guide{background:var(--ck-primary-50);color:var(--ck-primary-700);padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.5;margin-top:10px;}
   /* 재검사 액션바 [재검사] 버튼 */
-  body[data-reinspect="on"] #btnReinspect{display:inline-flex;}
-  #btnReinspect{display:none;background:var(--ck-primary-500);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;align-items:center;gap:6px;}
-  #btnReinspect:hover{background:var(--ck-primary-600);}
   /* 결과지 액션바 [문서 검사하기] 버튼 — extra 한정 */
   .ra-btn-inspect{display:none !important;}
   body[data-write-variant="extra"] .ra-btn-inspect{display:inline-flex !important;}
@@ -721,7 +707,6 @@
   html:has(body[data-view="write"]){overflow:hidden;height:100vh;}
   body[data-view="write"] #view-write{padding-left:240px;display:flex;flex-direction:column;height:100vh;overflow:hidden;padding-bottom:96px;}
   body[data-view="write"] #write-pageheader{flex-shrink:0;}
-  body[data-view="write"] #reinspectBanner{flex-shrink:0;}
   /* doc-panel 은 자기 안에서 스크롤 안 함 — muhaMount 안으로 위임 */
   body[data-view="write"] .doc-panel{overflow:hidden !important;min-height:0;}
   body[data-view="write"] .type-panel{min-height:0;}
@@ -991,10 +976,6 @@
     <h1 class="write-pagetitle">문서 작성</h1>
     <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
   </header>
-  <div id="reinspectBanner">
-    <span>📌 AI 검사 결과가 별도 창으로 열려 있어요. 참고하며 아래 에디터에서 수정 후 [재검사]를 눌러주세요.</span>
-    <button type="button" onclick="reopenInspectCompanion()">참고 창 다시 열기</button>
-  </div>
 
   <div class="editor-grid">
     <!-- 좌측 패널 — 항상 채팅 모드 -->
@@ -1093,26 +1074,11 @@
         <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="onBackToListClick()">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>저장 후 작성 검증 결과 확인</button>
-        <button id="btnReinspect" type="button" onclick="runReinspection()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
-          재검사
-        </button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 재검사 컨텍스트 패널 (SC-07) ============ -->
-<aside id="reinspectPanel">
-  <div class="rip-title">
-    <span>검사 참고</span>
-    <button class="rip-close" type="button" onclick="closeReinspect()" title="닫기">×</button>
-  </div>
-  <div class="rip-guide">AI 의심 문단을 참고해 에디터에서 직접 다듬어보세요. [재검사]를 누르면 저장·리포트 발급·검사가 함께 진행됩니다.</div>
-  <div class="rip-section-label">AI 의심 카드</div>
-  <div class="rip-cards" id="reinspectCards"></div>
-  <div class="rip-detail" id="reinspectDetail"></div>
-</aside>
 
 <!-- ============ REPORT VIEW (기존 결과지) ============ -->
 <section id="view-report">
@@ -5217,121 +5183,62 @@ function closeInspection(){
 }
 
 /* CTA [수정하러 가기] — 새 탭으로 검사 결과 참고창 열고, 원래 탭은 에디터 100% 폭 유지 */
-const COMPANION_STORE = 'ksv_companion_data';
-
-function saveCompanionData(){
-  if(!currentInspection) return;
-  const data = {
-    inspection: currentInspection,
-    model: model.map(m => ({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
-    ts: Date.now()
-  };
-  try { localStorage.setItem(COMPANION_STORE, JSON.stringify(data)); } catch(e){ console.warn('companion save fail', e); }
-}
-
+/* '의심 영역 수정하러 가기' — 검사 결과에서 진입. AI 판정 원문을 에디터에
+   그대로 로드하고 model.source 는 세그먼트별로 'ai' 로 마킹. 사용자는 별도
+   재검사 UI 없이 그냥 문서 작성 화면에서 수정하고 다시 문서 검사하기로
+   재검사 가능. companion 팝업·참고 창 흐름 삭제. */
 function enterReinspect(){
-  document.body.dataset.reinspect = 'on';
-  document.body.dataset.view = 'write';
-  document.body.dataset.writeVariant = 'extra';
-  sessionFrozen = false;
-  saveCompanionData();
-  openInspectCompanionTab();
-  window.scrollTo(0,0);
-}
-
-function openInspectCompanionTab(){
-  const url = window.location.pathname + '?rs=1&t=' + Date.now();
-  // popup=1 + width/height 지정 → 브라우저가 탭이 아닌 별도 창으로 오픈
-  const w = Math.min(1240, Math.max(900, Math.round(window.screen.availWidth * 0.7)));
-  const h = Math.min(940, Math.max(700, Math.round(window.screen.availHeight * 0.85)));
-  const left = Math.max(0, Math.round((window.screen.availWidth - w) / 2));
-  const top  = Math.max(0, Math.round((window.screen.availHeight - h) / 2));
-  const features = `popup=1,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes,location=no,toolbar=no,menubar=no,status=no`;
-  window.__inspectWin = window.open(url, 'ksv_inspect_result', features);
-  if(!window.__inspectWin){
-    if(typeof showToast === 'function') showToast('팝업이 차단되었습니다. 팝업 허용 후 [참고 창 다시 열기] 를 눌러주세요.');
-  } else {
-    try { window.__inspectWin.focus(); } catch(e){}
-  }
-}
-
-function reopenInspectCompanion(){
-  if(window.__inspectWin && !window.__inspectWin.closed){
-    try { window.__inspectWin.focus(); return; } catch(e){}
-  }
-  openInspectCompanionTab();
-}
-
-function closeReinspect(){
-  document.body.dataset.reinspect = '';
-  if(window.__inspectWin && !window.__inspectWin.closed){
-    try { window.__inspectWin.close(); } catch(e){}
-  }
-  window.__inspectWin = null;
-}
-
-function renderReinspectPanel(){
-  const cardsEl = document.getElementById('reinspectCards');
-  const detailEl = document.getElementById('reinspectDetail');
-  if(!cardsEl || !detailEl) return;
-  if(!currentInspection || !currentInspection.suspectSpans.length){
-    cardsEl.innerHTML = '<div class="rip-empty">이전 검사 결과가 없거나 의심 영역이 없습니다.</div>';
-    detailEl.innerHTML = '';
+  // 검사 결과 → 문서 작성 화면 진입. 재검사 모드 구분·companion 팝업 없음.
+  // AI 판정 원문이 에디터에 그대로 들어가고, model.source 는 세그먼트별로 'ai'
+  // 로 마킹돼 카운터·시각처리에 반영. 사용자는 그냥 이어서 편집 → 재검사만
+  // 하면 됨.
+  if(!currentInspection || !currentInspection.suspectSpans){
+    document.body.dataset.view = 'write';
+    document.body.dataset.writeVariant = 'extra';
     return;
   }
-  const {suspectSpans, acknowledgedSpans} = currentInspection;
-  cardsEl.innerHTML = suspectSpans.map(sp => {
-    const isAck = acknowledgedSpans.includes(sp.spanId);
-    const preview = _escInsp(sp.text.slice(0, 40) + (sp.text.length > 40 ? '…' : ''));
-    const dotCls = 'dot-' + sp.level;
-    return `<div class="mini-card ${isAck?'is-ack':''}" data-span-id="${sp.spanId}" onclick="selectPanelCard('${sp.spanId}')">
-      <div class="mini-head">
-        <span class="mini-dots ${dotCls}"><span class="d"></span><span class="d"></span><span class="d"></span></span>
-      </div>
-      <div class="mini-preview">${preview}</div>
-    </div>`;
-  }).join('');
-  // 자동 첫 카드 선택
-  const firstUnacked = suspectSpans.find(sp => !acknowledgedSpans.includes(sp.spanId)) || suspectSpans[0];
-  if(firstUnacked) selectPanelCard(firstUnacked.spanId);
-}
+  // 1) 원본 텍스트 확보
+  const text = model.map(m => m.ch).join('');
+  const paragraphs = text.split('\n');
 
-function selectPanelCard(spanId){
-  document.querySelectorAll('#reinspectCards .mini-card').forEach(c => c.classList.toggle('is-selected', c.dataset.spanId === spanId));
-  const sp = currentInspection?.suspectSpans.find(s => s.spanId === spanId);
-  const detailEl = document.getElementById('reinspectDetail');
-  if(!sp || !detailEl) return;
-  const features = sp.features.map(f => `<span class="feature-tag">${_escInsp(f)}</span>`).join('');
-  detailEl.innerHTML = `
-    <div class="rip-detail-title">원문</div>
-    <div class="rip-detail-text">${_escInsp(sp.text)}</div>
-    <div class="rip-detail-title" style="margin-top:12px;">AI생성 특징</div>
-    <div class="rip-features">${features}</div>
-  `;
-}
+  // 2) events 를 AI 세그먼트로 재구축. muha onChange → _syncMuhaModel 이 이 events
+  //    를 LCS 매칭해 model.source='ai' 로 자동 마킹하게 한다.
+  events.length = 0;
+  editOps.length = 0;
+  const nowTs = Date.now();
+  currentInspection.suspectSpans.forEach((sp, i) => {
+    events.push({
+      ts: nowTs + i,
+      type: 'ai', srcFamily: 'ai',
+      n: sp.originalCharCount, isInsert: true,
+      meta: { blockMark: (++blockSeq), blockSize: sp.originalCharCount, text: sp.text, prompt: '(작성 검증 원문 로드)' }
+    });
+  });
 
-/* [재검사] — 저장 + 리포트 발급 + 검사 3동작 원자 처리 (extra 한정) */
-function runReinspection(){
-  if(document.body.dataset.writeVariant !== 'extra') return;
-  // 1) 저장
-  if(model.length > 0){
-    if(!stats.firstTs) stats.firstTs = Date.now();
-    stats.lastTs = Date.now();
-    saveCount++;
-    try { boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
-  }
-  // 2) 리포트 발급 (buildReportFromSession 내부에서 최신화)
-  //    현재 프로토타입은 별도 flag 없이 검사 실행 시점에 report 데이터가 최신이 되어 있음.
-  // 3) 검사 실행 — view 전환 없이 (원래 탭은 에디터 유지)
-  runInspection({navigate:false});
-  // 4) 참고 탭 데이터 갱신 후 reload/오픈
-  saveCompanionData();
-  if(window.__inspectWin && !window.__inspectWin.closed){
-    try { window.__inspectWin.location.reload(); } catch(e){ openInspectCompanionTab(); }
-  } else {
-    openInspectCompanionTab();
-  }
-  if(typeof showToast === 'function') showToast('재검사 완료 — 참고 창이 갱신되었어요.');
+  // 3) 문서 작성 화면 진입
+  sessionFrozen = false;
+  document.body.dataset.view = 'write';
+  document.body.dataset.writeVariant = 'extra';
+  window.scrollTo(0, 0);
+
+  // 4) muha 에디터에 원문 로드
+  try {
+    const controller = window.__muhaController;
+    const body = {
+      type: 'doc',
+      content: paragraphs.map(p => ({
+        type: 'paragraph',
+        content: p ? [{ type: 'text', text: p }] : []
+      }))
+    };
+    if(controller && typeof controller.replaceBody === 'function'){
+      controller.replaceBody(body);
+    } else {
+      const el = _findMuhaEditable();
+      if(el) el.innerHTML = paragraphs.map(p => '<p>' + (p || '<br/>') + '</p>').join('');
+    }
+  } catch(e){ console.warn('reinspect body replace fail', e); }
+  if(typeof updateStats === 'function') updateStats();
 }
 
 /* ============ 플로우 2 — 문서 검사 등록 (SC-04) ============ */
@@ -5342,7 +5249,6 @@ function openInspUpload(){
   document.body.dataset.view = 'inspect-upload';
   document.body.dataset.writeVariant = 'extra';
   document.body.dataset.reinspect = '';
-  document.body.classList.remove('is-inspect-companion');
   // LNB active 토글
   document.querySelectorAll('#lnb .lnb-sub[data-menu], #lnb .lnb-item[data-menu]').forEach(el=>el.classList.remove('is-active'));
   const active = document.querySelector('#lnb [data-menu="inspect-upload"]');
@@ -5519,53 +5425,6 @@ function startInspectionFromUpload(){
   } else {
     bind();
   }
-})();
-
-/* 새 탭 페이지 로드 시 localStorage 로부터 데이터 로드 + 참고용 렌더 */
-function initInspectCompanionTab(){
-  let data = null;
-  try { data = JSON.parse(localStorage.getItem(COMPANION_STORE) || 'null'); } catch(e){}
-  // 문서 view 진입 우선
-  document.body.dataset.view = 'inspect-result';
-  document.body.dataset.writeVariant = 'extra';
-  document.body.classList.add('is-inspect-companion');
-  if(!data || !data.inspection){
-    const inspBody = document.getElementById('inspBody');
-    if(inspBody) inspBody.innerHTML = '<div style="padding:60px 40px;text-align:center;color:#94A3B8;font-size:13px;">이 창은 재검사 참고용입니다.<br><span style="font-size:11.5px;">원래 창에서 [수정하러 가기] 버튼으로 다시 열어주세요.</span></div>';
-    return;
-  }
-  currentInspection = data.inspection;
-  model.length = 0;
-  (data.model || []).forEach(m => model.push({...m}));
-  renderInspectionResult();
-  // CTA 는 참고 모드에서 숨김
-  const cta = document.getElementById('inspCta');
-  if(cta) cta.style.display = 'none';
-  // 하단 [결과지로 돌아가기] → [탭 닫기] 로 재라벨
-  const backBtn = document.querySelector('.insp-back');
-  if(backBtn){
-    backBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 창 닫기';
-    backBtn.onclick = () => window.close();
-  }
-  // storage 이벤트 리스닝 — 원래 탭이 재검사 시 localStorage 갱신하면 자동 refresh
-  window.addEventListener('storage', (e) => {
-    if(e.key === COMPANION_STORE) initInspectCompanionTab();
-  });
-}
-// URL param ?rs=1 이면 companion 초기화 — readyState 체크로 즉시/지연 실행 분기
-(function(){
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if(params.get('rs') === '1'){
-      const run = () => setTimeout(initInspectCompanionTab, 30);
-      if(document.readyState === 'complete' || document.readyState === 'interactive'){
-        run();
-      } else {
-        window.addEventListener('DOMContentLoaded', run);
-        window.addEventListener('load', run);
-      }
-    }
-  } catch(e) {}
 })();
 
 function applyQuoteLabel(){
@@ -6845,7 +6704,6 @@ function seedDemo(){
 (function autoInitVariant(){
   try{
     const params = new URLSearchParams(location.search);
-    if(params.get('rs') === '1') return;         // 참고 팝업 창
     if(params.get('demo')) return;                // 데모 자동 시드가 처리
     setTimeout(()=>{
       // 이미 다른 view 로 진입한 경우(예: 문서함) 는 건드리지 않음
