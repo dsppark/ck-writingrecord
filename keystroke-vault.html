@@ -4186,16 +4186,18 @@ function _recomputeFromSnapshot(){
   _auditTotalChars = total;
 }
 
-// audit 이벤트가 몰릴 때 rAF 로 한 번만 재계산 (DOM sync 대기 겸 throttle)
-let _snapRAF = 0;
+// audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (DOM sync 대기 겸 throttle).
+// requestAnimationFrame 은 탭 비활성·렌더 정지 시 콜백이 지연/무산돼 카운터가 갱신
+// 안 되는 문제가 있어 setTimeout(0) 사용 — 백그라운드에서도 확실히 실행됨.
+let _snapTimer = 0;
 function _scheduleSnapshotRecompute(){
-  if(_snapRAF) return;
-  _snapRAF = requestAnimationFrame(() => {
-    _snapRAF = 0;
+  if(_snapTimer) return;
+  _snapTimer = setTimeout(() => {
+    _snapTimer = 0;
     try { _recomputeFromSnapshot(); } catch(e){ console.warn('snapshot recompute fail', e); }
     if(typeof updateStats === 'function') updateStats();
     try { _renderAuditOverlay(); } catch(e){}
-  });
+  }, 16);
 }
 
 /* AI/paste 블록에 보라 음영 overlay 렌더. 원본 텍스트를 innerText 에서 찾아
@@ -4579,14 +4581,14 @@ function _bindMuhaEvents(){
           changed = true;
         }
       }
-      if(changed) requestAnimationFrame(() => { try { _renderAuditOverlay(); } catch(e){} });
+      if(changed) setTimeout(() => { try { _renderAuditOverlay(); } catch(e){} }, 16);
     }, 30);
   });
   // 창 리사이즈 시 overlay 재계산
   if(!window.__ksvOverlayResizeBound){
     window.__ksvOverlayResizeBound = true;
     window.addEventListener('resize', () => {
-      requestAnimationFrame(() => { try { _renderAuditOverlay(); } catch(e){} });
+      setTimeout(() => { try { _renderAuditOverlay(); } catch(e){} }, 16);
     });
   }
   // 키스트로크 카운트 (modifier 단독·복사/붙여넣기 단축키 제외)
