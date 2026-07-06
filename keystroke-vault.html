@@ -4090,13 +4090,33 @@ function _tallyReset(){
 const _auditBlocks = [];
 let _auditBlockSeq = 0;
 
-function _auditShift(refFrom, delta){
-  // refFrom 위치 이후 블록 range 를 delta 만큼 이동
+function _auditShift(refFrom, delta, exceptBlock){
+  // refFrom 위치 이후 블록 range 를 delta 만큼 이동. to 가 from 밑으로 못 감.
+  // exceptBlock 이 주어지면 그 블록은 제외 (자기 자신은 이미 조정된 상태).
   if(!delta) return;
   for(const b of _auditBlocks){
-    if(b.from >= refFrom){ b.from += delta; b.to += delta; }
-    else if(b.to > refFrom){ b.to += delta; }
+    if(exceptBlock && b === exceptBlock) continue;
+    if(b.from >= refFrom){
+      b.from += delta;
+      b.to   = Math.max(b.from, b.to + delta);
+    } else if(b.to > refFrom){
+      b.to = Math.max(b.from, b.to + delta);
+    }
   }
+}
+
+/* blocks 상태에서 tally 를 재계산. delta 누적 오차 방지. */
+function _recomputeTally(){
+  let ai = 0, paste = 0, revised = 0;
+  for(const b of _auditBlocks){
+    if(b.source === 'ai')    ai    += (b.remainOrig|0);
+    if(b.source === 'paste') paste += (b.remainOrig|0);
+    revised += (b.revisedInside|0);
+  }
+  _tally.ai      = ai;
+  _tally.paste   = paste;
+  _tally.revised = revised;
+  _tally.typing  = Math.max(0, (_auditTotalChars|0) - ai - paste - revised);
 }
 
 /* onAudit 이벤트를 실시간 카운터·블록 상태에 반영. */
@@ -4113,10 +4133,12 @@ function _handleAuditEntry(entry){
   const netDelta = insertedLen - deletedLen;
   const inputSource = entry.inputSource || 'typing';
 
-  // 이 이벤트가 어느 블록의 '경계 안' (앞·뒤 제외) 에서 발생했는지
+  // 이 이벤트가 어느 블록의 '경계 안' (앞·뒤 제외) 에서 발생했는지.
+  // remainOrig=0 이어도 revisedInside 로 살아있는 블록은 여전히 유효한 편집 영역.
   let hitBlock = null;
   for(const b of _auditBlocks){
-    if(b.remainOrig > 0 && from > b.from && to < b.to){ hitBlock = b; break; }
+    if((b.remainOrig > 0 || b.revisedInside > 0)
+       && from > b.from && to < b.to){ hitBlock = b; break; }
   }
 
   if(inputSource === 'ai' || inputSource === 'paste'){
@@ -4132,63 +4154,49 @@ function _handleAuditEntry(entry){
       remainOrig: insertedLen,
       revisedInside: 0
     });
-    _tally[inputSource] += insertedLen;
   } else {
-    // 사용자 typing/편집
+    // 사용자 typing/편집 (typing / ime / 기타)
     if(hitBlock){
       // 블록 경계 안 편집 — 수정
       if(deletedLen > 0){
         const remove = Math.min(hitBlock.remainOrig, deletedLen);
         hitBlock.remainOrig -= remove;
-        _tally[hitBlock.source] = Math.max(0, _tally[hitBlock.source] - remove);
-        // 삭제된 나머지가 revised 영역이면 revised 도 감소
         const stillDel = deletedLen - remove;
         if(stillDel > 0){
           const rev = Math.min(hitBlock.revisedInside, stillDel);
           hitBlock.revisedInside -= rev;
-          _tally.revised = Math.max(0, _tally.revised - rev);
         }
       }
       if(insertedLen > 0){
         hitBlock.revisedInside += insertedLen;
-        _tally.revised += insertedLen;
       }
-      hitBlock.to += netDelta;
-      _auditShift(hitBlock.to - Math.max(0, netDelta), netDelta);
+      hitBlock.to = Math.max(hitBlock.from, hitBlock.to + netDelta);
+      // hitBlock 이후의 다른 블록만 shift (자기 자신은 위에서 이미 조정)
+      _auditShift(hitBlock.to - Math.max(0, netDelta), netDelta, hitBlock);
     } else {
       // 블록 밖 편집 — 삭제가 다른 블록을 부분/전부 삼킬 수 있음
       if(deletedLen > 0){
         for(const b of _auditBlocks){
           if(b.remainOrig === 0 && b.revisedInside === 0) continue;
           if(b.from >= from && b.to <= to){
-            // 블록 완전 삼킴
-            _tally[b.source]  = Math.max(0, _tally[b.source]  - b.remainOrig);
-            _tally.revised    = Math.max(0, _tally.revised    - b.revisedInside);
             b.remainOrig = 0; b.revisedInside = 0;
           } else if(b.from < from && b.to > to){
-            // 블록 안 부분 (경계 걸침) — 삭제분을 origin/revised 에서 비례 차감
             const removedInside = to - from;
             const removeOrig = Math.min(b.remainOrig, removedInside);
             b.remainOrig -= removeOrig;
-            _tally[b.source] = Math.max(0, _tally[b.source] - removeOrig);
             const leftover = removedInside - removeOrig;
             if(leftover > 0){
               const rev = Math.min(b.revisedInside, leftover);
               b.revisedInside -= rev;
-              _tally.revised = Math.max(0, _tally.revised - rev);
             }
           } else if(b.from >= from && b.from < to){
-            // 블록 앞부분 잘림
             const removed = to - b.from;
             const cut = Math.min(b.remainOrig, removed);
             b.remainOrig -= cut;
-            _tally[b.source] = Math.max(0, _tally[b.source] - cut);
           } else if(b.to > from && b.to <= to){
-            // 블록 뒷부분 잘림
             const removed = b.to - from;
             const cut = Math.min(b.remainOrig, removed);
             b.remainOrig -= cut;
-            _tally[b.source] = Math.max(0, _tally[b.source] - cut);
           }
         }
       }
@@ -4198,7 +4206,8 @@ function _handleAuditEntry(entry){
   // 총 문자수는 audit 이벤트의 net delta 누적으로 tracking (DOM sync 시점 무관)
   const insertedNonNL = insertedText.replace(/\n/g, '').length;
   _auditTotalChars = Math.max(0, _auditTotalChars + insertedNonNL - Math.max(0, deletedLen));
-  _tally.typing = Math.max(0, _auditTotalChars - _tally.ai - _tally.paste - _tally.revised);
+  // tally 를 blocks 상태에서 매번 재계산 — delta 누적 오차 방지
+  _recomputeTally();
   if(typeof updateStats === 'function') updateStats();
 }
 
