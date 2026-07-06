@@ -3874,39 +3874,37 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    // muha 에 직접 삽입 — pendingAi 로 마킹해 _syncMuhaModel 이 source=ai 로 처리
-    _pendingAiText   = text;
-    _pendingAiTs     = Date.now();
-    _pendingAiPrompt = promptHint || '';
-    _tally.ai += text.length;
-    // AI 이벤트는 즉시 push (SEC-07 외부 유입 로그·리플레이 마커에 필요)
-    const _aiBm = ++blockSeq;
-    events.push({ts:_pendingAiTs, type:'ai', srcFamily:'ai', n:text.length, isInsert:true,
-                 meta:{blockMark:_aiBm, blockSize:text.length, text:text, prompt:_pendingAiPrompt}});
-    if(typeof updateStats === 'function') updateStats();
-    const el = _findMuhaEditable();
-    if(el){
-      el.focus();
-      // caret 을 문서의 마지막 텍스트 노드 끝으로 정확히 이동 — selectNodeContents 는 tiptap 이
-      // 앞 내용을 대체 selection 으로 인식할 수 있어 유실 위험
-      const range = document.createRange();
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      let last = null;
-      while(walker.nextNode()) last = walker.currentNode;
-      if(last){
-        range.setStart(last, last.textContent.length);
-      } else {
-        range.setStart(el, el.childNodes.length);
+    // muha controller.insertText(text, {auditSource:'ai'}) 로 삽입.
+    // 이러면 muha 자체 audit 이벤트에 inputSource='ai' 로 마킹되어, 우리가
+    // 유추 없이 onAudit 콜백에서 정확한 source 로 events 에 push. 카운터도 자동 반영.
+    const controller = window.__muhaController;
+    if(controller && typeof controller.insertText === 'function'){
+      // 문서 끝이 개행이 아니면 개행 먼저 삽입 (typing 으로 취급되도록 옵션 없이)
+      const el = _findMuhaEditable();
+      if(el){
+        el.focus();
+        try { controller.focus && controller.focus(); } catch(e){}
+        const cur = (el.innerText || '').replace(/\u00A0/g, ' ');
+        if(cur.length > 0 && !cur.endsWith('\n')){
+          try { controller.insertText('\n', {auditSource:'ai'}); } catch(e){}
+        }
       }
-      range.collapse(true);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      // 앞에 개행 필요 시 추가 후 텍스트 삽입 (execCommand 로 tiptap 이 인식)
-      const cur = (el.innerText || '').replace(/\u00A0/g, ' ');
-      const prefix = (cur.length > 0 && !cur.endsWith('\n')) ? '\n' : '';
-      document.execCommand('insertText', false, prefix + text);
+      try { controller.insertText(text, {auditSource:'ai'}); }
+      catch(e){ console.warn('controller.insertText fail', e); }
+    } else {
+      // controller 준비 전이면 fallback — execCommand (nonAudit)
+      console.warn('muha controller not ready; fallback execCommand');
+      const el = _findMuhaEditable();
+      if(el){
+        el.focus();
+        document.execCommand('insertText', false, text);
+      }
     }
+    // AI 프롬프트 hint 는 audit entry 로는 안 실려서 별도 side-log 로 유지
+    try {
+      window.__aiPromptLog = window.__aiPromptLog || [];
+      window.__aiPromptLog.push({ts: Date.now(), text, prompt: promptHint || ''});
+    } catch(e){}
     if(!stats.firstTs) stats.firstTs = Date.now();
     stats.lastTs = Date.now();
     if(typeof showRec === 'function') showRec();
@@ -4076,9 +4074,133 @@ function counts(){
   });
   return c;
 }
-// ── UI 카운터 tally: 이벤트 발생 시점에 누적. diff 로 재구성하지 않아 안정적. ──
+// ── UI 카운터 — muha onAudit 이벤트 기반. 유추 없이 소스 오브 트루스. ──
 const _tally = {typing:0, ai:0, paste:0, revised:0};
-function _tallyReset(){ _tally.typing=0; _tally.ai=0; _tally.paste=0; _tally.revised=0; }
+let _auditTotalChars = 0;
+function _tallyReset(){
+  _tally.typing = _tally.ai = _tally.paste = _tally.revised = 0;
+  _auditBlocks.length = 0;
+  _auditBlockSeq = 0;
+  _auditTotalChars = 0;
+}
+
+// AI/paste 삽입 블록 tracking. 각 블록의 tiptap position 범위(from~to)는 후속
+// 이벤트에 따라 shift 됨. remainOrig = 원본 잔여 글자 수, revisedInside = 그 블록
+// 안에 사용자가 추가한 글자 수. 경계(from, to) 자체는 앞/뒤 제외 규칙 반영.
+const _auditBlocks = [];
+let _auditBlockSeq = 0;
+
+function _auditShift(refFrom, delta){
+  // refFrom 위치 이후 블록 range 를 delta 만큼 이동
+  if(!delta) return;
+  for(const b of _auditBlocks){
+    if(b.from >= refFrom){ b.from += delta; b.to += delta; }
+    else if(b.to > refFrom){ b.to += delta; }
+  }
+}
+
+/* onAudit 이벤트를 실시간 카운터·블록 상태에 반영. */
+function _handleAuditEntry(entry){
+  if(!entry || entry.source !== 'document-delta') return;
+  const step = entry.steps && entry.steps[0];
+  if(!step || step.stepType !== 'replace') return;
+  const from = step.from|0, to = step.to|0;
+  const insertedText = (step.slice && step.slice.content)
+    ? step.slice.content.map(c => c.text || '').join('')
+    : '';
+  const deletedLen = Math.max(0, to - from);
+  const insertedLen = insertedText.length;
+  const netDelta = insertedLen - deletedLen;
+  const inputSource = entry.inputSource || 'typing';
+
+  // 이 이벤트가 어느 블록의 '경계 안' (앞·뒤 제외) 에서 발생했는지
+  let hitBlock = null;
+  for(const b of _auditBlocks){
+    if(b.remainOrig > 0 && from > b.from && to < b.to){ hitBlock = b; break; }
+  }
+
+  if(inputSource === 'ai' || inputSource === 'paste'){
+    // 새 외부 유입 블록. 이 삽입 자체는 수정이 아님.
+    _auditShift(from, netDelta);
+    _auditBlocks.push({
+      id: ++_auditBlockSeq,
+      source: inputSource,
+      origText: insertedText,
+      origLen: insertedLen,
+      from: from,
+      to: from + insertedLen,
+      remainOrig: insertedLen,
+      revisedInside: 0
+    });
+    _tally[inputSource] += insertedLen;
+  } else {
+    // 사용자 typing/편집
+    if(hitBlock){
+      // 블록 경계 안 편집 — 수정
+      if(deletedLen > 0){
+        const remove = Math.min(hitBlock.remainOrig, deletedLen);
+        hitBlock.remainOrig -= remove;
+        _tally[hitBlock.source] = Math.max(0, _tally[hitBlock.source] - remove);
+        // 삭제된 나머지가 revised 영역이면 revised 도 감소
+        const stillDel = deletedLen - remove;
+        if(stillDel > 0){
+          const rev = Math.min(hitBlock.revisedInside, stillDel);
+          hitBlock.revisedInside -= rev;
+          _tally.revised = Math.max(0, _tally.revised - rev);
+        }
+      }
+      if(insertedLen > 0){
+        hitBlock.revisedInside += insertedLen;
+        _tally.revised += insertedLen;
+      }
+      hitBlock.to += netDelta;
+      _auditShift(hitBlock.to - Math.max(0, netDelta), netDelta);
+    } else {
+      // 블록 밖 편집 — 삭제가 다른 블록을 부분/전부 삼킬 수 있음
+      if(deletedLen > 0){
+        for(const b of _auditBlocks){
+          if(b.remainOrig === 0 && b.revisedInside === 0) continue;
+          if(b.from >= from && b.to <= to){
+            // 블록 완전 삼킴
+            _tally[b.source]  = Math.max(0, _tally[b.source]  - b.remainOrig);
+            _tally.revised    = Math.max(0, _tally.revised    - b.revisedInside);
+            b.remainOrig = 0; b.revisedInside = 0;
+          } else if(b.from < from && b.to > to){
+            // 블록 안 부분 (경계 걸침) — 삭제분을 origin/revised 에서 비례 차감
+            const removedInside = to - from;
+            const removeOrig = Math.min(b.remainOrig, removedInside);
+            b.remainOrig -= removeOrig;
+            _tally[b.source] = Math.max(0, _tally[b.source] - removeOrig);
+            const leftover = removedInside - removeOrig;
+            if(leftover > 0){
+              const rev = Math.min(b.revisedInside, leftover);
+              b.revisedInside -= rev;
+              _tally.revised = Math.max(0, _tally.revised - rev);
+            }
+          } else if(b.from >= from && b.from < to){
+            // 블록 앞부분 잘림
+            const removed = to - b.from;
+            const cut = Math.min(b.remainOrig, removed);
+            b.remainOrig -= cut;
+            _tally[b.source] = Math.max(0, _tally[b.source] - cut);
+          } else if(b.to > from && b.to <= to){
+            // 블록 뒷부분 잘림
+            const removed = b.to - from;
+            const cut = Math.min(b.remainOrig, removed);
+            b.remainOrig -= cut;
+            _tally[b.source] = Math.max(0, _tally[b.source] - cut);
+          }
+        }
+      }
+      _auditShift(from, netDelta);
+    }
+  }
+  // 총 문자수는 audit 이벤트의 net delta 누적으로 tracking (DOM sync 시점 무관)
+  const insertedNonNL = insertedText.replace(/\n/g, '').length;
+  _auditTotalChars = Math.max(0, _auditTotalChars + insertedNonNL - Math.max(0, deletedLen));
+  _tally.typing = Math.max(0, _auditTotalChars - _tally.ai - _tally.paste - _tally.revised);
+  if(typeof updateStats === 'function') updateStats();
+}
 
 // UI 카운터 — muha innerText 기반, AI/paste 원본을 substring 단위로 매칭.
 // 완전일치 실패 시 반으로 잘라 재귀적으로 각각 시도 (recursive halving) — 삭제된
@@ -4633,7 +4755,6 @@ function ensureMuhaEditor(){
         try {
           window.__muhaAudit = window.__muhaAudit || [];
           window.__muhaAudit.push(entry);   // 콘솔에서 window.__muhaAudit 로 확인
-          // events 배열에도 push. type 은 audit-<source> 로 구분해 기존 이벤트와 충돌 방지.
           events.push({
             ts: entry.ts || Date.now(),
             type: 'audit-' + (entry.source || 'unknown'),
@@ -4641,6 +4762,8 @@ function ensureMuhaEditor(){
             audit: entry,
             isInsert: false
           });
+          // 실시간 카운터·블록 tracking 반영
+          if(typeof _handleAuditEntry === 'function') _handleAuditEntry(entry);
         } catch(e){ console.warn('onAudit handler fail', e); }
       },
     });
