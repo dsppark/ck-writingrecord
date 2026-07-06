@@ -6090,9 +6090,12 @@ async function buildReportFromSession(){
   setText('m_runChars', String(longest.chars));
   setText('m_runDur', String(Math.round(longest.durMs/1000)));
   setText('m_retention', retention===null ? '—' : String(retention));
-  // breakdown bars
-  const bdBars=document.querySelectorAll('#sec-02 .grid.grid-cols-1 .h-1\\.5 > div');
-  const bdValues=document.querySelectorAll('#sec-02 .grid.grid-cols-1 .font-mono');
+  // breakdown bars — 실제 HTML 구조(.bd-val / .bd-bar > div)에 맞춘 선택자.
+  // 구버전 선택자(.font-mono / .h-1.5)는 현재 마크업과 불일치해 하드코딩 목업이
+  // 그대로 노출되던 문제 수정. sec-02 안 순서: 직접타이핑/AI수정/붙여넣기수정/
+  // 수정품질/비선형커서/사고시간/(점진적/마무리) — 앞 6개가 bdData 와 매칭.
+  const bdBars=document.querySelectorAll('#sec-02 .bd-bar > div');
+  const bdValues=document.querySelectorAll('#sec-02 .bd-val');
   const bdData=[
     {v:pctTyping.toFixed(1)+'%', w:pctTyping},
     {v:((c.aiInternal/Math.max(1,c.ai+c.aiEdited+c.aiInternal))*100).toFixed(1)+'%', w:Math.min(100,(c.aiInternal/Math.max(1,c.ai+c.aiEdited+c.aiInternal))*100)},
