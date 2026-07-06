@@ -4138,6 +4138,14 @@ function _handleAuditEntry(entry){
   const netDelta = insertedLen - deletedLen;
   const inputSource = entry.inputSource || 'typing';
 
+  // 한글 IME 조합 progress 는 자모 교체(예: 'ㄱ'→'가'→'간')로, 실제 삭제·삽입이
+  // 아니라 조합 단계일 뿐. audit 은 deletedLen==insertedLen==1 인 replace 로 옴.
+  // 이걸 그대로 처리하면 원본이 감소하는 오탐 발생. 조합 progress 는 skip.
+  // 사용자가 완성 문자를 '입력' 하는 것은 별도 pure-insert audit(deletedLen=0)로 옴.
+  if(inputSource === 'ime' && deletedLen > 0 && deletedLen === insertedLen){
+    return;
+  }
+
   // 이 이벤트가 어느 블록의 '경계 안' (앞·뒤 제외) 에서 발생했는지.
   // remainOrig=0 이어도 revisedInside 로 살아있는 블록은 여전히 유효한 편집 영역.
   let hitBlock = null;
