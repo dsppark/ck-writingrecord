@@ -4938,37 +4938,83 @@ function splitParagraphsForInspection(){
   return paragraphs;
 }
 
-/* mock — 결정론적 규칙: 전체 non-\n 문자 수의 뒷 50% 를 하나의 AI 의심 세그먼트로 반환.
-   문단 경계 무시. non-\n 인덱스 기준으로 정확히 절반 위치부터 끝까지. */
-function mockDetectAISuspect(){
-  const total = model.filter(m => m.ch !== '\n').length;
-  if(total < 8) return [];
-  const halfCount = Math.ceil(total / 2);   // 뒷 절반에 들어갈 non-\n 문자 개수
-  const halfStartNonNL = total - halfCount; // 앞에서 이만큼 지나면 뒷 절반 시작
-  // model 안에서 non-\n 카운터로 시작 위치 찾기
-  let seen = 0, startModelIdx = -1;
-  for(let i = 0; i < model.length; i++){
-    if(model[i].ch === '\n') continue;
-    if(seen === halfStartNonNL){ startModelIdx = i; break; }
-    seen++;
+/* 원본 텍스트를 300~500자 단락 청크로 결정론 분할.
+   400자 목표. 300자 이상 지나서 문장 종료 문자(. ! ? \n) 를 만나면 그 지점에서 끊음.
+   500자 넘어가면 강제 끊음. 반환: [{start, end, text, chars}] (start/end 는 원본 text 인덱스). */
+function _splitTextIntoChunks(text){
+  const chunks = [];
+  const N = text.length;
+  const MIN = 300, MAX = 500;
+  const enders = new Set(['.', '!', '?', '\n', '。', '?', '!']);
+  let i = 0;
+  while(i < N){
+    let end = Math.min(N, i + MAX);
+    let breakAt = -1;
+    // 청크 최소 크기 도달 후, 문장 종료 문자에서 끊음
+    for(let j = i + MIN; j < end; j++){
+      if(enders.has(text[j])){ breakAt = j + 1; break; }
+    }
+    if(breakAt < 0) breakAt = end;  // 없으면 MAX 지점
+    // 마지막 남은 조각이 너무 짧으면 이전 청크에 병합
+    if(N - breakAt > 0 && N - breakAt < MIN && chunks.length > 0){
+      breakAt = N;
+    }
+    const chunkText = text.slice(i, breakAt);
+    chunks.push({
+      start: i,
+      end: breakAt,
+      text: chunkText,
+      chars: chunkText.replace(/\n/g, '').length
+    });
+    i = breakAt;
   }
-  if(startModelIdx < 0) return [];
-  const endModelIdx = model.length - 1;
-  const spanChars = model.slice(startModelIdx, endModelIdx + 1).map(m => m.ch);
-  const spanText = spanChars.join('');
-  const spanCharCount = spanChars.filter(ch => ch !== '\n').length;
-  const ratio = spanCharCount / total;
-  const level = ratio >= 0.60 ? 'high' : ratio >= 0.45 ? 'mid' : 'low';
-  return [{
-    spanId: 'sp_001',
-    startIdx: startModelIdx,
-    endIdx:   endModelIdx,
-    level,
-    ratio,
-    features: ['자동 판정: 문서 뒷부분','문체·톤 일관성','추상 어휘 비중 높음'],
-    text: spanText,
-    originalCharCount: spanCharCount
-  }];
+  return chunks;
+}
+
+/* 검사 결과 렌더/판정 공용 — rawText 를 정확히 문자 절반 지점에서 자른 뒤 앞/뒤
+   각각을 300~500자 청크로 분할. 앞 청크는 미탐(clear), 뒤 청크는 의심(suspect). */
+function _getInspectionChunks(rawText){
+  const nonNLTotal = rawText.replace(/\n/g, '').length;
+  if(nonNLTotal === 0) return { chunks: [], splitRawIdx: 0, nonNLTotal: 0 };
+  const halfPoint = Math.ceil(nonNLTotal / 2);
+  let seen = 0, splitRawIdx = rawText.length;
+  for(let i = 0; i < rawText.length; i++){
+    if(rawText[i] !== '\n') seen++;
+    if(seen >= halfPoint){ splitRawIdx = i + 1; break; }
+  }
+  const frontRaw = rawText.slice(0, splitRawIdx);
+  const backRaw  = rawText.slice(splitRawIdx);
+  const front = _splitTextIntoChunks(frontRaw).map(c => ({...c, isSuspect: false}));
+  const back  = _splitTextIntoChunks(backRaw).map(c => ({
+    start: c.start + splitRawIdx,
+    end:   c.end + splitRawIdx,
+    text:  c.text,
+    chars: c.chars,
+    isSuspect: true
+  }));
+  // chunkIdx 를 전체 배열 인덱스로 부여
+  const chunks = [...front, ...back].map((c, i) => ({...c, chunkIdx: i}));
+  return { chunks, splitRawIdx, nonNLTotal };
+}
+
+/* mock 판정 — _getInspectionChunks 의 뒷 반쪽 청크(isSuspect=true)들을 각각 AI 의심
+   span 으로 반환. 재검사 수정률 계산 기준으로 originalCharCount / text 를 유지. */
+function mockDetectAISuspect(){
+  const rawText = model.map(m => m.ch).join('');
+  const info = _getInspectionChunks(rawText);
+  if(info.nonNLTotal < 8) return [];
+  const spans = info.chunks.filter(c => c.isSuspect && c.chars > 0).map((c, i) => ({
+    spanId: 'sp_' + String(i + 1).padStart(3, '0'),
+    chunkIdx: c.chunkIdx,
+    startIdx: c.start,
+    endIdx:   c.end - 1,
+    level: 'mid',
+    ratio: c.chars / info.nonNLTotal,
+    features: ['추상적·일반적 내용 구성', '복잡한 문장 및 서술 구조', '과도하게 경직된 문어체'],
+    text: c.text,
+    originalCharCount: c.chars
+  }));
+  return spans;
 }
 
 /* 원본 텍스트 T 가 현재 문서 raw 안에 남아있는 가장 긴 연속 substring 길이. */
@@ -5080,22 +5126,24 @@ function renderInspectionResult(){
   const tInput = document.getElementById('docTitle');
   if(titleEl) titleEl.textContent = ((tInput?.value)||'제목 없음') + '.hwpx';
 
-  // 본문 렌더 — 문단 단위로 span 매칭
-  const paragraphs = splitParagraphsForInspection();
-  const suspMap = {};
-  suspectSpans.forEach(sp => { suspMap[sp.startIdx] = sp; });
+  // 본문 렌더 — _getInspectionChunks 로 앞/뒤 반쪽을 청크로 나눔. 앞 청크는 미탐,
+  // 뒤 청크는 AI 의심(보라 음영). suspectSpans 의 chunkIdx 와 매칭.
+  const rawText = model.map(m => m.ch).join('');
+  const info = _getInspectionChunks(rawText);
+  const spanByChunkIdx = {};
+  suspectSpans.forEach(sp => { if(sp.chunkIdx != null) spanByChunkIdx[sp.chunkIdx] = sp; });
   const content = document.getElementById('inspContent');
   if(content){
-    content.innerHTML = paragraphs.map(p => {
-      const sp = suspMap[p.startIdx];
-      const txt = _escInsp(p.chars.map(c => c.ch).join(''));
+    content.innerHTML = info.chunks.map(c => {
+      const txt = _escInsp(c.text).replace(/\n/g, '<br>');
+      const sp = spanByChunkIdx[c.chunkIdx];
       if(sp){
         const isAck = acknowledgedSpans.includes(sp.spanId);
         const cls = isAck ? 'ai-acknowledged' : 'ai-suspect';
         const badge = isAck ? '<span class="ack-badge">작성 증명 인정</span>' : '';
         return `<p class="${cls}" data-span-id="${sp.spanId}">${txt}${badge}</p>`;
       }
-      return `<p>${txt}</p>`;
+      return `<p class="chunk-clear">${txt}</p>`;
     }).join('');
   }
 
@@ -5197,12 +5245,14 @@ function enterReinspect(){
     document.body.dataset.writeVariant = 'extra';
     return;
   }
-  // 1) 원본 텍스트 확보
-  const text = model.map(m => m.ch).join('');
-  const paragraphs = text.split('\n');
+  // 1) 원본 텍스트를 검사 결과와 동일하게 앞/뒤 반쪽 청크로 나눠 에디터에 문단
+  //    단위로 로드. 사용자가 미탐/의심 청크 경계를 시각적으로 인지할 수 있도록
+  //    각 청크를 별도 문단으로 넣고, 청크 사이는 빈 문단 하나 추가 (자연 개행).
+  const rawText = model.map(m => m.ch).join('');
+  const chunks = _getInspectionChunks(rawText).chunks;
 
-  // 2) events 를 AI 세그먼트로 재구축. muha onChange → _syncMuhaModel 이 이 events
-  //    를 LCS 매칭해 model.source='ai' 로 자동 마킹하게 한다.
+  // 2) events 를 AI 세그먼트별로 push. muha onChange → _syncMuhaModel 의 LCS
+  //    매칭이 model.source='ai' 로 자동 마킹. 청크 원본 텍스트에서 개행은 유지.
   events.length = 0;
   editOps.length = 0;
   const nowTs = Date.now();
@@ -5221,21 +5271,34 @@ function enterReinspect(){
   document.body.dataset.writeVariant = 'extra';
   window.scrollTo(0, 0);
 
-  // 4) muha 에디터에 원문 로드
+  // 4) muha 에디터에 chunks 단위로 로드. 각 청크 안 개행은 <br> 로 보존, 청크 사이는
+  //    별도 <p> (문단) 로 자연 개행 처리.
   try {
     const controller = window.__muhaController;
-    const body = {
-      type: 'doc',
-      content: paragraphs.map(p => ({
+    const chunkToParagraphs = (chunkText) => {
+      // 청크 안에 이미 개행이 있으면 그것으로 sub-paragraph 분리
+      return chunkText.split('\n').map(line => ({
         type: 'paragraph',
-        content: p ? [{ type: 'text', text: p }] : []
-      }))
+        content: line ? [{ type: 'text', text: line }] : []
+      }));
     };
+    const paragraphNodes = chunks.flatMap((c, idx) => {
+      const paras = chunkToParagraphs(c.text);
+      // 청크 사이에 빈 문단 하나 넣어 시각적 구분
+      if(idx < chunks.length - 1) paras.push({ type: 'paragraph', content: [] });
+      return paras;
+    });
+    const body = { type: 'doc', content: paragraphNodes };
     if(controller && typeof controller.replaceBody === 'function'){
       controller.replaceBody(body);
     } else {
       const el = _findMuhaEditable();
-      if(el) el.innerHTML = paragraphs.map(p => '<p>' + (p || '<br/>') + '</p>').join('');
+      if(el){
+        el.innerHTML = chunks.map(c => {
+          const lines = c.text.split('\n').map(ln => '<p>' + (ln || '<br/>') + '</p>').join('');
+          return lines;
+        }).join('<p><br/></p>');
+      }
     }
   } catch(e){ console.warn('reinspect body replace fail', e); }
   if(typeof updateStats === 'function') updateStats();
