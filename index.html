@@ -2226,8 +2226,9 @@
   </div>
   <div class="docview-actions">
     <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
-    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button>
-    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 증명 리포트 확인 ›</button>
+    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">수정</button>
+    <button class="dv-btn" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 검증 결과 조회</button>
+    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxReinspectDoc(currentDocId);">문서 검사하기 ›</button>
   </div>
 </section>
 
@@ -4276,26 +4277,52 @@ function boxSaveCurrentDoc(){
   };
   let id;
   if(currentDocId){
-    // 동일 문서 upsert — 첫 번째 행으로 끌어올림 + saveCount 증가
+    // 동일 문서 upsert — 첫 번째 행으로 끌어올림 + saveCount 증가 + 검사 이력 유지
     const idx = docs.findIndex(d => d.id === currentDocId);
     if(idx >= 0){
       const prev = docs[idx];
-      const updated = {...prev, ...snapshot, id: currentDocId, saveCount: (prev.saveCount||1) + 1, createdAt: prev.createdAt || prev.savedAt};
+      const updated = {
+        ...prev, ...snapshot, id: currentDocId,
+        saveCount: (prev.saveCount||1) + 1,
+        createdAt: prev.createdAt || prev.savedAt,
+        // 이전에 누적된 inspHistory 유지, currentInspection 은 최신 회차로 승계
+        inspHistory: prev.inspHistory || [],
+        currentInspection: currentInspection ? {...currentInspection} : (prev.currentInspection || null)
+      };
       docs.splice(idx, 1);
       docs.unshift(updated);
       id = currentDocId;
     } else {
       // 메모리상의 id가 store에 없으면 새로 생성
       id = currentDocId;
-      docs.unshift({id, ...snapshot, saveCount:1, createdAt: now});
+      docs.unshift({id, ...snapshot, saveCount:1, createdAt: now,
+        inspHistory: [], currentInspection: currentInspection ? {...currentInspection} : null});
     }
   } else {
     id = 'd_' + now;
     currentDocId = id;
-    docs.unshift({id, ...snapshot, saveCount:1, createdAt: now});
+    docs.unshift({id, ...snapshot, saveCount:1, createdAt: now,
+      inspHistory: [], currentInspection: currentInspection ? {...currentInspection} : null});
   }
   boxSaveDocs(docs);
   return id;
+}
+
+/* 검사 결과를 문서 데이터에 push. runInspection 이 currentInspection 을 새로 만든 직후 호출.
+   문서별 회차 이력을 inspHistory 에 append. 회차 제한 없음. */
+function boxAppendInspectionToDoc(docId){
+  if(!docId || !currentInspection) return;
+  const docs = boxLoadDocs();
+  const idx = docs.findIndex(d => d.id === docId);
+  if(idx < 0) return;
+  const doc = docs[idx];
+  doc.inspHistory = doc.inspHistory || [];
+  doc.inspHistory.push({...currentInspection});
+  doc.currentInspection = {...currentInspection};
+  doc.lastInspectedAt = currentInspection.ts;
+  docs.splice(idx, 1);
+  docs.unshift(doc);
+  boxSaveDocs(docs);
 }
 
 // 새 문서 작성 진입 — 세션 초기화
@@ -4761,17 +4788,67 @@ function boxOpenDoc(id){
   document.body.dataset.view = 'write';
   window.scrollTo(0,0);
 }
-// '작성 증명 리포트 확인' — 보기 화면에서 호출
+/* ---------- 유료 이용권 차감 목업 ----------
+   실제 결제 연동 전까지 localStorage 에 잔여 이용권 저장. 문서 검사(재검사)
+   실행 시 confirm 으로 사용자 확인 후 1 회 차감. 잔여 0 이면 알림 후 중단. */
+const INSPECT_CREDIT_KEY = 'ksv_inspect_credit';
+const INSPECT_CREDIT_DEFAULT = 5;
+function getInspectionCreditBalance(){
+  try {
+    const v = localStorage.getItem(INSPECT_CREDIT_KEY);
+    if(v === null){
+      localStorage.setItem(INSPECT_CREDIT_KEY, String(INSPECT_CREDIT_DEFAULT));
+      return INSPECT_CREDIT_DEFAULT;
+    }
+    return Math.max(0, parseInt(v, 10) || 0);
+  } catch(e){ return INSPECT_CREDIT_DEFAULT; }
+}
+function setInspectionCreditBalance(n){
+  try { localStorage.setItem(INSPECT_CREDIT_KEY, String(Math.max(0, n|0))); } catch(e){}
+}
+function consumeInspectionCredit(){
+  const bal = getInspectionCreditBalance();
+  if(bal <= 0){
+    alert('이용권이 소진되었습니다. 결제 후 다시 시도해주세요.');
+    return false;
+  }
+  const proceed = window.confirm(`문서 검사를 진행하면 이용권이 1회 차감됩니다.\n현재 잔여: ${bal}회\n검사를 시작할까요?`);
+  if(!proceed) return false;
+  setInspectionCreditBalance(bal - 1);
+  return true;
+}
+
+// '작성 검증 결과 조회' — 저장된 최신 검사 결과를 결과 화면으로 노출
 function boxScanDoc(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
   if(!d) return;
   _loadDocIntoSession(d);
   sessionFrozen = true;
-  if(typeof buildReportFromSession === 'function') buildReportFromSession();
-  document.body.dataset.view = 'report';
-  document.body.dataset.reportTab = 'main';
+  // 저장된 검사 이력이 있으면 그 결과를 그대로 보여주고, 없으면 최초 판정 후 결과 렌더
+  if(d.currentInspection){
+    currentInspection = {...d.currentInspection};
+    document.body.dataset.view = 'inspect-result';
+    if(typeof renderInspectionResult === 'function') renderInspectionResult();
+  } else {
+    if(typeof runInspection === 'function') runInspection();
+  }
   window.scrollTo(0,0);
+}
+
+// '문서 검사하기' — 재검사 실행. 유료 이용권 차감 목업 확인 후 진행.
+function boxReinspectDoc(id){
+  const docs = boxLoadDocs();
+  const d = docs.find(x => x.id===id);
+  if(!d) return;
+  if(typeof consumeInspectionCredit === 'function' && !consumeInspectionCredit()){
+    return;  // 사용자 취소 or 잔여 없음
+  }
+  _loadDocIntoSession(d);
+  sessionFrozen = true;
+  // 이전 검사 결과를 currentInspection 에 세팅 → runInspection 안에서 재검사 로직으로 분기
+  currentInspection = d.currentInspection ? {...d.currentInspection} : null;
+  if(typeof runInspection === 'function') runInspection();
 }
 function boxDeleteSelected(){
   const checked = Array.from(document.querySelectorAll('#boxList .box-row .box-rowchk:checked'))
@@ -4895,45 +4972,75 @@ function splitParagraphsForInspection(){
   return paragraphs;
 }
 
-/* mock — model 안 ai 계열 비중이 높은 문단을 의심으로 반환. 프로토타이핑용 결정론. */
+/* mock — 결정론적 규칙: 전체 non-\n 문자 수의 뒷 50% 를 하나의 AI 의심 세그먼트로 반환.
+   문단 경계 무시. non-\n 인덱스 기준으로 정확히 절반 위치부터 끝까지. */
 function mockDetectAISuspect(){
-  const paragraphs = splitParagraphsForInspection();
-  const spans = [];
-  paragraphs.forEach((p, idx) => {
-    const total = p.chars.length;
-    if(total < 8) return;
-    const aiCount = p.chars.filter(m => m.source==='ai' || m.source==='ai-edited' || m.source==='ai-internal').length;
-    const ratio = aiCount / total;
-    if(ratio < 0.40) return;
-    const level = ratio >= 0.70 ? 'high' : ratio >= 0.50 ? 'mid' : 'low';
-    const features = level==='high'
-      ? ['주관성 지나친 배제','추상적·일반적 내용 구성','무견해, 판단 회피적 성향']
-      : level==='mid'
-        ? ['주관성 지나친 배제','추상적·일반적 내용 구성']
-        : ['어체 통일감'];
-    const text = p.chars.map(c => c.ch).join('');
-    spans.push({
-      spanId: 'sp_' + String(idx+1).padStart(3,'0'),
-      startIdx: p.startIdx, endIdx: p.endIdx,
-      level, ratio, features,
-      text
-    });
-  });
-  return spans;
+  const total = model.filter(m => m.ch !== '\n').length;
+  if(total < 8) return [];
+  const halfCount = Math.ceil(total / 2);   // 뒷 절반에 들어갈 non-\n 문자 개수
+  const halfStartNonNL = total - halfCount; // 앞에서 이만큼 지나면 뒷 절반 시작
+  // model 안에서 non-\n 카운터로 시작 위치 찾기
+  let seen = 0, startModelIdx = -1;
+  for(let i = 0; i < model.length; i++){
+    if(model[i].ch === '\n') continue;
+    if(seen === halfStartNonNL){ startModelIdx = i; break; }
+    seen++;
+  }
+  if(startModelIdx < 0) return [];
+  const endModelIdx = model.length - 1;
+  const spanChars = model.slice(startModelIdx, endModelIdx + 1).map(m => m.ch);
+  const spanText = spanChars.join('');
+  const spanCharCount = spanChars.filter(ch => ch !== '\n').length;
+  const ratio = spanCharCount / total;
+  const level = ratio >= 0.60 ? 'high' : ratio >= 0.45 ? 'mid' : 'low';
+  return [{
+    spanId: 'sp_001',
+    startIdx: startModelIdx,
+    endIdx:   endModelIdx,
+    level,
+    ratio,
+    features: ['자동 판정: 문서 뒷부분','문체·톤 일관성','추상 어휘 비중 높음'],
+    text: spanText,
+    originalCharCount: spanCharCount
+  }];
 }
 
-/* 인정 영역 판정 — 이전 회차 suspectSpans 기준. 각 span 안 model 글자 중 typing 비중 >= 임계이면 acknowledged. */
+/* 원본 텍스트 T 가 현재 문서 raw 안에 남아있는 가장 긴 연속 substring 길이. */
+function _lcsLen(T, raw){
+  const M = T ? T.length : 0, N = raw ? raw.length : 0;
+  if(!M || !N) return 0;
+  let prev = new Array(N + 1).fill(0);
+  let cur  = new Array(N + 1).fill(0);
+  let maxLen = 0;
+  for(let i = 1; i <= M; i++){
+    for(let j = 1; j <= N; j++){
+      if(T[i-1] === raw[j-1]){
+        cur[j] = prev[j-1] + 1;
+        if(cur[j] > maxLen) maxLen = cur[j];
+      } else cur[j] = 0;
+    }
+    const tmp = prev; prev = cur; cur = tmp;
+    for(let k = 0; k <= N; k++) cur[k] = 0;
+  }
+  return maxLen;
+}
+
+/* 재검사 세그먼트별 수정률 계산. 원본 텍스트가 현재 문서에서 얼마나 남아있는지 LCS 로.
+   반환: { ackIds: [수정률 >= 30% 세그먼트], modRates: {spanId: 0~1} } */
 function computeAcknowledgedSpans(prevSpans){
   const ack = [];
-  if(!prevSpans) return ack;
+  const modRates = {};
+  if(!prevSpans || !prevSpans.length) return { ackIds: ack, modRates };
+  const rawText = model.map(m => m.ch).join('');
   prevSpans.forEach(sp => {
-    const slice = model.slice(sp.startIdx, sp.endIdx + 1).filter(m => m && m.ch !== '\n');
-    if(!slice.length) return;
-    const typing = slice.filter(m => m.source === 'typing').length;
-    const ratio = typing / slice.length;
-    if(ratio >= ACK_TYPING_THRESHOLD) ack.push(sp.spanId);
+    const origText = sp.text || '';
+    const origLen = sp.originalCharCount || origText.replace(/\n/g, '').length || 1;
+    const remainLen = _lcsLen(origText, rawText);
+    const modRate = Math.max(0, Math.min(1, 1 - (remainLen / origLen)));
+    modRates[sp.spanId] = modRate;
+    if(modRate >= 0.30) ack.push(sp.spanId);  // 30% 이상 수정 → 미탐 처리
   });
-  return ack;
+  return { ackIds: ack, modRates };
 }
 
 /* [문서 검사하기] · [재검사] 공용 실행. opts.navigate=false 이면 view 전환 스킵 */
@@ -4942,21 +5049,48 @@ function runInspection(opts){
   // 결과지·검사 진입 직전 — muha 실제 텍스트 기반으로 model 재구성
   _rebuildModelFromMuha();
   const prev = currentInspection;
-  const spans = mockDetectAISuspect();
-  const ackIds = prev ? computeAcknowledgedSpans(prev.suspectSpans) : [];
+  const isReinspect = !!(prev && prev.suspectSpans && prev.suspectSpans.length);
   const totalDocChars = model.filter(m => m.ch !== '\n').length || 1;
-  const suspectTotal = spans.reduce((s, sp) => s + (sp.endIdx - sp.startIdx + 1), 0);
-  const ackedSpans = spans.filter(sp => ackIds.includes(sp.spanId));
-  const ackTotal = ackedSpans.reduce((s, sp) => s + (sp.endIdx - sp.startIdx + 1), 0);
-  const aiRatioOrig = suspectTotal / totalDocChars;
-  const aiRatioAdjusted = Math.max(0, (suspectTotal - ackTotal) / totalDocChars);
+
+  // 1회차: 새로 판정. 2회차 이상: 이전 세그먼트 승계 후 수정률로 재평가.
+  let spans, modRates;
+  if(!isReinspect){
+    spans = mockDetectAISuspect();
+    modRates = {};
+  } else {
+    spans = prev.suspectSpans;
+    const acked = computeAcknowledgedSpans(spans);
+    modRates = acked.modRates;
+  }
+
+  // 세그먼트별 비례 감소 적용해 AI 유효 기여 문자수 계산
+  //   · 수정률 >= 30% → ack 처리, 기여 0
+  //   · 수정률 <  30% → originalCharCount * (1 - 수정률) 만큼 기여
+  let effectiveAiChars = 0;
+  let origAiChars = 0;
+  const ackIds = [];
+  spans.forEach(sp => {
+    const segLen = sp.originalCharCount || (sp.endIdx - sp.startIdx + 1);
+    origAiChars += segLen;
+    const modRate = modRates[sp.spanId] || 0;
+    if(modRate >= 0.30){ ackIds.push(sp.spanId); return; }
+    effectiveAiChars += segLen * (1 - modRate);
+  });
+  const aiRatioOrig     = Math.min(1, origAiChars      / totalDocChars);
+  const aiRatioAdjusted = Math.min(1, effectiveAiChars / totalDocChars);
+
   currentInspection = {
     rev: (prev?.rev || 0) + 1,
     ts: Date.now(),
     aiRatioOrig, aiRatioAdjusted,
     suspectSpans: spans,
-    acknowledgedSpans: ackIds
+    acknowledgedSpans: ackIds,
+    modRates
   };
+  // 이 회차 결과를 문서 이력에 append (문서가 아직 저장 전이면 skip)
+  if(currentDocId && typeof boxAppendInspectionToDoc === 'function'){
+    try { boxAppendInspectionToDoc(currentDocId); } catch(e){ console.warn('inspHistory append fail', e); }
+  }
   if(opts.navigate !== false){
     renderInspectionResult();
     document.body.dataset.reinspect = '';
