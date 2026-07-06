@@ -16,8 +16,8 @@
 </style>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <!-- muha-editor (Tiptap v3 기반 vanilla mount, extra variant 에서 Froala-style 툴바 대체) -->
-<link rel="stylesheet" href="https://muhayu.github.io/muha-editor/vanilla/editor.css?v=20260703" />
-<link rel="preload" href="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260703" as="script" />
+<link rel="stylesheet" href="https://muhayu.github.io/muha-editor/vanilla/editor.css?v=20260706" />
+<link rel="preload" href="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260706" as="script" />
 <style>
   /* muha mount 완료 전 편집기 영역을 숨겨 초기 flash 방지. */
   body[data-view="write"][data-write-variant="extra"] .editor-shell{visibility:hidden;}
@@ -4605,6 +4605,26 @@ function ensureMuhaEditor(){
       documentId: 'ksv-extra-doc',
       storage,
       placeholder: '여기에 본문을 작성하세요. 타이핑·붙여넣기·수정·삭제가 실시간으로 증적 기록됩니다.',
+      // muha 자체 audit store — 에디터가 수집한 keystroke·paste·AI 삽입 등의 원본
+      // 이벤트 로그. 우리가 innerText diff 로 유추하는 대신, 에디터가 emit 하는
+      // audit entry 를 events 배열에 그대로 누적. 향후 서버 저장·검증 지표 산출의
+      // 소스 오브 트루스.
+      onControllerReady: function(controller){
+        try {
+          window.__muhaController = controller;  // 콘솔에서 확인용 노출
+          if(controller && typeof controller.subscribeAudit === 'function'){
+            controller.subscribeAudit(function(entry){
+              try { events.push(Object.assign({}, entry, {ts: entry.ts || Date.now()})); }
+              catch(e){ console.warn('audit entry push fail', e); }
+            });
+          } else if(controller && controller.auditStore && typeof controller.auditStore.subscribe === 'function'){
+            controller.auditStore.subscribe(function(entries){
+              const last = entries && entries[entries.length - 1];
+              if(last) events.push(Object.assign({}, last, {ts: last.ts || Date.now()}));
+            });
+          }
+        } catch(e){ console.warn('onControllerReady handler fail', e); }
+      },
       onChange: function(body){
         try {
           window.__muhaCB = (window.__muhaCB||0) + 1;
@@ -6708,7 +6728,7 @@ function seedDemo(){
   // 그 이후에는 unstyled 라도 사용자에게 보이는 것이 안 보이는 것보다 낫다.
   setTimeout(function(){ document.body.classList.add('tw-ready'); }, 5000);
 </script>
-<script src="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260703"></script>
+<script src="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260706"></script>
 <script>
 (function(){
   function tryMount(){
