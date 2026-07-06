@@ -4305,20 +4305,13 @@ function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // extra: muha 실 문서 innerText 기반. 개행/공백 포함, keystroke 아님.
-    const t = _computeTallyFromMuha();
-    if(t){
-      document.getElementById('stWrite').textContent   = t.typing;
-      document.getElementById('stAi').textContent      = t.ai;
-      document.getElementById('stPaste').textContent   = t.paste;
-      document.getElementById('stRevised').textContent = t.revised;
-      extraTotalNoBreak = t.totalNoBreak;
-    } else {
-      document.getElementById('stWrite').textContent   = 0;
-      document.getElementById('stAi').textContent      = 0;
-      document.getElementById('stPaste').textContent   = 0;
-      document.getElementById('stRevised').textContent = 0;
-    }
+    // extra: audit 기반 _tally 를 그대로 사용 (유추 로직 미사용). _handleAuditEntry 가
+    // muha onAudit 이벤트마다 _recomputeTally() 로 정확한 값을 세팅해 둔 상태.
+    document.getElementById('stWrite').textContent   = _tally.typing;
+    document.getElementById('stAi').textContent      = _tally.ai;
+    document.getElementById('stPaste').textContent   = _tally.paste;
+    document.getElementById('stRevised').textContent = _tally.revised;
+    extraTotalNoBreak = _auditTotalChars;
   } else {
     // legacy: model.source 기반 (기존 동작 유지)
     const c=counts();
