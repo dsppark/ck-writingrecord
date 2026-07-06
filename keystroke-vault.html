@@ -4110,6 +4110,87 @@ function _auditShift(refFrom, delta, exceptBlock){
   }
 }
 
+/* AI/paste 블록에 보라 음영 overlay 렌더. tiptap mark 대신 별도 DOM 레이어.
+   - _auditBlocks 순회, 각 블록 원본 텍스트를 muha innerText 에서 첫 위치에 찾아
+     그 range 의 clientRects 각각에 overlay div 생성 (문단 여러 줄이면 rect 다수).
+   - pointer-events:none 이라 편집 방해 없음.
+   - hiddenByUser 플래그가 있는 블록은 skip (클릭 후 계속 숨김). */
+function _renderAuditOverlay(){
+  const el = _findMuhaEditable();
+  if(!el){ _clearAuditOverlay(); return; }
+  let layer = document.getElementById('audit-overlay-layer');
+  if(!layer){
+    layer = document.createElement('div');
+    layer.id = 'audit-overlay-layer';
+    layer.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2;';
+    // muhaMount 안 (또는 조상 relative 요소) 에 삽입
+    const host = document.getElementById('muhaMount') || el.parentElement;
+    if(host){
+      if(getComputedStyle(host).position === 'static') host.style.position = 'relative';
+      host.appendChild(layer);
+    }
+  }
+  layer.innerHTML = '';
+  const editorRect = el.getBoundingClientRect();
+  const layerRect  = layer.getBoundingClientRect();
+  const innerText  = (el.innerText || '').replace(/ /g, ' ');
+
+  for(const b of _auditBlocks){
+    if(b.hiddenByUser) continue;
+    if(b.remainOrig === 0 && b.revisedInside === 0) continue;
+    const text = b.origText || '';
+    if(text.length < 3) continue;
+    const startCharIdx = innerText.indexOf(text);
+    if(startCharIdx < 0) continue;
+    const endCharIdx = startCharIdx + text.length;
+
+    // 문자 인덱스 → DOM range
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let seen = 0, startNode = null, startOff = 0, endNode = null, endOff = 0;
+    while(walker.nextNode()){
+      const t = walker.currentNode;
+      const len = (t.textContent || '').length;
+      if(!startNode && seen + len > startCharIdx){
+        startNode = t; startOff = startCharIdx - seen;
+      }
+      if(startNode && seen + len >= endCharIdx){
+        endNode = t; endOff = endCharIdx - seen;
+        break;
+      }
+      seen += len;
+    }
+    if(!startNode || !endNode) continue;
+
+    let range;
+    try {
+      range = document.createRange();
+      range.setStart(startNode, Math.min(startOff, startNode.textContent.length));
+      range.setEnd(endNode, Math.min(endOff, endNode.textContent.length));
+    } catch(e){ continue; }
+    const rects = Array.from(range.getClientRects());
+    for(const r of rects){
+      if(r.width < 1 || r.height < 1) continue;
+      const div = document.createElement('div');
+      div.className = 'audit-overlay';
+      div.dataset.blockId = String(b.id);
+      div.style.cssText =
+        'position:absolute;pointer-events:none;' +
+        'background:rgba(147,51,234,0.14);' +
+        'border-radius:2px;' +
+        'left:'   + Math.max(0, r.left   - layerRect.left) + 'px;' +
+        'top:'    + Math.max(0, r.top    - layerRect.top ) + 'px;' +
+        'width:'  + Math.max(0, r.width) + 'px;' +
+        'height:' + Math.max(0, r.height) + 'px;';
+      layer.appendChild(div);
+    }
+  }
+}
+
+function _clearAuditOverlay(){
+  const layer = document.getElementById('audit-overlay-layer');
+  if(layer) layer.innerHTML = '';
+}
+
 /* blocks 상태에서 tally 를 재계산. delta 누적 오차 방지. */
 function _recomputeTally(){
   let ai = 0, paste = 0, revised = 0;
@@ -4222,6 +4303,8 @@ function _handleAuditEntry(entry){
   // tally 를 blocks 상태에서 매번 재계산 — delta 누적 오차 방지
   _recomputeTally();
   if(typeof updateStats === 'function') updateStats();
+  // AI/paste 음영 overlay 재계산 (DOM 반영이 늦을 수 있어 다음 frame 에)
+  requestAnimationFrame(() => { try { _renderAuditOverlay(); } catch(e){} });
 }
 
 // UI 카운터 — muha innerText 기반, AI/paste 원본을 substring 단위로 매칭.
@@ -4474,6 +4557,42 @@ function _bindMuhaEvents(){
   if(el.dataset.ksvBound) return;
   el.dataset.ksvBound = '1';
   _muhaBindRetries = 0;
+  // 사용자 클릭 → 그 위치가 AI/paste 블록 안이면 그 블록의 overlay 해제
+  //   실제 편집 의사로 간주 (사용자 명세: 클릭 = 수정 의사)
+  el.addEventListener('mousedown', () => {
+    // caret 위치는 mouseup 후 확정 — 짧게 지연 후 판정
+    setTimeout(() => {
+      const el2 = _findMuhaEditable();
+      if(!el2) return;
+      const sel = window.getSelection();
+      if(!sel || !sel.anchorNode || !el2.contains(sel.anchorNode)) return;
+      // 캐럿 부근 텍스트로 어느 블록인지 heuristic 판정
+      let node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
+      let combined = '';
+      for(let i = 0; i < 3 && node; i++){
+        combined += (node.textContent || '');
+        node = node.parentNode;
+      }
+      if(!combined) return;
+      let changed = false;
+      for(const b of _auditBlocks){
+        if(b.hiddenByUser) continue;
+        const probe = (b.origText || '').slice(0, 24);
+        if(probe.length >= 3 && combined.indexOf(probe) !== -1){
+          b.hiddenByUser = true;
+          changed = true;
+        }
+      }
+      if(changed) requestAnimationFrame(() => { try { _renderAuditOverlay(); } catch(e){} });
+    }, 30);
+  });
+  // 창 리사이즈 시 overlay 재계산
+  if(!window.__ksvOverlayResizeBound){
+    window.__ksvOverlayResizeBound = true;
+    window.addEventListener('resize', () => {
+      requestAnimationFrame(() => { try { _renderAuditOverlay(); } catch(e){} });
+    });
+  }
   // 키스트로크 카운트 (modifier 단독·복사/붙여넣기 단축키 제외)
   el.addEventListener('keydown', (e) => {
     if(sessionFrozen) return;
