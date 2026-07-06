@@ -3874,26 +3874,31 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    // muha controller.insertText(text, {auditSource:'ai'}) 로 삽입.
-    // 이러면 muha 자체 audit 이벤트에 inputSource='ai' 로 마킹되어, 우리가
-    // 유추 없이 onAudit 콜백에서 정확한 source 로 events 에 push. 카운터도 자동 반영.
     const controller = window.__muhaController;
+    const _dbg = (m, ...rest) => console.log('[appendToEditor:ai]', m, ...rest);
+    _dbg('called', { source, textLen: text.length, controllerReady: !!controller,
+                     hasInsertText: !!(controller && controller.insertText) });
     if(controller && typeof controller.insertText === 'function'){
-      // 문서 끝이 개행이 아니면 개행 먼저 삽입 (typing 으로 취급되도록 옵션 없이)
       const el = _findMuhaEditable();
       if(el){
         el.focus();
         try { controller.focus && controller.focus(); } catch(e){}
-        const cur = (el.innerText || '').replace(/\u00A0/g, ' ');
-        if(cur.length > 0 && !cur.endsWith('\n')){
-          try { controller.insertText('\n', {auditSource:'ai'}); } catch(e){}
-        }
       }
-      try { controller.insertText(text, {auditSource:'ai'}); }
-      catch(e){ console.warn('controller.insertText fail', e); }
+      const beforeLen = (window.__muhaAudit || []).length;
+      try {
+        controller.insertText(text, {auditSource: 'ai'});
+        _dbg('insertText call ok');
+      } catch(e){ console.warn('controller.insertText fail', e); }
+      // 삽입 직후 audit 이 실제로 어떤 inputSource 로 emit 됐는지 로그
+      setTimeout(() => {
+        const newAudit = (window.__muhaAudit || []).slice(beforeLen);
+        _dbg('audit emitted after ai insert:',
+             newAudit.map(a => ({ src: a.source, input: a.inputSource,
+               txt: (a.steps && a.steps[0] && a.steps[0].slice && a.steps[0].slice.content ?
+                     a.steps[0].slice.content.map(c=>c.text||'').join('') : '') })));
+      }, 50);
     } else {
-      // controller 준비 전이면 fallback — execCommand (nonAudit)
-      console.warn('muha controller not ready; fallback execCommand');
+      console.warn('[appendToEditor:ai] controller not ready — fallback execCommand');
       const el = _findMuhaEditable();
       if(el){
         el.focus();
