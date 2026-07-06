@@ -4,11 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>카피킬러 문서작성v2</title>
+<link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
 <script src="https://cdn.tailwindcss.com" onload="document.body.classList.add('tw-ready')"></script>
 <style>
-  /* Tailwind CDN 로드 완료 전까지 body 전체 숨김 + 로더 표시. 로드 완료 시 body 표시. */
-  body:not(.tw-ready){visibility:hidden;}
-  #boot-loader{visibility:visible !important;position:fixed;inset:0;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:14px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;}
+  /* Tailwind CDN 로드가 느려도 body 전체 blank 대신 편집기 영역만 hidden. LNB/header
+     같은 legacy 무관 UI 는 즉시 표시해 사용자 인지 지연을 줄임. Legacy UI 요소는
+     아래 CSS 블록에서 data-write-variant="extra" 규칙으로 즉시 숨김되어 flash 없음. */
+  body:not(.tw-ready) #view-write{visibility:hidden;}
+  body:not(.tw-ready) #boot-loader{position:fixed;inset:0;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:14px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;pointer-events:none;}
   body.tw-ready #boot-loader{display:none;}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
