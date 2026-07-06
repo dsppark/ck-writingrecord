@@ -983,7 +983,7 @@
       <div id="chatPanel" style="display:flex;">
         <div class="chat-msgs" id="chatMsgs"></div>
         <div class="chat-input-wrap">
-          <textarea class="chat-input" id="chatInput" rows="1" placeholder="요청할 내용을 입력해주세요."></textarea>
+          <textarea class="chat-input" id="chatInput" rows="1" maxlength="3000" placeholder="요청할 내용을 입력해주세요. (최대 3,000자)"></textarea>
           <button class="chat-send" id="btnSend" title="보내기" disabled>↑</button>
         </div>
         <div class="chat-foot">AI가 작성한 초안은 우측 에디터에 자동 삽입됩니다. 본인의 색채를 입혀 글을 완성해보세요.</div>
@@ -3480,11 +3480,64 @@ function computeScoreFromInputs(inp, w){
 }
 
 /* ---------- 채팅 초기화 (유형 선택 없음 — 자유 입력 기본) ---------- */
-// 항상 고정으로 노출할 가이드 옵션 2개
+// 항상 고정으로 노출할 가이드 옵션 2개 (라벨 + 생성 주제 kind + 목표 글자수)
 const DEFAULT_GUIDE_CHIPS = [
-  '인공지능에 대한 에세이를 작성해줘.',
-  '서비스 기획자 직무에 대한 자기소개서 초안을 작성해줘.',
+  { label:'인공지능과 과학의 미래에 대한 에세이 초안을 500자 이내로 작성해줘.', kind:'essay', max:500 },
+  { label:'프론트엔드 개발 직무에 대한 자기소개서 초안을 300자 이내로 작성해줘.', kind:'cover', max:300 },
 ];
+
+// AI 생성 목업 — 주제별 문장 풀. 목표 글자수까지 이어붙여 임의 텍스트 생성.
+const _AI_POOLS = {
+  essay: [
+    '인공지능은 과학이 세계를 탐구하는 방식을 근본적으로 바꾸고 있다. ',
+    '방대한 데이터 속에서 인간이 미처 발견하지 못한 패턴을 기계가 찾아낸다. ',
+    '신약 개발, 기후 예측, 우주 관측처럼 오랜 난제들이 새로운 국면을 맞이하고 있다. ',
+    '연구자는 이제 가설의 수립과 검증 과정에서 인공지능을 협력자로 삼는다. ',
+    '그러나 기술의 진보가 곧 더 나은 미래를 자동으로 보장하지는 않는다. ',
+    '알고리즘의 편향과 데이터의 한계는 과학적 결론마저 왜곡할 수 있다. ',
+    '따라서 연구의 투명성과 윤리적 책임에 대한 논의가 함께 이루어져야 한다. ',
+    '인공지능과 과학의 협력은 인간의 통찰을 대체하는 것이 아니라 확장하는 방향이어야 한다. ',
+    '결국 미래의 과학은 인간과 기계가 서로의 한계를 보완하는 협업의 무대가 될 것이다. ',
+    '우리가 어떤 질문을 던지느냐에 따라 그 도구가 향하는 미래도 달라진다. ',
+  ],
+  cover: [
+    '저는 사용자 경험을 최우선으로 고민하는 프론트엔드 개발자입니다. ',
+    'React와 TypeScript를 기반으로 유지보수가 쉬운 컴포넌트 구조를 설계해 왔습니다. ',
+    '작은 인터랙션 하나에도 사용자의 흐름과 접근성을 함께 고려하는 습관이 있습니다. ',
+    '디자이너, 백엔드 개발자와 긴밀히 소통하며 문제를 빠르게 해결한 경험이 있습니다. ',
+    '성능 최적화와 웹 표준 준수에 지속적인 관심을 두고 학습하고 있습니다. ',
+    '앞으로도 더 나은 사용자 가치를 만드는 개발자로 성장하고 싶습니다. ',
+  ],
+  free: [
+    '요청하신 주제에 대한 초안을 핵심 내용 중심으로 정리해 보았습니다. ',
+    '전체적인 논리의 흐름이 자연스럽게 이어지도록 문단을 구성했습니다. ',
+    '주장을 뒷받침하는 근거와 예시를 함께 배치해 설득력을 높였습니다. ',
+    '도입에서 문제의식을 제시하고, 본론에서 구체적으로 전개했습니다. ',
+    '마무리에서는 앞선 내용을 요약하고 시사점을 덧붙였습니다. ',
+    '초안을 바탕으로 본인의 관점과 표현을 더해 완성해 보시길 권합니다. ',
+  ],
+};
+// 프롬프트/kind 로 문장 풀 선택 후 목표 글자수까지 이어붙임
+function _genAiDraft(kind, maxChars){
+  const pool = _AI_POOLS[kind] || _AI_POOLS.free;
+  const limit = Math.max(50, maxChars || 400);
+  let out = '', i = 0, guard = 0;
+  while(out.length < limit && guard < 500){
+    const sentence = pool[i % pool.length];
+    if(out.length + sentence.length > limit) break;
+    out += sentence;
+    i++; guard++;
+  }
+  // 아무 문장도 못 넣었으면(첫 문장이 limit 초과) 첫 문장을 limit 로 자름
+  if(!out) out = pool[0].slice(0, limit);
+  return out.trim();
+}
+// 자유 입력 프롬프트에서 'N자' 를 찾아 목표 글자수로. 없으면 기본 400.
+function _parseMaxChars(text){
+  const m = (text || '').match(/(\d{2,4})\s*자/);
+  if(m){ const n = parseInt(m[1], 10); if(n >= 50 && n <= 3000) return n; }
+  return 400;
+}
 function enterChat(typeName){
   selectedType=typeName;
   const msgs=document.getElementById('chatMsgs');
@@ -3501,16 +3554,14 @@ function enterChat(typeName){
       저에게 요청할 내용을 입력해주시거나 아래 가이드 항목을 클릭해보세요.
     </div>
     <div class="guide-chips">
-      ${DEFAULT_GUIDE_CHIPS.map(g=>`<button class="guide-chip" type="button">${g.replace(/</g,'&lt;')}</button>`).join('')}
+      ${DEFAULT_GUIDE_CHIPS.map((g,i)=>`<button class="guide-chip" type="button" data-idx="${i}">${g.label.replace(/</g,'&lt;')}</button>`).join('')}
     </div>
   `;
   greet.querySelectorAll('.guide-chip').forEach(c=>{
     c.addEventListener('click',()=>{
-      const txt=c.textContent.trim();
-      const input=document.getElementById('chatInput');
-      input.value=txt;
-      input.dispatchEvent(new Event('input'));
-      sendChat();
+      const g = DEFAULT_GUIDE_CHIPS[parseInt(c.dataset.idx,10)];
+      if(!g) return;
+      runAssistant(g.label, g.kind, g.max);
     });
   });
   msgs.appendChild(greet);
@@ -3549,24 +3600,29 @@ chatInput.addEventListener('keydown',e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
 });
 btnSend.onclick=sendChat;
+// 자유 입력 전송 — 프롬프트에서 목표 글자수 파싱, 범용 톤으로 생성
 function sendChat(){
   const text=chatInput.value.trim(); if(!text) return;
-  const msgs=document.getElementById('chatMsgs');
-  const u=document.createElement('div'); u.className='msg msg-user'; u.textContent=text;
-  msgs.appendChild(u); msgs.scrollTop=msgs.scrollHeight;
   chatInput.value=''; chatInput.style.height='auto'; btnSend.disabled=true;
-  // typing dots
+  runAssistant(text, 'free', _parseMaxChars(text));
+}
+// 가이드/자유 공통 — 사용자 메시지 → 타이핑 → 임의 텍스트 생성·에디터 삽입 → 답변
+function runAssistant(promptText, kind, maxChars){
+  const msgs=document.getElementById('chatMsgs');
+  if(!msgs) return;
+  const u=document.createElement('div'); u.className='msg msg-user'; u.textContent=promptText;
+  msgs.appendChild(u); msgs.scrollTop=msgs.scrollHeight;
   const dots=document.createElement('div'); dots.className='typing-dots';
   dots.innerHTML='<span></span><span></span><span></span>';
   msgs.appendChild(dots); msgs.scrollTop=msgs.scrollHeight;
   setTimeout(()=>{
     dots.remove();
+    const draft = _genAiDraft(kind, maxChars);
+    appendToEditor(draft, 'ai', promptText);
     const r=document.createElement('div'); r.className='msg msg-ai';
-    r.textContent='초안을 작성해 우측 에디터에 넣어드렸습니다. 자유롭게 수정·보강해 보세요.';
+    r.textContent='요청하신 결과물을 우측 에디터에 넣어드렸어요. 자유롭게 수정, 보강해 본인의 글로 만들어보세요.';
     msgs.appendChild(r); msgs.scrollTop=msgs.scrollHeight;
-    const draft=AI_DEMO_DRAFTS[selectedType] || AI_DEMO_DRAFTS.default;
-    appendToEditor(draft,'ai',text);
-  },1200);
+  },1000);
 }
 
 /* ---------- 에디터 (FS-017 ~ FS-024) ---------- */
@@ -3874,11 +3930,29 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    // [정리] AI 어시스턴트 에디터 삽입 제거 — 좌측 채팅 UI 만 유지.
-    //        AI 생성 입력 이벤트 로직은 다음 단계에서 재설계.
+    // AI 어시스턴트 생성 텍스트를 muha 에디터 문서 끝에 삽입.
+    // controller.insertText(auditSource:'ai') → 에디터 audit 에 inputSource:'ai' 로 기록.
+    // 삽입 글자수를 _aiCharCount 에 누적 → 'AI생성' 카운터에 표시.
+    const controller = window.__muhaController;
+    const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+    if(controller && typeof controller.insertText === 'function'){
+      try {
+        el && el.focus();
+        if(typeof controller.collapseSelectionToEnd === 'function') controller.collapseSelectionToEnd();
+        // 문서 끝에 이미 내용이 있으면 개행으로 문단 분리
+        const cur = el ? (el.innerText || '') : '';
+        const prefix = (cur.trim().length > 0) ? '\n' : '';
+        controller.insertText(prefix + text, {auditSource:'ai'});
+        _aiCharCount += text.length;   // 순수 생성 텍스트 글자수 (개행 제외)
+      } catch(e){ console.warn('ai insert fail', e); }
+    }
+    if(!stats.firstTs) stats.firstTs = Date.now();
+    stats.lastTs = Date.now();
+    if(typeof showRec === 'function') showRec();
+    if(typeof updateStats === 'function') updateStats();
     return;
   }
-  // ── legacy(#editor) 경로 ─────────────────────  // ── legacy(#editor) 경로 ─────────────────────
+  // ── legacy(#editor) 경로 ─────────────────────
   const pos=model.length;
   const mark=++blockSeq;
   const ts=Date.now();
@@ -4046,16 +4120,22 @@ function counts(){
 // muha onAudit 원본 이벤트는 window.__auditLog 에만 raw 로 쌓는다.
 // 카운터·model 재구성은 다음 단계에서 이 로그를 소스로 새로 설계.
 
+// AI 어시스턴트가 에디터에 삽입한 순수 생성 텍스트 누적 글자수 → 'AI생성' 카운터.
+// (직접타이핑/붙여넣기/수정 카운트는 다음 단계에서 audit 로그 기반 재설계)
+let _aiCharCount = 0;
+
 function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // [정리] extra 카운터는 재설계 전까지 0 고정. audit raw 로그만 수집.
+    // AI생성만 이번 단계에서 반영. 직접타이핑/붙여넣기/수정은 다음 단계.
+    const _el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+    const _totalNoBreak = _el ? (_el.innerText || '').split(String.fromCharCode(10)).join('').length : 0;
     document.getElementById('stWrite').textContent   = 0;
-    document.getElementById('stAi').textContent      = 0;
+    document.getElementById('stAi').textContent      = _aiCharCount;
     document.getElementById('stPaste').textContent   = 0;
     document.getElementById('stRevised').textContent = 0;
-    extraTotalNoBreak = 0;
+    extraTotalNoBreak = _totalNoBreak;
   } else {
     const c=counts();
     document.getElementById('stWrite').textContent=c.typing;
@@ -4277,7 +4357,7 @@ function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
   Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
-  if(typeof _tallyReset === 'function') _tallyReset();
+  _aiCharCount = 0;
   saveCount = 0;
   sessionFrozen = false;
   selectedType = null;
