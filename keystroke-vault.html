@@ -3874,48 +3874,11 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    const controller = window.__muhaController;
-    const _dbg = (m, ...rest) => console.log('[appendToEditor:ai]', m, ...rest);
-    _dbg('called', { source, textLen: text.length, controllerReady: !!controller,
-                     hasInsertText: !!(controller && controller.insertText) });
-    if(controller && typeof controller.insertText === 'function'){
-      const el = _findMuhaEditable();
-      if(el){
-        el.focus();
-        try { controller.focus && controller.focus(); } catch(e){}
-      }
-      const beforeLen = (window.__muhaAudit || []).length;
-      try {
-        controller.insertText(text, {auditSource: 'ai'});
-        _dbg('insertText call ok');
-      } catch(e){ console.warn('controller.insertText fail', e); }
-      // 삽입 직후 audit 이 실제로 어떤 inputSource 로 emit 됐는지 로그
-      setTimeout(() => {
-        const newAudit = (window.__muhaAudit || []).slice(beforeLen);
-        _dbg('audit emitted after ai insert:',
-             newAudit.map(a => ({ src: a.source, input: a.inputSource,
-               txt: (a.steps && a.steps[0] && a.steps[0].slice && a.steps[0].slice.content ?
-                     a.steps[0].slice.content.map(c=>c.text||'').join('') : '') })));
-      }, 50);
-    } else {
-      console.warn('[appendToEditor:ai] controller not ready — fallback execCommand');
-      const el = _findMuhaEditable();
-      if(el){
-        el.focus();
-        document.execCommand('insertText', false, text);
-      }
-    }
-    // AI 프롬프트 hint 는 audit entry 로는 안 실려서 별도 side-log 로 유지
-    try {
-      window.__aiPromptLog = window.__aiPromptLog || [];
-      window.__aiPromptLog.push({ts: Date.now(), text, prompt: promptHint || ''});
-    } catch(e){}
-    if(!stats.firstTs) stats.firstTs = Date.now();
-    stats.lastTs = Date.now();
-    if(typeof showRec === 'function') showRec();
+    // [정리] AI 어시스턴트 에디터 삽입 제거 — 좌측 채팅 UI 만 유지.
+    //        AI 생성 입력 이벤트 로직은 다음 단계에서 재설계.
     return;
   }
-  // ── legacy(#editor) 경로 ─────────────────────
+  // ── legacy(#editor) 경로 ─────────────────────  // ── legacy(#editor) 경로 ─────────────────────
   const pos=model.length;
   const mark=++blockSeq;
   const ts=Date.now();
@@ -4079,330 +4042,21 @@ function counts(){
   });
   return c;
 }
-// ── UI 카운터 — muha onAudit 이벤트 기반. 유추 없이 소스 오브 트루스. ──
-const _tally = {typing:0, ai:0, paste:0, revised:0};
-let _auditTotalChars = 0;
-function _tallyReset(){
-  _tally.typing = _tally.ai = _tally.paste = _tally.revised = 0;
-  _auditBlocks.length = 0;
-  _auditBlockSeq = 0;
-  _auditTotalChars = 0;
-}
-
-// AI/paste 삽입 블록 tracking. 각 블록의 tiptap position 범위(from~to)는 후속
-// 이벤트에 따라 shift 됨. remainOrig = 원본 잔여 글자 수, revisedInside = 그 블록
-// 안에 사용자가 추가한 글자 수. 경계(from, to) 자체는 앞/뒤 제외 규칙 반영.
-const _auditBlocks = [];
-let _auditBlockSeq = 0;
-
-/* ── audit 기반 카운터: 문서 innerText 스냅샷에서 원본을 순차 매칭. ──
-   position(from/to) shift 방식은 편집 누적 시 tiptap 실제 좌표와 어긋나
-   (붙여넣기 블록 뒤 타이핑이 블록 안으로 오판정되는 등) 문제가 있었음.
-   대신 매 audit 후 현재 innerText 에서 각 블록의 origText 를 순서대로 그리디
-   매칭해 잔여 원본·수정·타이핑을 매번 재계산한다. position drift 없음. */
-
-// origText 를 raw 안에서 순차 그리디 매칭 (used 위치 제외, searchStart 이후부터).
-// 원본 중간이 삭제돼도 남은 글자를 이어서 매칭. 반환: {first, last, positions[]} | null
-function _seqMatch(T, raw, used, searchStart){
-  const N = raw.length;
-  let searchFrom = searchStart, first = -1, last = -1;
-  const positions = [];
-  for(let k = 0; k < T.length; k++){
-    const ch = T[k];
-    for(let i = searchFrom; i < N; i++){
-      if(!used[i] && raw[i] === ch){
-        used[i] = true;
-        positions.push(i);
-        if(first === -1) first = i;
-        last = i;
-        searchFrom = i + 1;
-        break;
-      }
-    }
-  }
-  return (first === -1) ? null : {first, last, positions};
-}
-
-/* 문서 innerText 스냅샷에서 각 문자의 source 를 계산하는 공통 헬퍼.
-   실시간 카운터(_recomputeFromSnapshot)와 결과지 model 재구성(_rebuildModelFromMuha)
-   이 동일 로직을 쓰도록 한 곳에서 산출.
-   반환: { raw, N, src[], blockOf[], finalSrc[] } */
-function _computeSnapshotSources(){
-  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  if(!el) return null;
-  const norm = t => (t || '').replace(/ /g, ' ').replace(/\n{2,}/g, '\n');
-  const raw = norm(el.innerText || el.textContent || '');
-  const N = raw.length;
-  const src     = new Array(N).fill(null);
-  const used    = new Array(N).fill(false);
-  const blockOf = new Array(N).fill(null);
-  const blocks = _auditBlocks.slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
-  let priorLast = -1;
-  for(const b of blocks){
-    const T = norm(b.origText || '');
-    b._range = null; b.remainOrig = 0; b.revisedInside = 0;
-    if(!T){ continue; }
-    const m = _seqMatch(T, raw, used, priorLast + 1);
-    if(m){
-      for(const pos of m.positions) src[pos] = b.source;
-      b._range = {first: m.first, last: m.last};
-      b.remainOrig = m.positions.length;
-      priorLast = m.last;
-    }
-  }
-  for(const b of _auditBlocks){
-    if(!b._range) continue;
-    let rev = 0;
-    for(let i = b._range.first; i <= b._range.last; i++){
-      if(!blockOf[i]) blockOf[i] = b;
-      if(!src[i] && raw[i] !== '\n') rev++;
-    }
-    b.revisedInside = rev;
-  }
-  const finalSrc = new Array(N);
-  for(let i = 0; i < N; i++){
-    if(src[i]) finalSrc[i] = src[i];
-    else if(blockOf[i]) finalSrc[i] = blockOf[i].source + '-internal';
-    else finalSrc[i] = 'typing';
-  }
-  return { raw, N, src, blockOf, finalSrc };
-}
-
-/* 문서 스냅샷 기반 실시간 카운터 재계산. tally 세팅. */
-function _recomputeFromSnapshot(){
-  const snap = _computeSnapshotSources();
-  if(!snap){ return; }
-  const { raw, N, src, blockOf } = snap;
-  let ai = 0, paste = 0, revised = 0, typing = 0, total = 0;
-  for(let i = 0; i < N; i++){
-    if(raw[i] === '\n') continue;
-    total++;
-    if(src[i] === 'ai') ai++;
-    else if(src[i] === 'paste') paste++;
-    else if(blockOf[i]) revised++;
-    else typing++;
-  }
-  _tally.ai = ai; _tally.paste = paste; _tally.revised = revised; _tally.typing = typing;
-  _auditTotalChars = total;
-}
-
-// audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (DOM sync 대기 겸 throttle).
-// requestAnimationFrame 은 탭 비활성·렌더 정지 시 콜백이 지연/무산돼 카운터가 갱신
-// 안 되는 문제가 있어 setTimeout(0) 사용 — 백그라운드에서도 확실히 실행됨.
-let _snapTimer = 0;
-function _scheduleSnapshotRecompute(){
-  if(_snapTimer) return;
-  _snapTimer = setTimeout(() => {
-    _snapTimer = 0;
-    try { _recomputeFromSnapshot(); } catch(e){ console.warn('snapshot recompute fail', e); }
-    if(typeof updateStats === 'function') updateStats();
-    try { _renderAuditOverlay(); } catch(e){}
-  }, 16);
-}
-
-/* AI/paste 블록에 보라 음영 overlay 렌더. 원본 텍스트를 innerText 에서 찾아
-   DOM Range 의 clientRects 에 오버레이. pointer-events:none 로 편집 방해 없음. */
-function _renderAuditOverlay(){
-  const el = _findMuhaEditable();
-  if(!el){ _clearAuditOverlay(); return; }
-  let layer = document.getElementById('audit-overlay-layer');
-  if(!layer){
-    layer = document.createElement('div');
-    layer.id = 'audit-overlay-layer';
-    layer.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2;';
-    const host = document.getElementById('muhaMount') || el.parentElement;
-    if(host){
-      if(getComputedStyle(host).position === 'static') host.style.position = 'relative';
-      host.appendChild(layer);
-    }
-  }
-  layer.innerHTML = '';
-  const layerRect = layer.getBoundingClientRect();
-  const innerTextRaw = (el.innerText || '');
-  for(const b of _auditBlocks){
-    if(b.hiddenByUser) continue;
-    if(!b._range) continue;
-    if((b.remainOrig|0) === 0 && (b.revisedInside|0) === 0) continue;
-    const text = (b.origText || '');
-    if(text.length < 3) continue;
-    // 편집으로 원본이 쪼개졌을 수 있으니 매칭 가능한 최대 prefix 를 indexOf 로 탐색
-    let probe = text, startCharIdx = -1;
-    while(probe.length >= 3){
-      startCharIdx = innerTextRaw.indexOf(probe);
-      if(startCharIdx >= 0) break;
-      probe = probe.slice(0, Math.floor(probe.length / 2));
-    }
-    if(startCharIdx < 0) continue;
-    const endCharIdx = startCharIdx + probe.length;
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let seen = 0, startNode = null, startOff = 0, endNode = null, endOff = 0;
-    while(walker.nextNode()){
-      const t = walker.currentNode;
-      const len = (t.textContent || '').length;
-      if(!startNode && seen + len > startCharIdx){ startNode = t; startOff = startCharIdx - seen; }
-      if(startNode && seen + len >= endCharIdx){ endNode = t; endOff = endCharIdx - seen; break; }
-      seen += len;
-    }
-    if(!startNode || !endNode) continue;
-    let range;
-    try {
-      range = document.createRange();
-      range.setStart(startNode, Math.min(startOff, startNode.textContent.length));
-      range.setEnd(endNode, Math.min(endOff, endNode.textContent.length));
-    } catch(e){ continue; }
-    for(const r of Array.from(range.getClientRects())){
-      if(r.width < 1 || r.height < 1) continue;
-      const div = document.createElement('div');
-      div.className = 'audit-overlay';
-      div.dataset.blockId = String(b.id);
-      div.style.cssText =
-        'position:absolute;pointer-events:none;background:rgba(147,51,234,0.14);border-radius:2px;' +
-        'left:'   + Math.max(0, r.left - layerRect.left) + 'px;' +
-        'top:'    + Math.max(0, r.top  - layerRect.top ) + 'px;' +
-        'width:'  + Math.max(0, r.width)  + 'px;' +
-        'height:' + Math.max(0, r.height) + 'px;';
-      layer.appendChild(div);
-    }
-  }
-}
-
-function _clearAuditOverlay(){
-  const layer = document.getElementById('audit-overlay-layer');
-  if(layer) layer.innerHTML = '';
-}
-
-/* onAudit 이벤트 처리. ai/paste 는 블록 등록만, 카운터는 스냅샷이 전담. */
-function _handleAuditEntry(entry){
-  if(!entry || entry.source !== 'document-delta') return;
-  const step = entry.steps && entry.steps[0];
-  if(!step || step.stepType !== 'replace') return;
-  const from = step.from|0, to = step.to|0;
-  const insertedText = (step.slice && step.slice.content)
-    ? step.slice.content.map(c => c.text || '').join('')
-    : '';
-  const deletedLen = Math.max(0, to - from);
-  const insertedLen = insertedText.length;
-  const inputSource = entry.inputSource || 'typing';
-
-  // 한글 IME 조합 progress (자모 교체) 는 블록 등록 대상 아님. 스냅샷 재계산만.
-  const isImeProgress = (inputSource === 'ime' && deletedLen > 0 && deletedLen === insertedLen);
-
-  // ai/paste 삽입 → 새 외부 유입 블록 등록 (position 무관, origText 만 저장)
-  if(!isImeProgress && (inputSource === 'ai' || inputSource === 'paste') && insertedLen > 0){
-    _auditBlocks.push({
-      id: ++_auditBlockSeq,
-      seq: _auditBlockSeq,
-      source: inputSource,
-      origText: insertedText,
-      origLen: insertedLen,
-      remainOrig: insertedLen,
-      revisedInside: 0,
-      _range: null,
-      hiddenByUser: false
-    });
-  }
-  // 모든 이벤트 후 스냅샷 재계산 예약
-  _scheduleSnapshotRecompute();
-}
-
-// UI 카운터 — muha innerText 기반, AI/paste 원본을 substring 단위로 매칭.
-// 완전일치 실패 시 반으로 잘라 재귀적으로 각각 시도 (recursive halving) — 삭제된
-// 부분은 자동으로 skip. 매칭 된 range 만 ai/paste 로 카운트, 매칭된 range 최소외곽
-// (min~max) 안의 미매칭 글자 = revised (사용자가 그 블록에 추가한 것).
-//   개행: '\n{2,}' 는 innerText 관례상 문단 경계 이중 개행이므로 1개로 압축.
-//        개행 자체는 카운트 대상에서 제외.
-function _computeTallyFromMuha(){
-  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  if(!el) return null;
-  const normalize = (t) => (t || '').replace(/\u00A0/g, ' ').replace(/\n{2,}/g, '\n');
-  const raw = normalize(el.innerText || el.textContent || '');
-  const N = raw.length;
-  if(N === 0) return {typing:0, ai:0, paste:0, revised:0, totalNoBreak:0};
-  const src = new Array(N).fill('typing');
-  const used = new Array(N).fill(false);
-  // paste 를 AI 보다 먼저 매칭. 이유: AI 원본의 일부 substring 을 사용자가 복사·
-  // 붙여넣기 한 경우, ts 만으로 정렬하면 먼저 존재하는 AI 가 그 위치를 선점하고
-  // paste 는 다른 위치에서 재매칭돼 '두 항목 모두 카운트' 되는 문제 발생. paste
-  // 이벤트는 실제 붙여넣기 액션의 명시적 증거이므로 우선권을 준다.
-  const externals = (events||[])
-    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
-    .sort((a,b) => {
-      // paste 를 앞으로. 같은 type 이면 ts 오름차순.
-      if(a.type !== b.type) return a.type === 'paste' ? -1 : 1;
-      return (a.ts||0) - (b.ts||0);
-    });
-  const eventRanges = [];  // 이벤트별 [minFirst, maxLast]
-  const MIN_CHUNK = 3;
-  function halvingMatch(T, type){
-    // 완전 substring 매칭 시도 → 실패 시 반으로 잘라 재귀
-    const stack = [T];
-    let minFirst = -1, maxLast = -1;
-    while(stack.length){
-      const sub = stack.pop();
-      if(!sub || sub.length < MIN_CHUNK) continue;
-      // 사용 안 된 위치에서 sub 찾기
-      let pos = 0, found = -1;
-      while(pos <= N - sub.length){
-        const idx = raw.indexOf(sub, pos);
-        if(idx === -1) break;
-        let ok = true;
-        for(let k = idx; k < idx + sub.length; k++){
-          if(used[k]){ ok = false; break; }
-        }
-        if(ok){ found = idx; break; }
-        pos = idx + 1;
-      }
-      if(found !== -1){
-        for(let k = found; k < found + sub.length; k++){
-          used[k] = true; src[k] = type;
-        }
-        if(minFirst === -1 || found < minFirst) minFirst = found;
-        if(found + sub.length - 1 > maxLast) maxLast = found + sub.length - 1;
-      } else {
-        const mid = sub.length >> 1;
-        stack.push(sub.slice(0, mid));
-        stack.push(sub.slice(mid));
-      }
-    }
-    return (minFirst === -1) ? null : {first: minFirst, last: maxLast, type};
-  }
-  for(const e of externals){
-    const T = normalize(e.meta && e.meta.text ? e.meta.text : '');
-    if(!T){ eventRanges.push(null); continue; }
-    eventRanges.push(halvingMatch(T, e.type));
-  }
-  const inRange = new Array(N).fill(false);
-  for(const r of eventRanges){
-    if(!r) continue;
-    for(let i = r.first; i <= r.last; i++) inRange[i] = true;
-  }
-  let ai=0, paste=0, typing=0, revised=0, totalNoBreak=0;
-  for(let i = 0; i < N; i++){
-    const isNL = raw[i] === '\n';
-    if(!isNL) totalNoBreak++;
-    // 개행도 1자로 카운트 (사용자 요청: 공백/개행 모두 1자). 문단 사이 이중
-    // 개행은 위 normalize 에서 이미 하나로 압축돼 있음.
-    if(src[i] === 'ai') ai++;
-    else if(src[i] === 'paste') paste++;
-    else if(inRange[i]) revised++;
-    else typing++;
-  }
-  return {typing, ai, paste, revised, totalNoBreak};
-}
+// ── [정리] 입력 수집·매칭·카운터 로직 전면 제거 ──
+// muha onAudit 원본 이벤트는 window.__auditLog 에만 raw 로 쌓는다.
+// 카운터·model 재구성은 다음 단계에서 이 로그를 소스로 새로 설계.
 
 function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // extra: audit 기반 _tally 를 그대로 사용 (유추 로직 미사용). _handleAuditEntry 가
-    // muha onAudit 이벤트마다 _recomputeTally() 로 정확한 값을 세팅해 둔 상태.
-    document.getElementById('stWrite').textContent   = _tally.typing;
-    document.getElementById('stAi').textContent      = _tally.ai;
-    document.getElementById('stPaste').textContent   = _tally.paste;
-    document.getElementById('stRevised').textContent = _tally.revised;
-    extraTotalNoBreak = _auditTotalChars;
+    // [정리] extra 카운터는 재설계 전까지 0 고정. audit raw 로그만 수집.
+    document.getElementById('stWrite').textContent   = 0;
+    document.getElementById('stAi').textContent      = 0;
+    document.getElementById('stPaste').textContent   = 0;
+    document.getElementById('stRevised').textContent = 0;
+    extraTotalNoBreak = 0;
   } else {
-    // legacy: model.source 기반 (기존 동작 유지)
     const c=counts();
     document.getElementById('stWrite').textContent=c.typing;
     document.getElementById('stAi').textContent=c.ai+c.aiEdited;
@@ -4412,14 +4066,12 @@ function updateStats(){
   const totalChars = (extraTotalNoBreak != null) ? extraTotalNoBreak : model.filter(m=>m.ch!=='\n').length;
   document.getElementById('stCount').textContent=totalChars.toLocaleString();
   document.getElementById('stKs').textContent=stats.keystrokes.toLocaleString();
-  // speed
   let speed=0;
   if(stats.firstTs && stats.keystrokes>=2){
     const mins=(stats.lastTs-stats.firstTs)/60000;
     if(mins>0) speed=Math.round(stats.keystrokes/mins);
   }
   document.getElementById('stSpeed').textContent=speed;
-  // enable complete
   document.getElementById('btnComplete').disabled = totalChars<10;
 }
 
@@ -4533,12 +4185,7 @@ function _muhaBodyToText(body){
   return out.join('').replace(/\n+$/,'').replace(/\n\n+/g,'\n');
 }
 
-let _pendingPasteText = null;   // muha paste 이벤트 시 저장, 곧 onChange diff 매칭에 사용
-let _pendingPasteTs   = 0;
-let _pendingAiText    = null;   // AI 어시스턴트 삽입 텍스트 - _syncMuhaModel 에서 source=ai 마킹
-let _pendingAiTs      = 0;
-let _pendingAiPrompt  = null;
-
+// [정리] _pending* 매칭 상태 제거 (diff 수집 로직 폐기)
 function _findMuhaEditable(){
   const mount = document.getElementById('muhaMount');
   if(!mount) return null;
@@ -4555,263 +4202,13 @@ function _bindMuhaEvents(){
   if(el.dataset.ksvBound) return;
   el.dataset.ksvBound = '1';
   _muhaBindRetries = 0;
-  // 사용자 클릭 → 그 위치가 AI/paste 블록 안이면 그 블록의 overlay 해제
-  //   실제 편집 의사로 간주 (사용자 명세: 클릭 = 수정 의사)
-  el.addEventListener('mousedown', () => {
-    // caret 위치는 mouseup 후 확정 — 짧게 지연 후 판정
-    setTimeout(() => {
-      const el2 = _findMuhaEditable();
-      if(!el2) return;
-      const sel = window.getSelection();
-      if(!sel || !sel.anchorNode || !el2.contains(sel.anchorNode)) return;
-      // 캐럿 부근 텍스트로 어느 블록인지 heuristic 판정
-      let node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
-      let combined = '';
-      for(let i = 0; i < 3 && node; i++){
-        combined += (node.textContent || '');
-        node = node.parentNode;
-      }
-      if(!combined) return;
-      let changed = false;
-      for(const b of _auditBlocks){
-        if(b.hiddenByUser) continue;
-        const probe = (b.origText || '').slice(0, 24);
-        if(probe.length >= 3 && combined.indexOf(probe) !== -1){
-          b.hiddenByUser = true;
-          changed = true;
-        }
-      }
-      if(changed) setTimeout(() => { try { _renderAuditOverlay(); } catch(e){} }, 16);
-    }, 30);
-  });
-  // 창 리사이즈 시 overlay 재계산
-  if(!window.__ksvOverlayResizeBound){
-    window.__ksvOverlayResizeBound = true;
-    window.addEventListener('resize', () => {
-      setTimeout(() => { try { _renderAuditOverlay(); } catch(e){} }, 16);
-    });
-  }
-  // 키스트로크 카운트 (modifier 단독·복사/붙여넣기 단축키 제외)
-  el.addEventListener('keydown', (e) => {
-    if(sessionFrozen) return;
-    if(['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'].includes(e.key)) return;
-    if((e.ctrlKey || e.metaKey) && ['v','V','c','C','x','X','a','A'].includes(e.key)) return;
-    stats.keystrokes++;
-    const _nowTs = Date.now();
-    if(!stats.firstTs) stats.firstTs = _nowTs;
-    stats.lastTs = _nowTs;
-    // 편집키(Backspace/Delete/화살표) 는 typing 카운트에 넣지 않음.
-    // 카운터 조작은 audit onAudit → _handleAuditEntry 가 소스 오브 트루스이므로
-    // 여기서는 stats.keystrokes / stats.deletes / 최장 무중단용 keystroke 이벤트만
-    // 기록. _tally 는 건드리지 않음 (audit 과 밀당하지 않도록).
-    const editKey = e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow');
-    if(!editKey){
-      events.push({ts:_nowTs, type:'keystroke', srcFamily:'typing', n:1, isInsert:true});
-    } else if(e.key === 'Backspace' || e.key === 'Delete'){
-      stats.deletes = (stats.deletes || 0) + 1;
-    }
-  });
-  // paste 감지 — audit 이 clipboard paste 를 inputSource='paste' 로 emit 하므로 여기
-  // 리스너는 pendingPasteText 매칭용으로만 남길 필요 없음. 그러나 sync diff 로직
-  // 등 legacy 잔재가 참조할 수 있어 pendingPasteText 설정은 유지. tally 조작·이벤트
-  // 별도 push 는 audit 과 중복되므로 제거.
-  el.addEventListener('paste', (e) => {
-    const t = e.clipboardData?.getData('text/plain') || '';
-    if(t){
-      _pendingPasteText = t; _pendingPasteTs = Date.now();
-    }
-  }, true);
-  // 텍스트 변화 감지 — input 이벤트가 tiptap 에 흡수될 수 있어 MutationObserver 병행
-  let _syncScheduled = false;
-  let _syncTimer = null;
-  const _readText = () => (el.innerText || el.textContent || '').replace(/\u00A0/g, ' ');
-  const _scheduleSync = () => {
-    // debounce: 마지막 입력 이후 500ms 조용해지면 한 번에 sync
-    if(_syncTimer) clearTimeout(_syncTimer);
-    _syncTimer = setTimeout(() => {
-      _syncTimer = null;
-      const text = _readText();
-      // empty flash 방어: 이전 model 이 있는데 이번 read 가 empty 면 250ms 뒤 재확인
-      if(text.length === 0 && model.length > 0){
-        setTimeout(() => {
-          const t2 = _readText();
-          if(t2.length === 0) _syncMuhaModel('');
-        }, 250);
-        return;
-      }
-      // 삭제 급감 방어: 새 text 가 이전 modelText 보다 절반 이상 짧으면 flash 의심 → 250ms 재확인
-      const modelLen = model.filter(m => m.ch !== '\n').length;
-      if(modelLen > 5 && text.length < modelLen * 0.5){
-        setTimeout(() => {
-          const t2 = _readText();
-          if(t2.length < modelLen * 0.5) _syncMuhaModel(t2);
-        }, 250);
-        return;
-      }
-      _syncMuhaModel(text);
-    }, 500);
-  };
-  el.addEventListener('input', _scheduleSync);
-  try {
-    const mo = new MutationObserver(() => { window.__moFire = (window.__moFire||0) + 1; _scheduleSync(); });
-    mo.observe(el, {childList:true, subtree:true, characterData:true});
-    window.__moBound = 1;
-  } catch(e){ console.warn('mo fail', e); }
-  // 포커스·클릭 시 '작성 기록중' 배지
+  // [정리] 입력 수집 리스너(keydown/paste/input/MutationObserver/mousedown) 전면 제거.
+  //        '작성 기록중' 배지 노출만 유지.
   el.addEventListener('focusin', () => { if(typeof showRec === 'function') showRec(); });
   el.addEventListener('click',    () => { if(typeof showRec === 'function') showRec(); });
 }
 
-// caret 이 AI/paste 유입 블록 안이면 'ai'|'paste' 반환, 아니면 null
-function _caretInsideWhichBlock(){
-  try {
-    const sel = window.getSelection();
-    if(!sel || !sel.anchorNode) return null;
-    let cur = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
-    let combined = '';
-    for(let i=0; i<3 && cur; i++){
-      combined += (cur.textContent || '');
-      cur = cur.parentNode;
-    }
-    if(!combined) return null;
-    for(const e of events){
-      if(e.type !== 'ai' && e.type !== 'paste') continue;
-      const t = (e.meta && e.meta.text) ? e.meta.text : '';
-      if(t.length < 8) continue;
-      const probe = t.slice(0, 30);
-      if(combined.indexOf(probe) !== -1) return e.type;
-    }
-  } catch(err){}
-  return null;
-}
-// 기존 이름 유지 (typing 판정 등에서 호출)
-// caret 이 AI/paste 유입 블록의 텍스트 안에 있는지 판정 (heuristic)
-function _caretInsideExternalBlock(){
-  return _caretInsideWhichBlock() !== null;
-}
-
-function _syncMuhaModel(text){
-  if(document.body.dataset.writeVariant !== 'extra') return;
-  _bindMuhaEvents();
-  const newText = text || '';
-  const modelText = model.map(m=>m.ch).join('');
-  if(newText === modelText){ updateStats(); return; }
-
-  // 공통 prefix / suffix 매칭 → 변경 구간(s..eOld / s..eNew) 산출
-  let s = 0;
-  const minLen = Math.min(newText.length, modelText.length);
-  while(s < minLen && newText[s] === modelText[s]) s++;
-  let eNew = newText.length, eOld = modelText.length;
-  while(eNew > s && eOld > s && newText[eNew-1] === modelText[eOld-1]){ eNew--; eOld--; }
-
-  const removedLen = eOld - s;
-  const addedText  = newText.slice(s, eNew);
-  const ts = Date.now();
-  if(!stats.firstTs) stats.firstTs = ts;
-  stats.lastTs = ts;
-
-  // 편집 op 기록 (삭제가 포함된 오퍼레이션)
-  if(removedLen > 0){
-    const isContent = (removedLen >= 3) || (addedText.length >= 2);
-    editOps.push({deleted:removedLen, inserted:addedText.length, isContent, ts});
-  }
-  // 삭제 처리
-  if(removedLen > 0){
-    const removedChars = model.splice(s, removedLen);
-    stats.deletes += removedLen;
-    const famCount = {typing:0, ai:0, paste:0};
-    removedChars.forEach(m=>{
-      if(m.source==='typing'){ stats.typingDeleted++; famCount.typing++; }
-      else if(m.source==='ai'||m.source==='ai-edited'||m.source==='ai-internal'){ stats.aiDeleted++; famCount.ai++; }
-      else if(m.source==='paste'||m.source==='paste-edited'||m.source==='paste-internal'){ stats.pasteDeleted++; famCount.paste++; }
-    });
-    Object.entries(famCount).forEach(([fam, n]) => {
-      if(n>0) events.push({ts, type:'delete', srcFamily:fam, n, isInsert:false});
-    });
-  }
-  // 삽입 처리
-  if(addedText.length > 0){
-    let src = 'typing';
-    let bm = null, bsize = null;
-    // AI 매칭 — appendToEditor(extra) 가 pendingAiText 세팅 후 muha 에 execCommand 로 삽입.
-    // diff 의 addedText 안에 그 텍스트가 있으면 source=ai + blockMark 부여.
-    if(_pendingAiText && (Date.now() - _pendingAiTs) > 3000){
-      _pendingAiText = null; _pendingAiTs = 0; _pendingAiPrompt = null;
-    }
-    // AI 매칭 — addedText 안에 _pendingAiText 만 정확히 ai 마킹, 앞뒤 잔여(개행 등) 는 typing
-    let _aiInsertPlan = null;
-    if(_pendingAiText){
-      const aiIdx = addedText.indexOf(_pendingAiText);
-      if(aiIdx !== -1){
-        const aiLen = _pendingAiText.length;
-        const aiBm = ++blockSeq;
-        events.push({ts:_pendingAiTs || ts, type:'ai', srcFamily:'ai', n:aiLen, isInsert:true, meta:{blockMark:aiBm, blockSize:aiLen, text:_pendingAiText, prompt:_pendingAiPrompt || ''}});
-        _aiInsertPlan = {prefixLen:aiIdx, aiLen, aiBm};
-        _pendingAiText = null; _pendingAiTs = 0; _pendingAiPrompt = null;
-      }
-    }
-    // paste 매칭 — pendingPasteText 세팅 후 2초 이내에만 유효. 그 이후엔 stale 로 clear.
-    if(_pendingPasteText && (Date.now() - _pendingPasteTs) > 2000){
-      _pendingPasteText = null; _pendingPasteTs = 0;
-    }
-    // paste 매칭 — paste capture 리스너에서 이미 events.push 는 완료됨(clipboard 원본
-    // 텍스트로). 여기서는 중복 push 하지 않고 model.source 마킹용으로만 사용.
-    // addedText 는 debounce 500ms 동안 붙여넣기 + 뒤이은 타이핑을 합쳐 잡을 수 있어
-    // 이걸 paste 이벤트의 text 로 저장하면 LCS 매칭에서 뒤 타이핑까지 paste 로 흡수됨.
-    if(_pendingPasteText && addedText.indexOf(_pendingPasteText) !== -1){
-      src = 'paste';
-      bm = ++blockSeq;
-      bsize = addedText.length;
-      _pendingPasteText = null; _pendingPasteTs = 0;
-    }
-    // (자동 15자+ paste 승격은 debounce 로 여러 글자가 묶여도 typing 유지되도록 제거)
-
-    // paste/ai 블록 안 타이핑 → -internal 승격 (기존 reconcile 룰 재현)
-    const leftSrc  = s > 0 ? model[s-1]?.source : null;
-    const rightSrc = model[s]?.source;
-    const aiFam    = v => v==='ai'||v==='ai-edited'||v==='ai-internal';
-    const pasteFam = v => v==='paste'||v==='paste-edited'||v==='paste-internal';
-    let promoted = src;
-    let inheritBM = bm, inheritBSize = bsize;
-    if(src === 'typing'){
-      if(aiFam(leftSrc) && aiFam(rightSrc)) promoted = 'ai-internal';
-      else if(pasteFam(leftSrc) && pasteFam(rightSrc)) promoted = 'paste-internal';
-      if(promoted === 'ai-internal' || promoted === 'paste-internal'){
-        const adj = (aiFam(leftSrc)||pasteFam(leftSrc)) ? model[s-1] : model[s];
-        if(adj?.blockMark){ inheritBM = adj.blockMark; inheritBSize = adj.blockSize; }
-      }
-      // 블록 경계 타이핑 → 인접 블록을 edited 로 마킹
-      if((aiFam(leftSrc) ^ aiFam(rightSrc)) || (pasteFam(leftSrc) ^ pasteFam(rightSrc))){
-        if(typeof markEditedAround === 'function') markEditedAround(s);
-      }
-    }
-
-    const ins = [];
-    for(let i=0; i<addedText.length; i++){
-      let cSrc = promoted, cBM = inheritBM, cSize = inheritBSize;
-      if(_aiInsertPlan){
-        const pStart = _aiInsertPlan.prefixLen;
-        const pEnd   = _aiInsertPlan.prefixLen + _aiInsertPlan.aiLen;
-        if(i >= pStart && i < pEnd){
-          cSrc = 'ai'; cBM = _aiInsertPlan.aiBm; cSize = _aiInsertPlan.aiLen;
-        } else {
-          cSrc = 'typing'; cBM = null; cSize = null;
-        }
-      }
-      const item = {ch: addedText[i], source: cSrc, ts: ts + i*0.5};
-      if(cBM){ item.blockMark = cBM; item.blockSize = cSize; }
-      ins.push(item);
-    }
-    model.splice(s, 0, ...ins);
-    if(src === 'typing' && (promoted === 'typing' || promoted === 'ai-internal' || promoted === 'paste-internal')){
-      events.push({ts, type:'typing', srcFamily:'typing', n:addedText.length, isInsert:true});
-    }
-  }
-
-  updateStats();
-  if(typeof showRec === 'function' && newText.length > 0) showRec();
-}
-
+// [정리] _caretInside* / _syncMuhaModel (diff 수집) 제거
 function ensureMuhaEditor(){
   if(muhaHandle) return muhaHandle;
   if(!window.MuhayuEditorFull || typeof window.MuhayuEditorFull.mount !== 'function') return null;
@@ -4838,48 +4235,28 @@ function ensureMuhaEditor(){
       // audit entry 를 events 배열에 그대로 누적. 향후 서버 저장·검증 지표 산출의
       // 소스 오브 트루스.
       onControllerReady: function(controller){
-        try {
-          window.__muhaController = controller;  // 콘솔에서 확인용 노출
-          if(controller && typeof controller.subscribeAudit === 'function'){
-            controller.subscribeAudit(function(entry){
-              try { events.push(Object.assign({}, entry, {ts: entry.ts || Date.now()})); }
-              catch(e){ console.warn('audit entry push fail', e); }
-            });
-          } else if(controller && controller.auditStore && typeof controller.auditStore.subscribe === 'function'){
-            controller.auditStore.subscribe(function(entries){
-              const last = entries && entries[entries.length - 1];
-              if(last) events.push(Object.assign({}, last, {ts: last.ts || Date.now()}));
-            });
-          }
-        } catch(e){ console.warn('onControllerReady handler fail', e); }
+        // controller 노출만 (콘솔 확인용). audit 은 onAudit 으로 수신.
+        try { window.__muhaController = controller; } catch(e){}
       },
       onChange: function(body){
         try {
           window.__muhaCB = (window.__muhaCB||0) + 1;
-          const text = _muhaBodyToText(body);
-          window.__muhaLastText = text;
-          _syncMuhaModel(text);
-        } catch(e){ console.warn('muha onChange sync fail', e); }
+          window.__muhaLastText = _muhaBodyToText(body);
+        } catch(e){ console.warn('muha onChange fail', e); }
       },
-      // muha 에디터가 수집한 원본 이벤트 로그 — raw-key / editor-feature / document-delta.
+      // muha 에디터가 수집한 원본 이벤트 로그      // muha 에디터가 수집한 원본 이벤트 로그 — raw-key / editor-feature / document-delta.
       // 우리가 innerText diff 로 유추하는 대신 이 이벤트를 소스 오브 트루스로 삼는다.
       // 향후 서버 저장·검증 지표 산출·재생의 근간이 됨.
       onAudit(entry){
+        // [정리] 에디터가 주는 원본 이벤트를 raw 로 window.__auditLog 에만 저장.
+        // 가공·카운터·model 반영은 다음 단계에서 이 로그를 소스로 새로 설계.
         try {
-          window.__muhaAudit = window.__muhaAudit || [];
-          window.__muhaAudit.push(entry);   // 콘솔에서 window.__muhaAudit 로 확인
-          events.push({
-            ts: entry.ts || Date.now(),
-            type: 'audit-' + (entry.source || 'unknown'),
-            srcFamily: entry.source || 'audit',
-            audit: entry,
-            isInsert: false
-          });
-          // 실시간 카운터·블록 tracking 반영
-          if(typeof _handleAuditEntry === 'function') _handleAuditEntry(entry);
-        } catch(e){ console.warn('onAudit handler fail', e); }
+          window.__auditLog = window.__auditLog || [];
+          window.__auditLog.push(entry);
+        } catch(e){ console.warn('onAudit log fail', e); }
       },
     });
+    // .ProseMirror 노드가 DOM 에 붙기까지    });
     // .ProseMirror 노드가 DOM 에 붙기까지 잠깐 걸림 — 지연 후 bind + 편집기 노출
     _muhaBindRetries = 0;
     setTimeout(() => {
@@ -5767,22 +5144,9 @@ function applyQuoteLabel(){
  * 매칭 안 되는(=삭제된) 텍스트는 무시. 나머지 글자는 모두 typing.
  */
 function _rebuildModelFromMuha(){
-  // 결과지 진입 직전 model 재구성. 실시간 카운터와 동일한 _computeSnapshotSources
-  // 를 써서 각 문자에 source(ai|paste|ai-internal|paste-internal|typing)를 부여.
-  // → 결과지 상단 breakdown 지표·하단 텍스트 유입 세그먼트가 실시간 카운터와 일치.
-  if(document.body.dataset.writeVariant !== 'extra') return;
-  const snap = (typeof _computeSnapshotSources === 'function') ? _computeSnapshotSources() : null;
-  if(!snap){ return; }
-  const { raw, N, finalSrc, blockOf } = snap;
-  if(N === 0){ model.length = 0; return; }
-  const now = Date.now();
-  model.length = 0;
-  for(let i = 0; i < N; i++){
-    const item = { ch: raw[i], source: finalSrc[i], ts: now + i * 0.1 };
-    const b = blockOf[i];
-    if(b){ item.blockMark = b.id; item.blockSize = b.origLen; }
-    model.push(item);
-  }
+  // [정리] audit 기반 model 재구성 로직 제거. 다음 단계에서 window.__auditLog 를
+  // 소스로 새로 설계. 현재는 no-op (extra 결과지는 빈 상태).
+  return;
 }
 
 async function buildReportFromSession(){
