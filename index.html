@@ -8,7 +8,14 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <!-- muha-editor (Tiptap v3 기반 vanilla mount, extra variant 에서 Froala-style 툴바 대체) -->
 <link rel="stylesheet" href="https://muhayu.github.io/muha-editor/vanilla/editor.css?v=20260703" />
+<link rel="preload" href="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260703" as="script" />
 <style>
+  /* muha mount 완료 전 편집기 영역을 숨겨 초기 flash 방지. */
+  body[data-view="write"][data-write-variant="extra"] .editor-shell{visibility:hidden;}
+  body[data-view="write"][data-write-variant="extra"].muha-ready .editor-shell{visibility:visible;}
+  /* 편집기 자리에 로딩 인디케이터 */
+  body[data-view="write"][data-write-variant="extra"] #muha-loading{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;color:#94A3B8;font-size:13px;background:#fff;z-index:1;}
+  body[data-view="write"][data-write-variant="extra"].muha-ready #muha-loading{display:none;}
   :root{
     /* ===== ck-ui foundation tokens (subset) ===== */
     /* primary (cyan) */
@@ -1006,7 +1013,8 @@
           <span class="s s-revised"><span class="d"></span>수정 <b id="stRevised">0</b></span>
         </div>
       </div>
-      <div class="editor-shell">
+      <div class="editor-shell" style="position:relative;">
+            <div id="muha-loading">편집기 준비 중…</div>
         <div class="editor-toolbar">
           <button class="tool-btn" id="btnDemoPaste" title="외부 클립보드 텍스트를 paste source로 시뮬레이션">📋 외부 붙여넣기(데모)</button>
           <button class="tool-btn" id="btnDemoAI" title="AI 응답을 즉시 삽입 (시연용)">🤖 AI 초안 받기(데모)</button>
@@ -4593,9 +4601,15 @@ function ensureMuhaEditor(){
         } catch(e){ console.warn('muha onChange sync fail', e); }
       },
     });
-    // mount 이후 실제 .ProseMirror 노드가 DOM 에 붙기까지 잠깐 걸림 — 지연 후 bind
+    // .ProseMirror 노드가 DOM 에 붙기까지 잠깐 걸림 — 지연 후 bind + 편집기 노출
     _muhaBindRetries = 0;
-    setTimeout(_bindMuhaEvents, 120);
+    setTimeout(() => {
+      _bindMuhaEvents();
+      // mount 완료 확정 시 body 에 muha-ready 부여 → 편집기 visibility:visible
+      if(document.querySelector('#muhaMount .ProseMirror')){
+        document.body.classList.add('muha-ready');
+      }
+    }, 120);
   }catch(e){
     console.warn('muha mount fail', e);
     muhaHandle = null;
