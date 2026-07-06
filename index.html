@@ -3943,7 +3943,7 @@ function appendToEditor(text, source, promptHint){
         const cur = el ? (el.innerText || '') : '';
         const prefix = (cur.trim().length > 0) ? '\n' : '';
         controller.insertText(prefix + text, {auditSource:'ai'});
-        _aiCharCount += text.length;   // 순수 생성 텍스트 글자수 (개행 제외)
+        // 카운트는 audit replay(_recountFromAuditLog)가 담당 — 수동 누적 제거.
       } catch(e){ console.warn('ai insert fail', e); }
     }
     if(!stats.firstTs) stats.firstTs = Date.now();
@@ -4120,22 +4120,98 @@ function counts(){
 // muha onAudit 원본 이벤트는 window.__auditLog 에만 raw 로 쌓는다.
 // 카운터·model 재구성은 다음 단계에서 이 로그를 소스로 새로 설계.
 
-// AI 어시스턴트가 에디터에 삽입한 순수 생성 텍스트 누적 글자수 → 'AI생성' 카운터.
-// (직접타이핑/붙여넣기/수정 카운트는 다음 단계에서 audit 로그 기반 재설계)
-let _aiCharCount = 0;
+/* ============================================================
+   audit replay 카운트 엔진 — window.__auditLog 를 처음부터 순서대로 재생해
+   각 최종 문자의 출처(typing/ai/paste/revised)를 계산. offline(node)으로
+   실측 로그 검증 완료. position drift 없음 (audit 이 매 이벤트 정확 좌표 제공).
+   정책:
+     · 직접타이핑: 블록 밖 유저 입력 (개행 포함)
+     · AI생성/붙여넣기: 해당 이벤트로 유입돼 남은 글자
+     · 수정(revised): AI/붙여넣기 블록 내부(첫글자 뒤~마지막글자 앞)의 유저 입력
+   ============================================================ */
+let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+
+function _recountFromAuditLog(){
+  const chars = [];          // {ch, src:'typing'|'ai'|'paste'|'revised', blk}
+  let blkSeq = 0;
+  // tiptap position → chars 인덱스. 첫 문단 열림=pos1, 각 문자 +1, 개행(문단경계) +2.
+  const posToIdx = (target) => {
+    let pos = 1;
+    for(let i=0;i<chars.length;i++){
+      if(pos >= target) return i;
+      pos += (chars[i].ch === '\n') ? 2 : 1;
+    }
+    return chars.length;
+  };
+  // slice.content(노드 배열) → 문자 배열. top-level 블록 사이 = 개행 1개.
+  const collectText = (node, out) => {
+    if(node.type === 'text'){ for(const ch of (node.text||'')) out.push(ch); }
+    else if(Array.isArray(node.content)){ node.content.forEach(n=>collectText(n,out)); }
+  };
+  const contentToChars = (content) => {
+    const out = [];
+    (content||[]).forEach((node,i) => { if(i>0) out.push('\n'); collectText(node, out); });
+    return out;
+  };
+  for(const entry of (window.__auditLog||[])){
+    if(!entry || entry.source !== 'document-delta') continue;
+    const step = entry.steps && entry.steps[0];
+    if(!step || step.stepType !== 'replace') continue;
+    const from = step.from|0, to = step.to|0;
+    const inserted = (step.slice && step.slice.content) ? contentToChars(step.slice.content) : [];
+    const src = entry.inputSource || 'typing';
+    const idxFrom = posToIdx(from);
+    const idxTo = posToIdx(to);
+    if(idxTo > idxFrom) chars.splice(idxFrom, idxTo - idxFrom);   // 삭제
+    if(inserted.length){                                          // 삽입
+      const left = chars[idxFrom-1];
+      const right = chars[idxFrom];
+      let tok;
+      if(src === 'ai' || src === 'paste'){
+        const b = ++blkSeq;
+        tok = inserted.map(ch => ({ch, src, blk:b}));
+      } else {
+        // typing/ime: 좌우가 같은 AI/paste 블록이면 internal → 수정, 아니면 직접타이핑
+        const internal = left && right && left.blk!=null && left.blk === right.blk;
+        tok = internal ? inserted.map(ch => ({ch, src:'revised', blk:left.blk}))
+                       : inserted.map(ch => ({ch, src:'typing', blk:null}));
+      }
+      chars.splice(idxFrom, 0, ...tok);
+    }
+  }
+  let typing=0, ai=0, paste=0, revised=0;
+  for(const c of chars){
+    if(c.src==='ai') ai++;
+    else if(c.src==='paste') paste++;
+    else if(c.src==='revised') revised++;
+    else typing++;
+  }
+  _auditCounts = {typing, ai, paste, revised, total: chars.length};
+  return _auditCounts;
+}
+
+// audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (setTimeout — 백그라운드 안전)
+let _recountTimer = 0;
+function _scheduleRecount(){
+  if(_recountTimer) return;
+  _recountTimer = setTimeout(() => {
+    _recountTimer = 0;
+    try { _recountFromAuditLog(); } catch(e){ console.warn('recount fail', e); }
+    if(typeof updateStats === 'function') updateStats();
+  }, 16);
+}
 
 function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // AI생성만 이번 단계에서 반영. 직접타이핑/붙여넣기/수정은 다음 단계.
-    const _el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-    const _totalNoBreak = _el ? (_el.innerText || '').split(String.fromCharCode(10)).join('').length : 0;
-    document.getElementById('stWrite').textContent   = 0;
-    document.getElementById('stAi').textContent      = _aiCharCount;
-    document.getElementById('stPaste').textContent   = 0;
-    document.getElementById('stRevised').textContent = 0;
-    extraTotalNoBreak = _totalNoBreak;
+    // audit replay 결과를 그대로 표시. 상호배타 → 합 = 총 글자수(개행 포함).
+    const c = _auditCounts || {typing:0, ai:0, paste:0, revised:0, total:0};
+    document.getElementById('stWrite').textContent   = c.typing;
+    document.getElementById('stAi').textContent      = c.ai;
+    document.getElementById('stPaste').textContent   = c.paste;
+    document.getElementById('stRevised').textContent = c.revised;
+    extraTotalNoBreak = c.total;
   } else {
     const c=counts();
     document.getElementById('stWrite').textContent=c.typing;
@@ -4328,11 +4404,11 @@ function ensureMuhaEditor(){
       // 우리가 innerText diff 로 유추하는 대신 이 이벤트를 소스 오브 트루스로 삼는다.
       // 향후 서버 저장·검증 지표 산출·재생의 근간이 됨.
       onAudit(entry){
-        // [정리] 에디터가 주는 원본 이벤트를 raw 로 window.__auditLog 에만 저장.
-        // 가공·카운터·model 반영은 다음 단계에서 이 로그를 소스로 새로 설계.
+        // 에디터 원본 이벤트를 raw 로 저장 후, audit replay 로 카운터 재계산.
         try {
           window.__auditLog = window.__auditLog || [];
           window.__auditLog.push(entry);
+          if(typeof _scheduleRecount === 'function') _scheduleRecount();
         } catch(e){ console.warn('onAudit log fail', e); }
       },
     });
@@ -4357,7 +4433,9 @@ function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
   Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
-  _aiCharCount = 0;
+  // audit 로그·카운터 초기화 (새 문서 세션)
+  window.__auditLog = [];
+  _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
   saveCount = 0;
   sessionFrozen = false;
   selectedType = null;
@@ -4376,9 +4454,24 @@ function newWrite(variant){
   const activeEl = document.querySelector(`#lnb [data-menu="${activeKey}"]`);
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
-  // extra 변형이면 muha-editor 마운트 (script 로드 완료 후)
+  // extra 변형이면 muha-editor 마운트 (script 로드 완료 후) + 문서 빈 상태로 초기화
   if(variant === 'extra' && typeof ensureMuhaEditor === 'function'){
-    try { ensureMuhaEditor(); } catch(e){ console.warn('muha ensure fail', e); }
+    try {
+      ensureMuhaEditor();
+      // 새 문서 — muha 에디터 내용 비우기 (이전 세션 텍스트 잔존 방지)
+      setTimeout(() => {
+        try {
+          const c = window.__muhaController;
+          if(c && typeof c.replaceBody === 'function'){
+            c.replaceBody({type:'doc', content:[{type:'paragraph', content:[]}]});
+          }
+          // replaceBody 가 audit 을 유발할 수 있으니 로그·카운터 재초기화
+          window.__auditLog = [];
+          _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+          if(typeof updateStats === 'function') updateStats();
+        } catch(e){}
+      }, 200);
+    } catch(e){ console.warn('muha ensure fail', e); }
   }
   // 상단 통계 카운터를 즉시 0 으로 갱신 (이전 세션 잔존값 제거)
   if(typeof updateStats === 'function') updateStats();
