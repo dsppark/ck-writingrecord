@@ -4523,11 +4523,14 @@ function _syncMuhaModel(text){
     if(_pendingPasteText && (Date.now() - _pendingPasteTs) > 2000){
       _pendingPasteText = null; _pendingPasteTs = 0;
     }
+    // paste 매칭 — paste capture 리스너에서 이미 events.push 는 완료됨(clipboard 원본
+    // 텍스트로). 여기서는 중복 push 하지 않고 model.source 마킹용으로만 사용.
+    // addedText 는 debounce 500ms 동안 붙여넣기 + 뒤이은 타이핑을 합쳐 잡을 수 있어
+    // 이걸 paste 이벤트의 text 로 저장하면 LCS 매칭에서 뒤 타이핑까지 paste 로 흡수됨.
     if(_pendingPasteText && addedText.indexOf(_pendingPasteText) !== -1){
       src = 'paste';
       bm = ++blockSeq;
       bsize = addedText.length;
-      events.push({ts:_pendingPasteTs || ts, type:'paste', srcFamily:'paste', n:addedText.length, isInsert:true, meta:{blockMark:bm, blockSize:bsize, text:addedText}});
       _pendingPasteText = null; _pendingPasteTs = 0;
     }
     // (자동 15자+ paste 승격은 debounce 로 여러 글자가 묶여도 typing 유지되도록 제거)
