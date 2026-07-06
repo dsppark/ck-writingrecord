@@ -4,7 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>카피킬러 문서작성v2</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com" onload="document.body.classList.add('tw-ready')"></script>
+<style>
+  /* Tailwind CDN 로드 완료 전까지 body 전체 숨김 + 로더 표시. 로드 완료 시 body 표시. */
+  body:not(.tw-ready){visibility:hidden;}
+  #boot-loader{visibility:visible !important;position:fixed;inset:0;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:14px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;}
+  body.tw-ready #boot-loader{display:none;}
+</style>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <!-- muha-editor (Tiptap v3 기반 vanilla mount, extra variant 에서 Froala-style 툴바 대체) -->
 <link rel="stylesheet" href="https://muhayu.github.io/muha-editor/vanilla/editor.css?v=20260703" />
@@ -885,6 +891,7 @@
 </style>
 </head>
 <body data-view="write" data-write-variant="extra" data-report-tab="main">
+<div id="boot-loader">문서 작성 준비 중…</div>
 
 <!-- ============ WRITE 뷰 헤더 ============ -->
 <!-- ============ LNB (좌측 사이드바) — '새 문서 작성' 화면 한정 ============ -->
@@ -1082,7 +1089,7 @@
       <div class="doc-actions">
         <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="onBackToListClick()">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
-        <button class="btn btn-primary" id="btnComplete" disabled>작성 증명 리포트 확인</button>
+        <button class="btn btn-primary" id="btnComplete" disabled>저장 후 작성 검증 결과 확인</button>
         <button id="btnReinspect" type="button" onclick="runReinspection()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
           재검사
@@ -6690,6 +6697,11 @@ function seedDemo(){
 
 </script>
 <!-- muha-editor UMD 로드 후, extra variant 에디터가 mount 대기 상태이면 마운트 -->
+<script>
+  // Tailwind CDN 이 script load 이벤트를 놓치거나 실패해도 최대 5 초 후 body 강제 표시.
+  // 그 이후에는 unstyled 라도 사용자에게 보이는 것이 안 보이는 것보다 낫다.
+  setTimeout(function(){ document.body.classList.add('tw-ready'); }, 5000);
+</script>
 <script src="https://muhayu.github.io/muha-editor/vanilla/editor.full.umd.min.js?v=20260703"></script>
 <script>
 (function(){
