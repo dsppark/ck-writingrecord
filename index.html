@@ -4123,18 +4123,19 @@ function _seqMatch(T, raw, used, searchStart){
   return (first === -1) ? null : {first, last, positions};
 }
 
-/* 문서 스냅샷 기반 카운터·블록 range 재계산. tally + 각 블록 _range 세팅. */
-function _recomputeFromSnapshot(){
+/* 문서 innerText 스냅샷에서 각 문자의 source 를 계산하는 공통 헬퍼.
+   실시간 카운터(_recomputeFromSnapshot)와 결과지 model 재구성(_rebuildModelFromMuha)
+   이 동일 로직을 쓰도록 한 곳에서 산출.
+   반환: { raw, N, src[], blockOf[], finalSrc[] } */
+function _computeSnapshotSources(){
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  if(!el){ return; }
-  const norm = t => (t || '').replace(/ /g, ' ').replace(/\n{2,}/g, '\n');
+  if(!el) return null;
+  const norm = t => (t || '').replace(/ /g, ' ').replace(/\n{2,}/g, '\n');
   const raw = norm(el.innerText || el.textContent || '');
   const N = raw.length;
-  const src  = new Array(N).fill(null);   // 'ai' | 'paste' | null (실제 원본 매치 위치)
-  const used = new Array(N).fill(false);
-
-  // 삽입 순서(seq)대로 매칭 — 문서상 앞→뒤 배치이므로 이전 블록 매치 끝 이후부터
-  // 검색해 fragment 가 엉뚱한 곳에 매칭되는 것을 방지.
+  const src     = new Array(N).fill(null);
+  const used    = new Array(N).fill(false);
+  const blockOf = new Array(N).fill(null);
   const blocks = _auditBlocks.slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
   let priorLast = -1;
   for(const b of blocks){
@@ -4149,27 +4150,37 @@ function _recomputeFromSnapshot(){
       priorLast = m.last;
     }
   }
-
-  // 블록 범위 안 미매칭(=사용자가 원본 사이에 추가) → revised
-  const inRange = new Array(N).fill(false);
   for(const b of _auditBlocks){
     if(!b._range) continue;
     let rev = 0;
     for(let i = b._range.first; i <= b._range.last; i++){
-      inRange[i] = true;
+      if(!blockOf[i]) blockOf[i] = b;
       if(!src[i] && raw[i] !== '\n') rev++;
     }
     b.revisedInside = rev;
   }
+  const finalSrc = new Array(N);
+  for(let i = 0; i < N; i++){
+    if(src[i]) finalSrc[i] = src[i];
+    else if(blockOf[i]) finalSrc[i] = blockOf[i].source + '-internal';
+    else finalSrc[i] = 'typing';
+  }
+  return { raw, N, src, blockOf, finalSrc };
+}
 
+/* 문서 스냅샷 기반 실시간 카운터 재계산. tally 세팅. */
+function _recomputeFromSnapshot(){
+  const snap = _computeSnapshotSources();
+  if(!snap){ return; }
+  const { raw, N, src, blockOf } = snap;
   let ai = 0, paste = 0, revised = 0, typing = 0, total = 0;
   for(let i = 0; i < N; i++){
     if(raw[i] === '\n') continue;
     total++;
     if(src[i] === 'ai') ai++;
     else if(src[i] === 'paste') paste++;
-    else if(inRange[i]) revised++;   // 원본 사이 = 수정
-    else typing++;                    // 원본 앞/뒤/무관 = 직접 타이핑
+    else if(blockOf[i]) revised++;
+    else typing++;
   }
   _tally.ai = ai; _tally.paste = paste; _tally.revised = revised; _tally.typing = typing;
   _auditTotalChars = total;
@@ -5754,87 +5765,20 @@ function applyQuoteLabel(){
  * 매칭 안 되는(=삭제된) 텍스트는 무시. 나머지 글자는 모두 typing.
  */
 function _rebuildModelFromMuha(){
-  // 결과지 진입 직전 model 재구성. 각 AI/paste 이벤트의 원본 텍스트를
-  // innerText 안에서 가장 긴 연속 공통 substring (LCS) 로 매칭한다.
-  //   · halving 은 짧은 fragment 가 새 문단으로 튀어 사용자 typing 을
-  //     AI/paste 로 흡수하는 문제가 있어 LCS 로 대체.
-  //   · 매칭된 위치 → 'ai'/'paste', range 안 미매칭 → 'ai-internal'/
-  //     'paste-internal' (편집 흔적), 그 외 → 'typing'.
+  // 결과지 진입 직전 model 재구성. 실시간 카운터와 동일한 _computeSnapshotSources
+  // 를 써서 각 문자에 source(ai|paste|ai-internal|paste-internal|typing)를 부여.
+  // → 결과지 상단 breakdown 지표·하단 텍스트 유입 세그먼트가 실시간 카운터와 일치.
   if(document.body.dataset.writeVariant !== 'extra') return;
-  const el = _findMuhaEditable();
-  if(!el) return;
-  const normalize = (t) => (t || '').replace(/\u00A0/g, ' ').replace(/\n{2,}/g, '\n');
-  const raw = normalize(el.innerText || el.textContent || '');
-  const N = raw.length;
+  const snap = (typeof _computeSnapshotSources === 'function') ? _computeSnapshotSources() : null;
+  if(!snap){ return; }
+  const { raw, N, finalSrc, blockOf } = snap;
   if(N === 0){ model.length = 0; return; }
-  const src = new Array(N).fill('typing');
-  const used = new Array(N).fill(false);
-  const bmArr = new Array(N).fill(null);
-  const bsArr = new Array(N).fill(null);
-  const externals = (events||[])
-    .filter(e => e && (e.type === 'ai' || e.type === 'paste'))
-    .sort((a,b) => {
-      if(a.type !== b.type) return a.type === 'paste' ? -1 : 1;
-      return (a.ts||0) - (b.ts||0);
-    });
-  const rangesByType = { ai: [], paste: [] };
-  const MIN_LCS = 4;
-  function findLCS(T){
-    // T 와 raw 의 가장 긴 공통 substring (raw 안 used 아닌 위치) 찾기.
-    // O(M*N) DP, row-wise 메모리 O(N).
-    const M = T.length;
-    if(M < MIN_LCS) return null;
-    let prev = new Array(N + 1).fill(0);
-    let cur  = new Array(N + 1).fill(0);
-    let maxLen = 0, iEndBest = 0;
-    for(let i = 1; i <= M; i++){
-      for(let j = 1; j <= N; j++){
-        if(!used[j-1] && T[i-1] === raw[j-1]){
-          cur[j] = prev[j-1] + 1;
-          if(cur[j] > maxLen){ maxLen = cur[j]; iEndBest = j; }
-        } else {
-          cur[j] = 0;
-        }
-      }
-      const tmp = prev; prev = cur; cur = tmp;
-      for(let k = 0; k <= N; k++) cur[k] = 0;
-    }
-    if(maxLen < MIN_LCS) return null;
-    return { iStart: iEndBest - maxLen, iEnd: iEndBest, len: maxLen };
-  }
-  for(const e of externals){
-    const T = normalize(e.meta && e.meta.text ? e.meta.text : '');
-    if(!T) continue;
-    const bm = e.meta && e.meta.blockMark;
-    const bs = (e.meta && e.meta.blockSize) || T.length;
-    const lcs = findLCS(T);
-    if(!lcs) continue;
-    for(let k = lcs.iStart; k < lcs.iEnd; k++){
-      used[k] = true; src[k] = e.type; bmArr[k] = bm; bsArr[k] = bs;
-    }
-    rangesByType[e.type].push({ first: lcs.iStart, last: lcs.iEnd - 1, bm, bs });
-  }
-  const inAiRange    = new Array(N).fill(null);
-  const inPasteRange = new Array(N).fill(null);
-  for(const r of rangesByType.ai){
-    for(let i = r.first; i <= r.last; i++) inAiRange[i] = r;
-  }
-  for(const r of rangesByType.paste){
-    for(let i = r.first; i <= r.last; i++) inPasteRange[i] = r;
-  }
   const now = Date.now();
   model.length = 0;
   for(let i = 0; i < N; i++){
-    let finalSrc, bm = bmArr[i], bs = bsArr[i];
-    if(src[i] === 'ai') finalSrc = 'ai';
-    else if(src[i] === 'paste') finalSrc = 'paste';
-    else if(inPasteRange[i]){
-      finalSrc = 'paste-internal'; bm = inPasteRange[i].bm; bs = inPasteRange[i].bs;
-    } else if(inAiRange[i]){
-      finalSrc = 'ai-internal'; bm = inAiRange[i].bm; bs = inAiRange[i].bs;
-    } else finalSrc = 'typing';
-    const item = { ch: raw[i], source: finalSrc, ts: now + i * 0.1 };
-    if(bm != null){ item.blockMark = bm; item.blockSize = bs; }
+    const item = { ch: raw[i], source: finalSrc[i], ts: now + i * 0.1 };
+    const b = blockOf[i];
+    if(b){ item.blockMark = b.id; item.blockSize = b.origLen; }
     model.push(item);
   }
 }
