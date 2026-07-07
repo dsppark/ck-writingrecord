@@ -4205,13 +4205,16 @@ function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // audit replay 결과를 그대로 표시. 상호배타 → 합 = 총 글자수(개행 포함).
-    const c = _auditCounts || {typing:0, ai:0, paste:0, revised:0, total:0};
-    document.getElementById('stWrite').textContent   = c.typing;
-    document.getElementById('stAi').textContent      = c.ai;
-    document.getElementById('stPaste').textContent   = c.paste;
-    document.getElementById('stRevised').textContent = c.revised;
-    extraTotalNoBreak = c.total;
+    // [보류] 직접타이핑/AI/붙여넣기/수정 집계는 muha source API 대기 중.
+    // 현재 audit 스트림(AI 재emit·hardBreak·IME)만으론 정확 재구성 불가라
+    // 잘못된 값 대신 '—'(집계 대기) 표시. audit raw 로그는 window.__auditLog 에 계속 적재.
+    document.getElementById('stWrite').textContent   = '—';
+    document.getElementById('stAi').textContent      = '—';
+    document.getElementById('stPaste').textContent   = '—';
+    document.getElementById('stRevised').textContent = '—';
+    // 총 글자수는 에디터 실제 innerText 기준으로 표시 (개행 제외)
+    const _el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+    extraTotalNoBreak = _el ? (_el.innerText || '').split(String.fromCharCode(10)).join('').length : 0;
   } else {
     const c=counts();
     document.getElementById('stWrite').textContent=c.typing;
