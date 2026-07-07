@@ -413,6 +413,49 @@
   .insp-tab:hover{background:#F1F5F9;}
   .insp-tab.is-active{background:#fff;color:var(--ck-gray-900);border-bottom:2px solid var(--ck-primary-500);}
   .insp-tab .chk{color:var(--ck-primary-500);font-weight:700;}
+  /* 탭 라인 우측 — 문서 AI작성률 (실제 서비스 스타일) */
+  .insp-tabs{align-items:stretch;}
+  .insp-tab-ratio{margin-left:auto;display:flex;align-items:center;gap:7px;padding:14px 20px;
+    font-size:13.5px;font-weight:700;color:var(--ck-gray-800);background:#fff;border-left:1px solid var(--ck-secondary-200);}
+  .insp-tab-ratio .ratio-dot{width:8px;height:8px;border-radius:50%;background:#7C3AED;display:inline-block;}
+  .insp-tab-ratio b{color:#7C3AED;font-size:15px;font-weight:800;}
+  /* 우측 사이드바 상단 의심정도 범례 */
+  .insp-legend-top{display:flex;align-items:center;justify-content:flex-end;gap:5px;
+    font-size:11px;color:var(--ck-gray-500);margin-bottom:12px;}
+  .insp-legend-top .lg-info{color:var(--ck-gray-400);}
+  .insp-legend-top .dot{width:7px;height:7px;border-radius:50%;background:#DDD6FE;display:inline-block;}
+  .insp-legend-top .dot.on{background:#7C3AED;}
+  /* 선택된 AI 의심 영역 상세 카드 (실제 서비스 우측 패널) */
+  .susp-detail{border:1px solid #C4B5FD;border-radius:12px;padding:16px 16px 14px;background:#fff;
+    box-shadow:0 2px 10px rgba(124,58,237,0.06);}
+  .susp-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .susp-detail-title{font-size:14px;font-weight:700;color:var(--ck-primary-700);display:inline-flex;align-items:center;gap:5px;}
+  .susp-detail-title .chk{color:#7C3AED;}
+  .susp-level{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--ck-gray-500);}
+  .susp-level .d{width:7px;height:7px;border-radius:50%;background:#DDD6FE;display:inline-block;}
+  .susp-level.dot-low .d:nth-child(1){background:#7C3AED;}
+  .susp-level.dot-mid .d:nth-child(-n+2){background:#7C3AED;}
+  .susp-level.dot-high .d{background:#7C3AED;}
+  .susp-detail-lead{margin:0 0 12px;font-size:12.5px;line-height:1.6;color:var(--ck-gray-700);}
+  .susp-detail-preview{margin:0;font-size:13px;line-height:1.6;color:var(--ck-gray-900);font-weight:700;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .susp-detail-hr{border:none;border-top:1px solid var(--ck-secondary-100);margin:14px 0;}
+  .susp-detail-feat-title{font-size:12.5px;font-weight:700;color:var(--ck-gray-800);margin-bottom:6px;}
+  .susp-detail-feat-desc{margin:0 0 10px;font-size:11.5px;line-height:1.6;color:var(--ck-gray-500);}
+  .susp-detail-tags{display:flex;gap:5px;flex-wrap:wrap;}
+  .susp-detail-more{display:inline-block;margin-top:12px;font-size:11.5px;color:var(--ck-gray-400);cursor:pointer;text-decoration:none;}
+  .susp-detail-more:hover{color:var(--ck-primary-500);}
+  .susp-empty{padding:40px 12px;text-align:center;color:var(--ck-gray-400);font-size:12.5px;line-height:1.6;}
+  /* 우측 하단 검사 안내 박스 */
+  .insp-notice{display:flex;gap:8px;margin-top:16px;padding:12px 14px;background:#F8FAFC;border-radius:10px;}
+  .insp-notice-ic{color:var(--ck-gray-400);font-size:13px;flex-shrink:0;line-height:1.6;}
+  .insp-notice p{margin:0;font-size:11px;line-height:1.6;color:var(--ck-gray-500);}
+  /* 하단 액션바 우측 버튼 그룹 */
+  .insp-actions-right{margin-left:auto;display:flex;gap:10px;}
+  .ra-btn-dark{background:var(--ck-gray-800);color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .ra-btn-dark:hover{background:var(--ck-gray-900);}
+  .ra-btn-primary{background:var(--ck-brand-gk-500,#00C2FF);color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .ra-btn-primary:hover{filter:brightness(1.05);}
   .insp-body{background:#fff;border:1px solid var(--ck-secondary-200);border-top:none;border-radius:0 0 10px 10px;padding:24px 28px;}
   .insp-ratio{background:#FEF2F2;border-radius:8px;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;}
   .insp-ratio-label{font-size:13.5px;font-weight:700;color:var(--ck-gray-900);white-space:nowrap;}
@@ -451,7 +494,7 @@
   .card-features{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;}
   .feature-tag{background:#F5F3FF;color:var(--ck-primary-700);padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:600;border:1px solid #DDD6FE;}
   .insp-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
-  .insp-actions .insp-back{margin-right:auto;}
+  /* insp-back 은 좌측, actions-right 가 우측 push */
   /* 우측 AI 의심 카드 패널 하단 — 문서 작성 이동 안내 + CTA 묶음. 기본 숨김, JS로 노출 */
   .insp-cta-box{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--ck-secondary-100);
     position:sticky;bottom:12px;background:#fff;}
@@ -2124,31 +2167,25 @@
     <div class="insp-tabs" role="tablist">
       <button class="insp-tab" data-insp-tab="plagiarism" onclick="switchInspTab('plagiarism')"><span class="chk">✓</span> 표절검사</button>
       <button class="insp-tab is-active" data-insp-tab="ai" onclick="switchInspTab('ai')"><span class="chk">✓</span> AI생성검사</button>
+      <div class="insp-tab-ratio"><span class="ratio-dot"></span>문서 AI작성률 <b id="inspRatioValue">0</b>%</div>
     </div>
     <div class="insp-body" id="inspBody">
-      <div class="insp-ratio">
-        <div>
-          <div class="insp-ratio-label">문서 AI작성률</div>
-          <div class="insp-ratio-desc">전체 글 중에서 AI가 작성한 것으로 의심되는 부분의 비중입니다. 각 영역을 클릭해서 AI생성의 특징을 확인해 보세요.</div>
-        </div>
-        <div class="insp-ratio-bar"><div class="insp-ratio-fill" id="inspRatioFill" style="width:0%"></div></div>
-        <div class="insp-ratio-value"><span id="inspRatioValue">0</span>%</div>
-      </div>
       <div class="insp-content-wrap">
         <div class="insp-content" id="inspContent"></div>
         <aside class="insp-sidebar">
-          <div class="insp-sidebar-head">
-            <span class="insp-sidebar-title"><span class="chk">✓</span> AI 의심</span>
-            <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
-          </div>
+          <div class="insp-legend-top">의심 정도 <span class="lg-info">ⓘ</span> 낮음 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span> 높음</div>
           <div id="inspCards"></div>
-          <!-- AI 의심 카드 확인 흐름 다음, 문서 작성 이동 안내 + CTA (AI 의심 1개 이상일 때만 노출) -->
+          <!-- 문서 작성 이동 안내 + CTA (AI 의심 1개 이상일 때만 노출) -->
           <div id="inspCtaBox" class="insp-cta-box">
             <p class="insp-cta-desc">AI 생성 특징이 나타나는 영역이에요. 직접 작성 과정을 거치면 나만의 사고와 표현이 글에 남아 <b>진짜 내가 쓴 글</b>이 됩니다.</p>
             <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               직접 작성해 완성하기
             </button>
+          </div>
+          <div class="insp-notice">
+            <span class="insp-notice-ic">ⓘ</span>
+            <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 문서의 AI 작성 여부 판단은 문서 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
           </div>
         </aside>
       </div>
@@ -2157,8 +2194,15 @@
   <div class="insp-actions no-print">
     <button class="ra-btn ra-btn-ghost insp-back" type="button" onclick="closeInspection()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      결과지로 돌아가기
+      뒤로가기
     </button>
+    <div class="insp-actions-right">
+      <button class="ra-btn ra-btn-dark" type="button" onclick="openInspUpload()">다른 문서 검사하기</button>
+      <button class="ra-btn ra-btn-primary" type="button" onclick="showToast && showToast('결과 다운로드 (데모)')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        결과 다운로드
+      </button>
+    </div>
   </div>
 </section>
 
@@ -4951,21 +4995,15 @@ function runInspection(opts){
 
 function renderInspectionResult(){
   if(!currentInspection) return;
-  const {suspectSpans, acknowledgedSpans, aiRatioAdjusted, aiRatioOrig} = currentInspection;
+  const {suspectSpans, acknowledgedSpans, aiRatioAdjusted} = currentInspection;
   const pct = Math.round(aiRatioAdjusted * 100);
-  const fill = document.getElementById('inspRatioFill');
   const val = document.getElementById('inspRatioValue');
-  if(fill) fill.style.width = pct + '%';
-  if(val){
-    val.textContent = pct;
-    val.title = `원본 ${Math.round(aiRatioOrig*100)}% · 인정 영역 반영 후 ${pct}%`;
-  }
+  if(val) val.textContent = pct;
   const titleEl = document.getElementById('inspDocTitle');
   const tInput = document.getElementById('docTitle');
-  if(titleEl) titleEl.textContent = ((tInput?.value)||'제목 없음') + '.hwpx';
+  if(titleEl) titleEl.textContent = ((tInput && tInput.value) || '제목 없음') + '.hwpx';
 
-  // 본문 렌더 — _getInspectionChunks 로 앞/뒤 반쪽을 청크로 나눔. 앞 청크는 미탐,
-  // 뒤 청크는 AI 의심(보라 음영). suspectSpans 의 chunkIdx 와 매칭.
+  // 본문 렌더 — 청크 단위. 의심 청크는 보라 음영 + 클릭 시 우측 상세 카드 갱신.
   const rawText = model.map(m => m.ch).join('');
   const info = _getInspectionChunks(rawText);
   const spanByChunkIdx = {};
@@ -4979,51 +5017,58 @@ function renderInspectionResult(){
         const isAck = acknowledgedSpans.includes(sp.spanId);
         const cls = isAck ? 'ai-acknowledged' : 'ai-suspect';
         const badge = isAck ? '<span class="ack-badge">작성 증명 인정</span>' : '';
-        return `<p class="${cls}" data-span-id="${sp.spanId}">${txt}${badge}</p>`;
+        return `<p class="${cls}" data-span-id="${sp.spanId}" onclick="selectSuspectCard('${sp.spanId}')">${txt}${badge}</p>`;
       }
       return `<p class="chunk-clear">${txt}</p>`;
     }).join('');
   }
 
-  // 사이드 카드
-  const cards = document.getElementById('inspCards');
-  if(cards){
-    if(!suspectSpans.length){
-      cards.innerHTML = '<div class="insp-empty">의심 없음 ✓<br><span style="font-size:11.5px;color:var(--ck-gray-400);">직접 작성 흐름이 잘 관찰됩니다.</span></div>';
-    } else {
-      cards.innerHTML = suspectSpans.map(sp => {
-        const isAck = acknowledgedSpans.includes(sp.spanId);
-        const preview = _escInsp(sp.text.slice(0, 46) + (sp.text.length > 46 ? '…' : ''));
-        const dotCls = 'dot-' + sp.level;
-        const levelKor = {'low':'낮음','mid':'중간','high':'높음'}[sp.level] || '중간';
-        return `<div class="suspect-card ${isAck?'is-ack':''}" data-span-id="${sp.spanId}" onclick="selectSuspectCard('${sp.spanId}')">
-          <div class="card-head">
-            <span class="card-title">✓ ${isAck ? '작성 증명 인정' : 'AI 의심'}</span>
-            <span class="level-dots ${dotCls}" title="${levelKor}"><span class="d"></span><span class="d"></span><span class="d"></span></span>
-          </div>
-          <div class="card-preview">${preview}</div>
-          ${isAck ? '<div class="card-ack">이 영역은 직접 다듬은 흔적이 충분해 판정에서 제외됐어요.</div>'
-                  : `<div class="card-features">${sp.features.map(f=>`<span class="feature-tag">${_escInsp(f)}</span>`).join('')}</div>`}
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // 안내+CTA 노출 — AI 의심이 1개 이상 남아있을 때만 (인정으로 다 빠졌으면 미노출)
+  // 우측 상세 카드 — 실제 서비스처럼 '선택된 1개'만 상세 표시. 첫 활성 의심 영역 자동 선택.
   const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId));
+  if(activeSuspects.length){
+    selectSuspectCard(activeSuspects[0].spanId);
+  } else {
+    const cards = document.getElementById('inspCards');
+    if(cards) cards.innerHTML = '<div class="susp-empty">AI 의심 영역이 없습니다 ✓<br>직접 작성 흐름이 잘 관찰됩니다.</div>';
+  }
+  // 문서 작성 이동 CTA — AI 의심 1개 이상일 때만
   const ctaBox = document.getElementById('inspCtaBox');
   if(ctaBox) ctaBox.style.display = activeSuspects.length > 0 ? 'block' : 'none';
 }
 
+
 function selectSuspectCard(spanId){
-  document.querySelectorAll('#inspCards .suspect-card').forEach(c => c.classList.toggle('is-selected', c.dataset.spanId === spanId));
-  const target = document.querySelector(`#inspContent p[data-span-id="${spanId}"]`);
-  if(target){
-    target.scrollIntoView({behavior:'smooth', block:'center'});
-    target.classList.add('is-flash');
-    setTimeout(() => target.classList.remove('is-flash'), 800);
+  const sp = currentInspection && currentInspection.suspectSpans.find(s => s.spanId === spanId);
+  if(!sp) return;
+  const levelKor = {low:'낮음', mid:'중간', high:'높음'}[sp.level] || '중간';
+  const dotCls = 'dot-' + sp.level;
+  const preview = _escInsp(sp.text.slice(0, 90) + (sp.text.length > 90 ? '…' : ''));
+  const feats = (sp.features || []).map(f => `<span class="feature-tag">${_escInsp(f)}</span>`).join('');
+  const cards = document.getElementById('inspCards');
+  if(cards){
+    cards.innerHTML = `
+      <div class="susp-detail">
+        <div class="susp-detail-head">
+          <span class="susp-detail-title"><span class="chk">✓</span> AI 의심</span>
+          <span class="susp-level ${dotCls}"><span class="d"></span><span class="d"></span><span class="d"></span> ${levelKor}</span>
+        </div>
+        <p class="susp-detail-lead">AI가 생성한 글의 특성이 일정 수준 이상 나타나는 영역입니다.</p>
+        <p class="susp-detail-preview">${preview}</p>
+        <hr class="susp-detail-hr">
+        <div class="susp-detail-feat-title">AI생성 특징</div>
+        <p class="susp-detail-feat-desc">다음과 같은 특징을 갖고 있기 때문에 AI가 생성했을 확률이 높다고 추정됩니다.</p>
+        <div class="susp-detail-tags">${feats}</div>
+        <span class="susp-detail-more" onclick="return false;">자세히 보기</span>
+      </div>`;
   }
+  // 본문에서 선택 영역 강조 + 스크롤
+  document.querySelectorAll('#inspContent p[data-span-id]').forEach(pEl => {
+    pEl.classList.toggle('is-flash', pEl.dataset.spanId === spanId);
+  });
+  const target = document.querySelector(`#inspContent p[data-span-id="${spanId}"]`);
+  if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
 }
+
 
 function switchInspTab(name){
   document.querySelectorAll('.insp-tab').forEach(t => t.classList.toggle('is-active', t.dataset.inspTab === name));
@@ -5033,24 +5078,24 @@ function switchInspTab(name){
   if(name === 'plagiarism'){
     body.innerHTML = '<div class="insp-empty">표절검사 결과는 이번 프로토타입 스코프 밖입니다.<br><span style="font-size:11.5px;">상단 AI생성검사 탭을 눌러 결과를 확인하세요.</span></div>';
   } else {
-    // AI 탭 원상복구를 위해 페이지 리로드 대신 renderInspectionResult 재호출
+    // AI 탭 컨텐츠 복원 (탭 라인의 inspRatioValue 는 body 밖이라 유지됨)
     body.innerHTML = `
-      <div class="insp-ratio">
-        <div>
-          <div class="insp-ratio-label">문서 AI작성률</div>
-          <div class="insp-ratio-desc">전체 글 중에서 AI가 작성한 것으로 의심되는 부분의 비중입니다. 각 영역을 클릭해서 AI생성의 특징을 확인해 보세요.</div>
-        </div>
-        <div class="insp-ratio-bar"><div class="insp-ratio-fill" id="inspRatioFill" style="width:0%"></div></div>
-        <div class="insp-ratio-value"><span id="inspRatioValue">0</span>%</div>
-      </div>
       <div class="insp-content-wrap">
         <div class="insp-content" id="inspContent"></div>
         <aside class="insp-sidebar">
-          <div class="insp-sidebar-head">
-            <span class="insp-sidebar-title"><span class="chk">✓</span> AI 의심</span>
-            <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
-          </div>
+          <div class="insp-legend-top">의심 정도 <span class="lg-info">ⓘ</span> 낮음 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span> 높음</div>
           <div id="inspCards"></div>
+          <div id="inspCtaBox" class="insp-cta-box">
+            <p class="insp-cta-desc">AI 생성 특징이 나타나는 영역이에요. 직접 작성 과정을 거치면 나만의 사고와 표현이 글에 남아 <b>진짜 내가 쓴 글</b>이 됩니다.</p>
+            <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              직접 작성해 완성하기
+            </button>
+          </div>
+          <div class="insp-notice">
+            <span class="insp-notice-ic">ⓘ</span>
+            <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 문서의 AI 작성 여부 판단은 문서 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
+          </div>
         </aside>
       </div>`;
     renderInspectionResult();
