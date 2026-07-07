@@ -4021,6 +4021,10 @@ function appendToEditor(text, source, promptHint){
     const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
     if(controller && typeof controller.insertText === 'function'){
       try {
+        // AI 삽입 '직전'에 현재 상태를 shadow 맵에 확정 — 앞선 직접 텍스트(IME 로 쳐
+        // _srcState 미저장일 수 있음)의 origin(typing)을 락인해, 삽입 후 muha 재-source
+        // 로 직접타이핑이 AI 로 뒤집히는 걸 막는다.
+        if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();
         el && el.focus();
         if(typeof controller.collapseSelectionToEnd === 'function') controller.collapseSelectionToEnd();
         // 문서 끝에 이미 내용이 있으면 개행으로 문단 분리
@@ -4498,6 +4502,13 @@ function _bindMuhaEvents(){
     stats.lastTs = Date.now();
     if(typeof updateStats === 'function') updateStats();
   });
+  // 붙여넣기 '직전'(capture)에 현재 상태를 shadow 맵에 확정한다. IME 로 친 직접
+  // 텍스트는 조합 가드로 _srcState 에 저장 안 됐을 수 있는데, 이때 붙여넣기가 들어와
+  // muha 가 기존 텍스트를 재-source 하면 직접타이핑이 붙여넣기로 뒤집힌다. 삽입 전에
+  // origin(typing)을 확정해 두면 이후 diff 가 보존한다.
+  el.addEventListener('paste', () => {
+    try { if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog(); } catch(e){}
+  }, true);
 }
 
 // [정리] _caretInside* / _syncMuhaModel (diff 수집) 제거
