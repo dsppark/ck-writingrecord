@@ -4315,8 +4315,14 @@ function updateStats(){
     if(mins>0) speed=Math.round(stats.keystrokes/mins);
   }
   document.getElementById('stSpeed').textContent=speed;
-  document.getElementById('btnComplete').disabled = totalChars<10;
+  // 저장 후 작성 검증 결과 확인 — 본문 10자 이상 + 제목 1자 이상일 때만 활성
+  const _titleLen = ((document.getElementById('docTitle')||{}).value || '').trim().length;
+  document.getElementById('btnComplete').disabled = totalChars<10 || _titleLen<1;
 }
+// 제목 입력 시에도 완료 버튼 활성 상태 재평가 (제목만 바꿔도 즉시 토글)
+document.getElementById('docTitle')?.addEventListener('input', () => {
+  if(typeof updateStats === 'function') updateStats();
+});
 
 /* ---------- demo buttons ---------- */
 document.getElementById('btnDemoPaste').onclick=()=>{
