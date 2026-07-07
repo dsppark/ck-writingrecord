@@ -4223,6 +4223,10 @@ function _resetSrcState(){ _srcState = null; }
 
 function _recountFromAuditLog(){
   const c = window.__muhaController;
+  // IME 조합 중에는 문서가 과도기 상태(음절이 ㅎ→하→한 으로 바뀜)라 shadow 맵을
+  // 저장하면 오염된다. 표시는 하되(아래 계산은 그대로 수행) _srcState 저장만 스킵.
+  let composing = false;
+  try { composing = !!(c && typeof c.isComposing === 'function' && c.isComposing()); } catch(e){}
   let ranges = [], body = null;
   try { if(c && typeof c.getSourceRanges === 'function') ranges = c.getSourceRanges() || []; } catch(e){ ranges = []; }
   try { if(c && typeof c.getBody === 'function') body = c.getBody(); } catch(e){ body = null; }
@@ -4241,37 +4245,45 @@ function _recountFromAuditLog(){
     .map(r => ({ from: r.from, to: r.to, source: r.source || 'typing' }))
     .sort((a, b) => a.from - b.from);
   const srcAt = (p) => { for(const r of rs){ if(p >= r.from && p < r.to) return r.source; } return null; };
-  // 비개행 문자 배열 + muha 가 보고한 출처
-  const newChars = [], newMuha = [];
-  for(const o of ordered){ if(o.ch !== '\n'){ newChars.push(o.ch); newMuha.push(srcAt(o.pos) || 'typing'); } }
+  // 비개행 문자 배열 + muha 가 보고한 '원천'(ai/paste, 그 외(typing/ime)=typing)
+  const newChars = [], newOrigin = [];
+  for(const o of ordered){
+    if(o.ch !== '\n'){
+      newChars.push(o.ch);
+      const ms = srcAt(o.pos);
+      newOrigin.push((ms === 'ai' || ms === 'paste') ? ms : 'typing');
+    }
+  }
 
-  // shadow diff — 공통 prefix/suffix 는 이전 출처 보존, 가운데(삽입분)만 새로 판정
-  const old = _srcState || { chars: [], src: [] };
-  const oldC = old.chars, oldS = old.src, oldLen = oldC.length, newLen = newChars.length;
+  // shadow diff — 공통 prefix/suffix 의 '원천'만 이전 값으로 보존한다. muha 는 문단
+  // 분리(Enter) 등 구조 편집 시 기존 ai 를 typing 으로 강등 보고하므로, 안 변한 글자의
+  // 원천을 지켜 AI 가 직접타이핑으로 흡수되는 걸 막는다. 삽입분 원천은 muha 값 사용.
+  const old = _srcState || { chars: [], origin: [] };
+  const oldC = old.chars, oldO = old.origin, oldLen = oldC.length, newLen = newChars.length;
   let p = 0; while(p < oldLen && p < newLen && oldC[p] === newChars[p]) p++;
   let s = 0; while(s < (oldLen - p) && s < (newLen - p) && oldC[oldLen-1-s] === newChars[newLen-1-s]) s++;
-  const newSrc = new Array(newLen);
-  for(let i = 0; i < p; i++) newSrc[i] = oldS[i];                       // prefix 보존
-  for(let i = 0; i < s; i++) newSrc[newLen-1-i] = oldS[oldLen-1-i];     // suffix 보존
-  const insEnd = newLen - s;
-  // 이웃이 ai/paste 뿐 아니라 이미 revised(블록 내부 입력)여도 '블록 내부'로 본다.
-  // 안 그러면 블록 안에서 둘째 글자부터 왼쪽 이웃이 revised라 typing 으로 빠진다.
-  const insideOf = (x) => (x === 'ai' || x === 'paste' || x === 'revised');
-  const leftSrc  = (p - 1 >= 0) ? newSrc[p - 1] : null;                 // 삽입 구간 왼쪽 이웃(보존값)
-  const rightSrc = (insEnd < newLen) ? newSrc[insEnd] : null;           // 오른쪽 이웃(보존값)
-  const inside = insideOf(leftSrc) && insideOf(rightSrc);               // 블록 내부 입력?
-  for(let i = p; i < insEnd; i++){
-    const ms = newMuha[i];
-    newSrc[i] = (ms === 'ai' || ms === 'paste') ? ms : (inside ? 'revised' : 'typing');
-  }
-  _srcState = { chars: newChars, src: newSrc };
+  const origin = new Array(newLen);
+  for(let i = 0; i < p; i++) origin[i] = oldO[i];                       // prefix 원천 보존
+  for(let i = 0; i < s; i++) origin[newLen-1-i] = oldO[oldLen-1-i];     // suffix 원천 보존
+  for(let i = p; i < newLen - s; i++) origin[i] = newOrigin[i];         // 삽입분 = muha 원천
+  // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
+  if(!composing) _srcState = { chars: newChars, origin };
 
-  let ai = 0, paste = 0, revised = 0, typing = 0;
-  for(const sv of newSrc){
-    if(sv === 'ai') ai++; else if(sv === 'paste') paste++;
-    else if(sv === 'revised') revised++; else typing++;
+  // 집계 — '수정'은 매번 스캔으로 재계산(self-healing): typing 런이 양옆 모두 블록
+  // (ai/paste)에 둘러싸이면 '수정'(블록 내부 입력), 아니면 직접타이핑.
+  // 블록 첫 글자 앞·마지막 글자 뒤(=한쪽 이웃만 블록)는 직접타이핑.
+  const isBlock = (x) => (x === 'ai' || x === 'paste');
+  let ai = 0, paste = 0, revised = 0, direct = 0, i = 0;
+  while(i < newLen){
+    const o = origin[i];
+    if(o === 'ai'){ ai++; i++; continue; }
+    if(o === 'paste'){ paste++; i++; continue; }
+    let j = i; while(j < newLen && origin[j] === 'typing') j++;         // typing 런 [i, j)
+    const enclosed = (i - 1 >= 0) && isBlock(origin[i - 1]) && (j < newLen) && isBlock(origin[j]);
+    if(enclosed) revised += (j - i); else direct += (j - i);
+    i = j;
   }
-  _auditCounts = { typing, ai, paste, revised, total: newLen };
+  _auditCounts = { typing: direct, ai, paste, revised, total: newLen };
   return _auditCounts;
 }
 
