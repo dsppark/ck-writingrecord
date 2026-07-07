@@ -4549,6 +4549,8 @@ function newWrite(variant){
   // audit 로그·카운터 초기화 (새 문서 세션)
   window.__auditLog = [];
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+  // 검사→에디터 AI 의심 음영 초기화 (새 문서엔 음영 없음)
+  if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
   sessionFrozen = false;
   selectedType = null;
@@ -5266,7 +5268,113 @@ function enterReinspect(){
       }
     }
   } catch(e){ console.warn('reinspect body replace fail', e); }
+
+  // 5) AI 의심 영역에 보라 음영 overlay 씌우기. 커서 클릭 시 해당 영역 음영 해제.
+  _reinspectSuspects = currentInspection.suspectSpans.map(sp => ({ text: sp.text, hidden: false }));
+  setTimeout(() => {
+    try { _bindReinspectOverlay(); _renderReinspectOverlay(); } catch(e){ console.warn('reinspect overlay fail', e); }
+  }, 400);
+
   if(typeof updateStats === 'function') updateStats();
+}
+
+/* ── 검사→에디터 진입 시 AI 의심 영역 음영 overlay (클릭 시 해제) ──
+   overlay 는 pointer-events:none 이라 편집을 방해하지 않고, 클릭은 에디터로 통과.
+   커서가 의심 영역 안에 들어오면 그 영역 음영을 해제(hidden)한다. */
+let _reinspectSuspects = [];   // [{text, hidden}]
+
+function _renderReinspectOverlay(){
+  const el = _findMuhaEditable();
+  const host = document.getElementById('muhaMount');
+  if(!el || !host) return;
+  let layer = document.getElementById('reinspect-overlay-layer');
+  if(!layer){
+    layer = document.createElement('div');
+    layer.id = 'reinspect-overlay-layer';
+    layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:3;';
+    if(getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    host.appendChild(layer);
+  }
+  layer.innerHTML = '';
+  if(!_reinspectSuspects.length) return;
+  const layerRect = layer.getBoundingClientRect();
+  const innerText = el.innerText || '';
+  for(const b of _reinspectSuspects){
+    if(b.hidden) continue;
+    // 편집으로 원본이 쪼개졌을 수 있어 매칭 가능한 최대 prefix 로 위치 탐색
+    let probe = b.text || '', startIdx = -1;
+    while(probe.length >= 4){
+      startIdx = innerText.indexOf(probe);
+      if(startIdx >= 0) break;
+      probe = probe.slice(0, Math.floor(probe.length / 2));
+    }
+    if(startIdx < 0) continue;
+    const endIdx = startIdx + probe.length;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let seen = 0, sNode = null, sOff = 0, eNode = null, eOff = 0;
+    while(walker.nextNode()){
+      const t = walker.currentNode, len = (t.textContent || '').length;
+      if(!sNode && seen + len > startIdx){ sNode = t; sOff = startIdx - seen; }
+      if(sNode && seen + len >= endIdx){ eNode = t; eOff = endIdx - seen; break; }
+      seen += len;
+    }
+    if(!sNode || !eNode) continue;
+    let range;
+    try {
+      range = document.createRange();
+      range.setStart(sNode, Math.min(sOff, sNode.textContent.length));
+      range.setEnd(eNode, Math.min(eOff, eNode.textContent.length));
+    } catch(e){ continue; }
+    for(const r of Array.from(range.getClientRects())){
+      if(r.width < 1 || r.height < 1) continue;
+      const d = document.createElement('div');
+      d.className = 'reinspect-overlay';
+      d.style.cssText =
+        'position:absolute;pointer-events:none;background:rgba(124,58,237,0.16);border-radius:2px;' +
+        'left:'   + Math.max(0, r.left - layerRect.left) + 'px;' +
+        'top:'    + Math.max(0, r.top  - layerRect.top ) + 'px;' +
+        'width:'  + Math.max(0, r.width)  + 'px;' +
+        'height:' + Math.max(0, r.height) + 'px;';
+      layer.appendChild(d);
+    }
+  }
+}
+
+function _clearReinspectOverlay(){
+  _reinspectSuspects = [];
+  const l = document.getElementById('reinspect-overlay-layer');
+  if(l) l.innerHTML = '';
+}
+
+function _bindReinspectOverlay(){
+  const el = _findMuhaEditable();
+  if(!el || el.dataset.reinspectBound) return;
+  el.dataset.reinspectBound = '1';
+  // 커서 클릭 → 그 위치가 어느 의심 영역 안이면 음영 해제
+  el.addEventListener('mousedown', () => {
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if(!sel || !sel.anchorNode) return;
+      let node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
+      let combined = '';
+      for(let i = 0; i < 3 && node; i++){ combined += (node.textContent || ''); node = node.parentNode; }
+      let changed = false;
+      for(const b of _reinspectSuspects){
+        if(b.hidden) continue;
+        const probe = (b.text || '').slice(0, 24);
+        if(probe.length >= 4 && combined.indexOf(probe) !== -1){ b.hidden = true; changed = true; }
+      }
+      if(changed) _renderReinspectOverlay();
+    }, 30);
+  });
+  // 리사이즈·스크롤·편집 시 음영 위치 재계산 (debounce)
+  let _t = 0;
+  const re = () => { clearTimeout(_t); _t = setTimeout(_renderReinspectOverlay, 60); };
+  window.addEventListener('resize', re);
+  const host = document.getElementById('muhaMount');
+  if(host) host.addEventListener('scroll', re, true);
+  el.addEventListener('input', re);
+  el.addEventListener('keyup', re);
 }
 
 /* ============ 플로우 2 — 문서 검사 등록 (SC-04) ============ */
