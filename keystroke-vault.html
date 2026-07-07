@@ -452,8 +452,12 @@
   .feature-tag{background:#F5F3FF;color:var(--ck-primary-700);padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:600;border:1px solid #DDD6FE;}
   .insp-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   .insp-actions .insp-back{margin-right:auto;}
-  /* 우측 AI 의심 카드 패널 하단 CTA — full-width 강조. 기본 숨김, JS로 노출 제어 */
-  .insp-cta{display:none;width:100%;margin-top:14px;position:sticky;bottom:16px;
+  /* 우측 AI 의심 카드 패널 하단 — 문서 작성 이동 안내 + CTA 묶음. 기본 숨김, JS로 노출 */
+  .insp-cta-box{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--ck-secondary-100);
+    position:sticky;bottom:12px;background:#fff;}
+  .insp-cta-desc{margin:0 0 10px;font-size:12px;line-height:1.6;color:var(--ck-gray-600);}
+  .insp-cta-desc b{color:var(--ck-primary-600);font-weight:700;}
+  .insp-cta{display:flex;width:100%;
     background:linear-gradient(90deg,var(--ck-primary-500),var(--ck-brand-gk-500));color:#fff;
     padding:13px 18px;border-radius:10px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;
     align-items:center;justify-content:center;gap:6px;
@@ -2138,11 +2142,14 @@
             <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
           </div>
           <div id="inspCards"></div>
-          <!-- AI 의심 카드 확인 흐름 바로 다음에 강조 CTA (AI 의심 1개 이상일 때만 노출) -->
-          <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            AI 의심 영역 직접 수정하러 가기
-          </button>
+          <!-- AI 의심 카드 확인 흐름 다음, 문서 작성 이동 안내 + CTA (AI 의심 1개 이상일 때만 노출) -->
+          <div id="inspCtaBox" class="insp-cta-box">
+            <p class="insp-cta-desc">AI 생성 특징이 나타나는 영역이에요. 직접 작성 과정을 거치면 나만의 사고와 표현이 글에 남아 <b>진짜 내가 쓴 글</b>이 됩니다.</p>
+            <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              직접 작성해 완성하기
+            </button>
+          </div>
         </aside>
       </div>
     </div>
@@ -5002,10 +5009,10 @@ function renderInspectionResult(){
     }
   }
 
-  // CTA 노출 — AI 의심이 1개 이상 남아있을 때만 (인정으로 다 빠졌으면 미노출)
+  // 안내+CTA 노출 — AI 의심이 1개 이상 남아있을 때만 (인정으로 다 빠졌으면 미노출)
   const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId));
-  const cta = document.getElementById('inspCta');
-  if(cta) cta.style.display = activeSuspects.length > 0 ? 'flex' : 'none';
+  const ctaBox = document.getElementById('inspCtaBox');
+  if(ctaBox) ctaBox.style.display = activeSuspects.length > 0 ? 'block' : 'none';
 }
 
 function selectSuspectCard(spanId){
