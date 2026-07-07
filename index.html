@@ -2231,7 +2231,7 @@
 <section id="view-box">
   <div class="box-page">
     <header class="box-pageheader">
-      <h1>내 문서함</h1>
+      <h1>내 문서</h1>
       <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 문서 작성</button>
     </header>
 
@@ -2269,9 +2269,9 @@
   </div>
   <div class="docview-actions">
     <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
-    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">수정</button>
+    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button>
     <button class="dv-btn" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 검증 결과 조회</button>
-    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxReinspectDoc(currentDocId);">문서 검사하기 ›</button>
+    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxSendToInspect(currentDocId);">문서 검사하기 ›</button>
   </div>
 </section>
 
@@ -4618,7 +4618,6 @@ function renderBoxList(){
         <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글자 수</b> ${(d.chars||0).toLocaleString()}자 <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn ghost" onclick="boxScanShowToast('${d.id}')">문서 검사하기</button>
         <button class="box-actionbtn solid" onclick="boxViewDoc('${d.id}')">문서 열기</button>
       </div>
     </div>
@@ -4662,15 +4661,61 @@ function boxViewDoc(id){
   document.body.dataset.view = 'doc';
   window.scrollTo(0,0);
 }
-// '문서 수정' — 작성 도구에서 이어 작성
+// rawText 를 muha 에디터에 문단(원래 개행=문단) 그대로 로드. 컨트롤러 준비될
+// 때까지 폴링 후 replaceBody. done 콜백은 로드 완료 시 1회 실행.
+function _loadTextIntoMuha(rawText, done){
+  const paragraphs = String(rawText || '').split('\n').map(line => ({
+    type: 'paragraph', content: line ? [{ type: 'text', text: line }] : []
+  }));
+  let tries = 0;
+  const tryLoad = () => {
+    const c = window.__muhaController;
+    if(c && typeof c.replaceBody === 'function'){
+      try { c.replaceBody({ type: 'doc', content: paragraphs }); }
+      catch(e){ console.warn('replaceBody fail', e); }
+      if(typeof done === 'function') done();
+      return;
+    }
+    const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+    if(el && tries > 8){  // 컨트롤러 못 잡으면 innerHTML 폴백
+      el.innerHTML = paragraphs.map(pn =>
+        '<p>' + (pn.content[0] ? _escInsp(pn.content[0].text) : '<br/>') + '</p>').join('');
+      if(typeof done === 'function') done();
+      return;
+    }
+    if(tries++ < 24) setTimeout(tryLoad, 80);
+  };
+  tryLoad();
+}
+
+// '문서 수정' — 저장된 문서를 작성 에디터에서 이어 편집. 제목·본문을 에디터에
+// 로드하고, 우측 상단 카운터는 직전 저장 시점 stats 를 그대로 유지.
 function boxOpenDoc(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
   if(!d) return;
   sessionFrozen = false;
-  _loadDocIntoSession(d);
+  _loadDocIntoSession(d);                 // model/events/stats/title/writeVariant 복원
   document.body.dataset.view = 'write';
-  window.scrollTo(0,0);
+  document.body.dataset.writeVariant = 'extra';
+  // 페이지 헤더·완료 버튼·LNB 를 '문서 작성'(extra) 톤으로
+  const ph = document.querySelector('#write-pageheader .write-pagetitle');
+  if(ph) ph.textContent = '문서 작성';
+  const bc = document.getElementById('btnComplete');
+  if(bc) bc.textContent = '저장 후 작성 검증 결과 확인';
+  document.querySelectorAll('#lnb [data-menu]').forEach(el => el.classList.remove('is-active'));
+  const a = document.querySelector('#lnb [data-menu="write-extra"]');
+  if(a) a.classList.add('is-active');
+  // muha 에디터에 본문 로드 → 로드 후 카운터는 직전 저장 stats 로 복구해 유지
+  if(typeof ensureMuhaEditor === 'function'){ try { ensureMuhaEditor(); } catch(e){} }
+  const rawText = (d.model || []).map(m => m.ch).join('');
+  _loadTextIntoMuha(rawText, () => {
+    Object.assign(stats, d.stats || {});  // replaceBody audit 후에도 저장 시점 값 유지
+    window.__auditLog = [];               // 로드로 유발된 audit 로그 폐기
+    if(typeof updateStats === 'function') updateStats();
+  });
+  window.scrollTo(0, 0);
+  if(typeof updateStats === 'function') updateStats();
 }
 /* ---------- 유료 이용권 차감 목업 ----------
    실제 결제 연동 전까지 localStorage 에 잔여 이용권 저장. 문서 검사(재검사)
@@ -4702,37 +4747,33 @@ function consumeInspectionCredit(){
   return true;
 }
 
-// '작성 검증 결과 조회' — 저장된 최신 검사 결과를 결과 화면으로 노출
+// '작성 검증 결과 조회' — 저장된 문서의 '작성 증명 결과'(리포트) 화면으로 이동.
+// (AI생성검사 결과 화면이 아니라 작성 증명 결과 화면)
 function boxScanDoc(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
   if(!d) return;
   _loadDocIntoSession(d);
   sessionFrozen = true;
-  // 저장된 검사 이력이 있으면 그 결과를 그대로 보여주고, 없으면 최초 판정 후 결과 렌더
-  if(d.currentInspection){
-    currentInspection = {...d.currentInspection};
-    document.body.dataset.view = 'inspect-result';
-    if(typeof renderInspectionResult === 'function') renderInspectionResult();
-  } else {
-    if(typeof runInspection === 'function') runInspection();
-  }
+  if(typeof buildReportFromSession === 'function') buildReportFromSession();
+  document.body.dataset.view = 'report';
+  document.body.dataset.reportTab = 'main';
   window.scrollTo(0,0);
 }
 
-// '문서 검사하기' — 재검사 실행. 유료 이용권 차감 목업 확인 후 진행.
-function boxReinspectDoc(id){
+// '문서 검사하기 ›' — 작성한 문서를 '직접 입력' 형태로 검사 업로드 화면에 등록.
+// 그룹명 입력·검사 설정만 하면 되는 상태(파일카드 '검사 가능')로 진입.
+function boxSendToInspect(id){
   const docs = boxLoadDocs();
   const d = docs.find(x => x.id===id);
   if(!d) return;
-  if(typeof consumeInspectionCredit === 'function' && !consumeInspectionCredit()){
-    return;  // 사용자 취소 or 잔여 없음
-  }
-  _loadDocIntoSession(d);
-  sessionFrozen = true;
-  // 이전 검사 결과를 currentInspection 에 세팅 → runInspection 안에서 재검사 로직으로 분기
-  currentInspection = d.currentInspection ? {...d.currentInspection} : null;
-  if(typeof runInspection === 'function') runInspection();
+  openInspUpload();  // view=inspect-upload + 상태 초기화(그룹명 비움)
+  const text = (d.model || []).map(m => m.ch).join('');
+  const base = (d.title || '').trim();
+  uploadedText = text;
+  uploadedFilename = (base ? base : '직접 입력 문서') + '.txt';
+  _renderInspFileCard(uploadedFilename, text.length);  // 파일카드 + '검사 가능' + 삭제, 검사 버튼 활성
+  window.scrollTo(0, 0);
 }
 function boxDeleteSelected(){
   const checked = Array.from(document.querySelectorAll('#boxList .box-row .box-rowchk:checked'))
@@ -4758,7 +4799,7 @@ document.getElementById('btnSaveOnly').onclick=()=>{
   renderBoxList();
   document.body.dataset.view = 'box';
   window.scrollTo(0,0);
-  showToast('내 문서함에 저장되었습니다');
+  showToast('내 문서에 저장되었습니다');
 };
 document.getElementById('btnComplete').onclick=()=>{
   // 작성 완료 시점에 lastTs 확정 + freeze (이후 결과지 조회 동안 시간 누적 X)
