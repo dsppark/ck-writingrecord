@@ -402,7 +402,15 @@
   body[data-view="inspect-result"] #header-report{display:none !important;}
   body[data-view="inspect-result"] #lnb{display:flex;}
   body[data-view="inspect-result"]{background:#F8FAFC;}
-  body[data-view="inspect-result"] #view-inspect-result{padding-left:275px;padding-top:0;padding-bottom:88px;min-height:100vh;}
+  /* 검사 결과 화면을 뷰포트 세로로 꽉 채우고 본문·사이드바가 각자 내부 스크롤 */
+  body[data-view="inspect-result"] #view-inspect-result{padding-left:275px;padding-top:0;padding-bottom:80px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  body[data-view="inspect-result"] .insp-wrap{flex:1;min-height:0;display:flex;flex-direction:column;}
+  body[data-view="inspect-result"] .insp-header{flex-shrink:0;}
+  body[data-view="inspect-result"] .insp-tabs{flex-shrink:0;}
+  body[data-view="inspect-result"] .insp-body{flex:1;min-height:0;display:flex;flex-direction:column;}
+  body[data-view="inspect-result"] .insp-content-wrap{flex:1;min-height:0;}
+  body[data-view="inspect-result"] .insp-content{max-height:none;height:100%;}
+  body[data-view="inspect-result"] .insp-sidebar{max-height:100%;overflow-y:auto;}
   .insp-wrap{max-width:1280px;margin:0 auto;padding:24px 40px 0;}
   .insp-header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 14px;}
   .insp-title{font-size:16px;font-weight:700;color:var(--ck-gray-900);}
@@ -467,7 +475,7 @@
   .insp-content{flex:1;min-width:0;font-size:14px;line-height:1.85;color:var(--ck-gray-800);max-height:640px;overflow-y:auto;padding-right:8px;}
   .insp-content p{margin:0 0 12px;position:relative;}
   .insp-content p.ai-suspect{background:#EDE9FE;padding:10px 14px 10px 16px;border-radius:6px;border-left:3px solid #7C3AED;}
-  .insp-content p.ai-suspect.is-flash{background:#DDD6FE;transition:background .3s;}
+  .insp-content p.ai-suspect.is-flash{background:#DDD6FE;box-shadow:0 0 0 2px #7C3AED;transition:background .3s,box-shadow .3s;}
   .insp-content p.ai-acknowledged{padding:10px 14px;border-radius:6px;border-bottom:2px solid #10B981;background:#ECFDF5;position:relative;}
   .ack-badge{display:inline-block;font-size:10px;font-weight:700;color:#047857;background:#D1FAE5;padding:3px 8px;border-radius:10px;margin-left:6px;vertical-align:middle;}
   .insp-sidebar{width:320px;flex-shrink:0;border-left:1px solid var(--ck-secondary-100);padding-left:20px;}
@@ -495,17 +503,23 @@
   .feature-tag{background:#F5F3FF;color:var(--ck-primary-700);padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:600;border:1px solid #DDD6FE;}
   .insp-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   /* insp-back 은 좌측, actions-right 가 우측 push */
-  /* 우측 AI 의심 카드 패널 하단 — 문서 작성 이동 안내 + CTA 묶음. 기본 숨김, JS로 노출 */
-  .insp-cta-box{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--ck-secondary-100);
-    position:sticky;bottom:12px;background:#fff;}
-  .insp-cta-desc{margin:0 0 10px;font-size:12px;line-height:1.6;color:var(--ck-gray-600);}
-  .insp-cta-desc b{color:var(--ck-primary-600);font-weight:700;}
+  /* '자세히 보기' 펼침 — 각 AI생성 특징 태그 + 설명 문단 */
+  .susp-feat-list{display:flex;flex-direction:column;gap:12px;}
+  .susp-feat-item .feature-tag{display:inline-block;margin-bottom:6px;}
+  .susp-feat-desc{margin:0;font-size:12px;line-height:1.65;color:var(--ck-gray-600);}
+
+  /* 우측 AI 의심 카드 패널 하단 — 문서 작성 이동 안내 + CTA. 눈에 띄는 강조 카드 */
+  .insp-cta-box{display:none;margin-top:16px;padding:16px;border-radius:12px;
+    background:linear-gradient(135deg,#F5F3FF,#EAF2FF);border:1px solid #C4B5FD;
+    position:sticky;bottom:12px;box-shadow:0 6px 18px rgba(124,58,237,0.14);}
+  .insp-cta-desc{margin:0 0 12px;font-size:13px;line-height:1.65;color:var(--ck-gray-700);font-weight:500;}
+  .insp-cta-desc b{color:#7C3AED;font-weight:800;}
   .insp-cta{display:flex;width:100%;
-    background:linear-gradient(90deg,var(--ck-primary-500),var(--ck-brand-gk-500));color:#fff;
-    padding:13px 18px;border-radius:10px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;
-    align-items:center;justify-content:center;gap:6px;
-    box-shadow:0 6px 18px rgba(37,99,235,0.28);}
-  .insp-cta:hover{filter:brightness(1.05);}
+    background:linear-gradient(90deg,#7C3AED,#00C2FF);color:#fff;
+    padding:14px 18px;border-radius:10px;font-size:14px;font-weight:800;border:none;cursor:pointer;
+    align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 8px 20px rgba(124,58,237,0.30);transition:transform .12s,filter .12s;}
+  .insp-cta:hover{filter:brightness(1.05);transform:translateY(-1px);}
   .insp-empty{text-align:center;padding:32px 20px;color:var(--ck-gray-500);font-size:13px;}
 
   /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 상단 안내 배너 + 새 탭 참고 ============ */
@@ -4879,6 +4893,15 @@ function _getInspectionChunks(rawText){
   return { chunks, splitRawIdx, nonNLTotal };
 }
 
+/* AI생성 특징 사전 — 태그 + '자세히 보기' 펼침 설명 (실제 서비스 톤 참고 목업) */
+const _AI_FEATURE_DICT = [
+  { tag:'추상적·일반적 내용 구성', desc:'추상적이고 일반적인 성향의 표현이 감지됩니다. AI는 인간에 비해 상대적으로 개념, 원리, 방법론 같은 추상적인 내용 중심으로 글을 쓰는 경향이 있습니다.' },
+  { tag:'복잡한 문장 및 서술 구조', desc:'문장의 길이가 길고 절이 여러 겹으로 중첩된 서술 구조가 반복됩니다. 한 문장 안에 많은 정보를 담아 정연하게 연결하는 방식은 AI 생성문에서 자주 관찰됩니다.' },
+  { tag:'과도하게 경직된 문어체', desc:'구어적 표현이나 개인적 어조 없이 지나치게 격식화된 문어체가 일관되게 유지됩니다. 감정·경험의 흔적이 적고 균질한 톤이 이어지는 특징입니다.' },
+  { tag:'간접 화법, 비인칭 서술', desc:'주어를 드러내지 않는 비인칭 서술과 간접 화법이 두드러집니다. 글쓴이의 직접적 목소리보다 관찰자적 서술이 우세한 방식입니다.' },
+  { tag:'무견해, 판단 회피적 성향', desc:'글에서 주장이나 관점을 드러내기보다 중립적이고 무견해적인 내용으로 구성되어 있습니다. 조심스러운 어조를 유지하는 AI 특유 서술 방식이 보여집니다.' },
+];
+
 /* mock 판정 — _getInspectionChunks 의 뒷 반쪽 청크(isSuspect=true)들을 각각 AI 의심
    span 으로 반환. 재검사 수정률 계산 기준으로 originalCharCount / text 를 유지. */
 function mockDetectAISuspect(){
@@ -4892,7 +4915,8 @@ function mockDetectAISuspect(){
     endIdx:   c.end - 1,
     level: 'mid',
     ratio: c.chars / info.nonNLTotal,
-    features: ['추상적·일반적 내용 구성', '복잡한 문장 및 서술 구조', '과도하게 경직된 문어체'],
+    // 특징: 사전에서 앞 3개 사용 (tag + 자세히보기 설명 desc 포함)
+    features: _AI_FEATURE_DICT.slice(0, 3).map(f => ({...f})),
     text: c.text,
     originalCharCount: c.chars
   }));
@@ -5037,13 +5061,47 @@ function renderInspectionResult(){
 }
 
 
+let _inspFeatExpanded = false;   // 자세히 보기 펼침 상태
+
+// features 정규화 — 문자열(구버전 저장분) 또는 {tag,desc} 모두 허용
+function _normFeatures(features){
+  return (features || []).map(f => {
+    if(typeof f === 'string'){
+      const hit = (_AI_FEATURE_DICT || []).find(d => d.tag === f);
+      return { tag: f, desc: hit ? hit.desc : '' };
+    }
+    return { tag: f.tag || '', desc: f.desc || '' };
+  });
+}
+
+function toggleInspFeat(){
+  _inspFeatExpanded = !_inspFeatExpanded;
+  if(window.__inspSelSpan) selectSuspectCard(window.__inspSelSpan);
+}
+
 function selectSuspectCard(spanId){
   const sp = currentInspection && currentInspection.suspectSpans.find(s => s.spanId === spanId);
   if(!sp) return;
+  window.__inspSelSpan = spanId;
   const levelKor = {low:'낮음', mid:'중간', high:'높음'}[sp.level] || '중간';
   const dotCls = 'dot-' + sp.level;
   const preview = _escInsp(sp.text.slice(0, 90) + (sp.text.length > 90 ? '…' : ''));
-  const feats = (sp.features || []).map(f => `<span class="feature-tag">${_escInsp(f)}</span>`).join('');
+  const feats = _normFeatures(sp.features);
+
+  // 접힘: 태그 칩만 + '자세히 보기' / 펼침: 태그 + 설명 문단 + '키워드만 보기'
+  let featBody, moreLabel;
+  if(_inspFeatExpanded){
+    featBody = '<div class="susp-feat-list">' + feats.map(f => `
+      <div class="susp-feat-item">
+        <span class="feature-tag">${_escInsp(f.tag)}</span>
+        <p class="susp-feat-desc">${_escInsp(f.desc)}</p>
+      </div>`).join('') + '</div>';
+    moreLabel = '키워드만 보기';
+  } else {
+    featBody = '<div class="susp-detail-tags">' + feats.map(f => `<span class="feature-tag">${_escInsp(f.tag)}</span>`).join('') + '</div>';
+    moreLabel = '자세히 보기';
+  }
+
   const cards = document.getElementById('inspCards');
   if(cards){
     cards.innerHTML = `
@@ -5057,8 +5115,8 @@ function selectSuspectCard(spanId){
         <hr class="susp-detail-hr">
         <div class="susp-detail-feat-title">AI생성 특징</div>
         <p class="susp-detail-feat-desc">다음과 같은 특징을 갖고 있기 때문에 AI가 생성했을 확률이 높다고 추정됩니다.</p>
-        <div class="susp-detail-tags">${feats}</div>
-        <span class="susp-detail-more" onclick="return false;">자세히 보기</span>
+        ${featBody}
+        <span class="susp-detail-more" onclick="toggleInspFeat()">${moreLabel}</span>
       </div>`;
   }
   // 본문에서 선택 영역 강조 + 스크롤
