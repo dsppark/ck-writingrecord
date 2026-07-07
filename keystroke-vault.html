@@ -4205,66 +4205,73 @@ function counts(){
 // 카운터·model 재구성은 다음 단계에서 이 로그를 소스로 새로 설계.
 
 /* ============================================================
-   출처 기반 카운트 엔진 — muha controller.getSourceRanges() 로 '현재 문서'의
-   위치별 최종 출처([{from,to,source}])를 읽어 바로 집계한다. audit 이벤트
-   replay 방식(AI 재emit·hardBreak·IME 로 불안정)을 폐기하고 문서 상태를
-   소스 오브 트루스로 삼음 → muha 내부 동작 변화에도 안 깨짐.
-   정책:
-     · AI생성/붙여넣기: source 가 ai/paste 인 구간 길이
-     · 수정(revised): typing 구간인데 좌우가 모두 ai/paste 블록(=블록을 쪼갠
-       내부 입력). 블록 첫 글자 앞·마지막 글자 뒤 입력은 직접타이핑.
-     · 직접타이핑: 총 글자수 − (ai+paste+revised). 추적 안 된(로드된) 글자·
-       블록 밖 유저 입력을 모두 흡수.
-   합 = 총 글자수(개행 제외, innerText 기준)로 항상 일치.
+   출처 기반 카운트 엔진 — shadow 소스맵 + diff.
+   muha controller.getSourceRanges() 로 '현재 문서' 위치별 출처를 읽되, 그대로
+   쓰지 않는다. muha 는 문단 분리(Enter) 등 구조 편집 시 기존 AI/붙여넣기 텍스트
+   의 source 를 typing 으로 재분류(강등)해버려서, 그 값만 믿으면 AI 글자가 통째로
+   직접타이핑으로 흡수된다. 그래서 문자 단위 shadow 맵(_srcState)을 유지하고,
+   매 집계마다 이전 문서와 diff(공통 prefix/suffix) 해서:
+     · 변하지 않은 글자 → 이전 출처를 그대로 보존 (muha 재분류 무시)
+     · 새로 삽입된 글자 → muha 출처 사용. 단 typing/ime 인데 좌우(보존된) 이웃이
+       모두 ai/paste 면 '수정(revised)'(블록 내부 입력), 아니면 직접타이핑.
+   정책: AI/붙여넣기=해당 출처 글자, 수정=블록 내부 유저입력(첫글자 앞·마지막글자
+   뒤는 직접), 직접타이핑=그 외. 개행 제외. 합=총 비개행 글자수.
    ============================================================ */
 let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+let _srcState = null;   // {chars:[비개행 문자...], src:['typing'|'ai'|'paste'|'revised'...]}
+function _resetSrcState(){ _srcState = null; }
 
 function _recountFromAuditLog(){
   const c = window.__muhaController;
   let ranges = [], body = null;
   try { if(c && typeof c.getSourceRanges === 'function') ranges = c.getSourceRanges() || []; } catch(e){ ranges = []; }
   try { if(c && typeof c.getBody === 'function') body = c.getBody(); } catch(e){ body = null; }
-  // ProseMirror position → 문자 맵. 개행(\n)이 특정 source range 안에 섞여도
-  // 해당 카운터를 부풀리지 않도록, range 별 '비개행 글자수'만 세기 위함.
-  // PM 규칙: 텍스트 글자는 pos 1칸, 블록 노드는 open+close 각 1칸.
-  const posChar = {};
+  // 문서 순서대로 (pos, ch) 수집 — PM 규칙: 텍스트 글자 1칸, 블록 open/close 각 1칸
+  const ordered = [];
   const walk = (content, pos) => {
     (content || []).forEach(node => {
-      if(node.type === 'text'){
-        const t = node.text || '';
-        for(let i = 0; i < t.length; i++){ posChar[pos] = t[i]; pos++; }
-      } else {
-        pos += 1;                       // 노드 open
-        pos = walk(node.content, pos);
-        pos += 1;                       // 노드 close
-      }
+      if(node.type === 'text'){ const t = node.text || ''; for(let i=0;i<t.length;i++){ ordered.push({pos, ch:t[i]}); pos++; } }
+      else { pos += 1; pos = walk(node.content, pos); pos += 1; }
     });
     return pos;
   };
-  if(body && body.doc) { try { walk(body.doc.content, 0); } catch(e){} }
-  // 정규화 + from 오름차순 정렬
+  if(body && body.doc){ try { walk(body.doc.content, 0); } catch(e){} }
   const rs = (ranges || [])
     .filter(r => r && typeof r.from === 'number' && typeof r.to === 'number' && r.to > r.from)
     .map(r => ({ from: r.from, to: r.to, source: r.source || 'typing' }))
     .sort((a, b) => a.from - b.from);
   const srcAt = (p) => { for(const r of rs){ if(p >= r.from && p < r.to) return r.source; } return null; };
-  const blockish = (s) => (s === 'ai' || s === 'paste');
-  // range [from,to) 안의 비개행 글자수 (개행·구조 위치 제외)
-  const nonNL = (from, to) => { let n = 0; for(let p = from; p < to; p++){ const ch = posChar[p]; if(ch !== undefined && ch !== '\n') n++; } return n; };
-  let ai = 0, paste = 0, revised = 0, direct = 0;
-  for(const r of rs){
-    const len = nonNL(r.from, r.to);
-    if(r.source === 'ai') ai += len;
-    else if(r.source === 'paste') paste += len;
-    else if(blockish(srcAt(r.from - 1)) && blockish(srcAt(r.to))) revised += len;  // 블록 내부 입력 = 수정
-    else direct += len;                                                            // 블록 밖 = 직접타이핑
+  // 비개행 문자 배열 + muha 가 보고한 출처
+  const newChars = [], newMuha = [];
+  for(const o of ordered){ if(o.ch !== '\n'){ newChars.push(o.ch); newMuha.push(srcAt(o.pos) || 'typing'); } }
+
+  // shadow diff — 공통 prefix/suffix 는 이전 출처 보존, 가운데(삽입분)만 새로 판정
+  const old = _srcState || { chars: [], src: [] };
+  const oldC = old.chars, oldS = old.src, oldLen = oldC.length, newLen = newChars.length;
+  let p = 0; while(p < oldLen && p < newLen && oldC[p] === newChars[p]) p++;
+  let s = 0; while(s < (oldLen - p) && s < (newLen - p) && oldC[oldLen-1-s] === newChars[newLen-1-s]) s++;
+  const newSrc = new Array(newLen);
+  for(let i = 0; i < p; i++) newSrc[i] = oldS[i];                       // prefix 보존
+  for(let i = 0; i < s; i++) newSrc[newLen-1-i] = oldS[oldLen-1-i];     // suffix 보존
+  const insEnd = newLen - s;
+  // 이웃이 ai/paste 뿐 아니라 이미 revised(블록 내부 입력)여도 '블록 내부'로 본다.
+  // 안 그러면 블록 안에서 둘째 글자부터 왼쪽 이웃이 revised라 typing 으로 빠진다.
+  const insideOf = (x) => (x === 'ai' || x === 'paste' || x === 'revised');
+  const leftSrc  = (p - 1 >= 0) ? newSrc[p - 1] : null;                 // 삽입 구간 왼쪽 이웃(보존값)
+  const rightSrc = (insEnd < newLen) ? newSrc[insEnd] : null;           // 오른쪽 이웃(보존값)
+  const inside = insideOf(leftSrc) && insideOf(rightSrc);               // 블록 내부 입력?
+  for(let i = p; i < insEnd; i++){
+    const ms = newMuha[i];
+    newSrc[i] = (ms === 'ai' || ms === 'paste') ? ms : (inside ? 'revised' : 'typing');
   }
-  // 총 글자수(개행 제외) — 에디터 innerText 기준. 추적 안 된(로드된) 글자는 직접타이핑으로 흡수.
-  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  const total = el ? (el.innerText || '').split(String.fromCharCode(10)).join('').length : (ai + paste + revised + direct);
-  const tracked = ai + paste + revised + direct;
-  if(total > tracked) direct += (total - tracked);
-  _auditCounts = { typing: direct, ai, paste, revised, total };
+  _srcState = { chars: newChars, src: newSrc };
+
+  let ai = 0, paste = 0, revised = 0, typing = 0;
+  for(const sv of newSrc){
+    if(sv === 'ai') ai++; else if(sv === 'paste') paste++;
+    else if(sv === 'revised') revised++; else typing++;
+  }
+  _auditCounts = { typing, ai, paste, revised, total: newLen };
   return _auditCounts;
 }
 
@@ -4553,6 +4560,7 @@ function newWrite(variant){
   // audit 로그·카운터 초기화 (새 문서 세션)
   window.__auditLog = [];
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+  if(typeof _resetSrcState === 'function') _resetSrcState();  // 출처 shadow 맵 초기화
   // 검사→에디터 AI 의심 음영 초기화 (새 문서엔 음영 없음)
   if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
@@ -4587,6 +4595,7 @@ function newWrite(variant){
           // replaceBody 가 audit 을 유발할 수 있으니 로그·카운터 재초기화
           window.__auditLog = [];
           _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
+          if(typeof _resetSrcState === 'function') _resetSrcState();
           if(typeof updateStats === 'function') updateStats();
         } catch(e){}
       }, 200);
@@ -4712,6 +4721,7 @@ function boxOpenDoc(id){
   if(a) a.classList.add('is-active');
   // muha 에디터에 본문 로드 → 로드 후 카운터는 직전 저장 stats 로 복구해 유지
   if(typeof ensureMuhaEditor === 'function'){ try { ensureMuhaEditor(); } catch(e){} }
+  if(typeof _resetSrcState === 'function') _resetSrcState();  // 로드 문서는 새 출처 세션
   const rawText = (d.model || []).map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
     Object.assign(stats, d.stats || {});  // replaceBody audit 후에도 저장 시점 값 유지
@@ -5267,6 +5277,7 @@ function enterReinspect(){
 
   events.length = 0;
   editOps.length = 0;
+  if(typeof _resetSrcState === 'function') _resetSrcState();  // 로드 문서는 새 출처 세션
 
   // 2) 문서 작성 화면 진입
   sessionFrozen = false;
