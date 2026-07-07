@@ -404,7 +404,7 @@
   body[data-view="inspect-result"]{background:#F8FAFC;}
   /* 검사 결과 화면을 뷰포트 세로로 꽉 채우고 본문·사이드바가 각자 내부 스크롤 */
   body[data-view="inspect-result"] #view-inspect-result{padding-left:275px;padding-top:0;padding-bottom:80px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-  body[data-view="inspect-result"] .insp-wrap{flex:1;min-height:0;display:flex;flex-direction:column;}
+  body[data-view="inspect-result"] .insp-wrap{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;box-sizing:border-box;}
   body[data-view="inspect-result"] .insp-header{flex-shrink:0;}
   body[data-view="inspect-result"] .insp-tabs{flex-shrink:0;}
   body[data-view="inspect-result"] .insp-body{flex:1;min-height:0;display:flex;flex-direction:column;}
@@ -5282,15 +5282,24 @@ function enterReinspect(){
     }
   } catch(e){ console.warn('reinspect body replace fail', e); }
 
-  // 4) AI 의심 영역 음영 — 의심 텍스트를 개행 기준 라인으로 분해해서 각 라인을
-  //    음영 대상으로. innerText(문단 사이 \n\n)에서 개행 없는 라인은 매칭 성공.
-  _reinspectSuspects = [];
-  currentInspection.suspectSpans.forEach(sp => {
-    (sp.text || '').split('\n').forEach(line => {
-      const t = line.trim();
-      if(t.length >= 4) _reinspectSuspects.push({ text: t, hidden: false });
+  // 4) AI 의심 영역 음영 — suspect span 의 문자 범위(startIdx~endIdx)를 '문단 인덱스'로
+  //    변환해 해당 문단만 음영한다. 텍스트 매칭이 아니라 위치 기반이라 같은 문장이
+  //    여러 번 나오거나(중복 리스트), 짧은 라인, 빈 문단이 섞여도 정확히 뒷부분
+  //    의심 문단에만 칠해진다. (에디터 문단 = rawText.split('\n') 와 1:1 대응)
+  const _lines = rawText.split('\n');
+  const _lineRanges = [];
+  { let pos = 0;
+    for(const ln of _lines){ _lineRanges.push({ start: pos, end: pos + ln.length, len: ln.length }); pos += ln.length + 1; } }
+  const _suspSet = new Set();
+  (currentInspection.suspectSpans || []).forEach(sp => {
+    const s = sp.startIdx, e = sp.endIdx;  // endIdx inclusive
+    if(typeof s !== 'number' || typeof e !== 'number') return;
+    _lineRanges.forEach((lr, idx) => {
+      if(lr.len === 0) return;                                   // 빈 문단 제외
+      if(lr.start <= e && (lr.end - 1) >= s) _suspSet.add(idx);  // 문자 범위 겹침
     });
   });
+  _reinspectSuspects = Array.from(_suspSet).sort((a,b)=>a-b).map(i => ({ para: i, hidden: false }));
   setTimeout(() => {
     try { _bindReinspectOverlay(); _renderReinspectOverlay(); } catch(e){ console.warn('reinspect overlay fail', e); }
   }, 400);
@@ -5301,7 +5310,13 @@ function enterReinspect(){
 /* ── 검사→에디터 진입 시 AI 의심 영역 음영 overlay (클릭 시 해제) ──
    overlay 는 pointer-events:none 이라 편집을 방해하지 않고, 클릭은 에디터로 통과.
    커서가 의심 영역 안에 들어오면 그 영역 음영을 해제(hidden)한다. */
-let _reinspectSuspects = [];   // [{text, hidden}]
+let _reinspectSuspects = [];   // [{para:<문단 인덱스>, hidden}]
+
+// el(.ProseMirror) 의 top-level 블록(문단) 요소 배열. rawText.split('\n') 로드 시
+// 문단 인덱스와 1:1 대응.
+function _reinspectParaEls(el){
+  return Array.from(el.children).filter(n => n.nodeType === 1);
+}
 
 function _renderReinspectOverlay(){
   const el = _findMuhaEditable();
@@ -5318,45 +5333,22 @@ function _renderReinspectOverlay(){
   layer.innerHTML = '';
   if(!_reinspectSuspects.length) return;
   const layerRect = layer.getBoundingClientRect();
-  const innerText = el.innerText || '';
+  const paras = _reinspectParaEls(el);
   for(const b of _reinspectSuspects){
     if(b.hidden) continue;
-    // 편집으로 원본이 쪼개졌을 수 있어 매칭 가능한 최대 prefix 로 위치 탐색
-    let probe = b.text || '', startIdx = -1;
-    while(probe.length >= 4){
-      startIdx = innerText.indexOf(probe);
-      if(startIdx >= 0) break;
-      probe = probe.slice(0, Math.floor(probe.length / 2));
-    }
-    if(startIdx < 0) continue;
-    const endIdx = startIdx + probe.length;
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let seen = 0, sNode = null, sOff = 0, eNode = null, eOff = 0;
-    while(walker.nextNode()){
-      const t = walker.currentNode, len = (t.textContent || '').length;
-      if(!sNode && seen + len > startIdx){ sNode = t; sOff = startIdx - seen; }
-      if(sNode && seen + len >= endIdx){ eNode = t; eOff = endIdx - seen; break; }
-      seen += len;
-    }
-    if(!sNode || !eNode) continue;
-    let range;
-    try {
-      range = document.createRange();
-      range.setStart(sNode, Math.min(sOff, sNode.textContent.length));
-      range.setEnd(eNode, Math.min(eOff, eNode.textContent.length));
-    } catch(e){ continue; }
-    for(const r of Array.from(range.getClientRects())){
-      if(r.width < 1 || r.height < 1) continue;
-      const d = document.createElement('div');
-      d.className = 'reinspect-overlay';
-      d.style.cssText =
-        'position:absolute;pointer-events:none;background:rgba(124,58,237,0.16);border-radius:2px;' +
-        'left:'   + Math.max(0, r.left - layerRect.left) + 'px;' +
-        'top:'    + Math.max(0, r.top  - layerRect.top ) + 'px;' +
-        'width:'  + Math.max(0, r.width)  + 'px;' +
-        'height:' + Math.max(0, r.height) + 'px;';
-      layer.appendChild(d);
-    }
+    const pEl = paras[b.para];
+    if(!pEl) continue;
+    const r = pEl.getBoundingClientRect();
+    if(r.width < 1 || r.height < 1) continue;
+    const d = document.createElement('div');
+    d.className = 'reinspect-overlay';
+    d.style.cssText =
+      'position:absolute;pointer-events:none;background:rgba(124,58,237,0.16);border-radius:3px;' +
+      'left:'   + Math.max(0, r.left - layerRect.left) + 'px;' +
+      'top:'    + Math.max(0, r.top  - layerRect.top ) + 'px;' +
+      'width:'  + Math.max(0, r.width)  + 'px;' +
+      'height:' + Math.max(0, r.height) + 'px;';
+    layer.appendChild(d);
   }
 }
 
@@ -5375,14 +5367,15 @@ function _bindReinspectOverlay(){
     setTimeout(() => {
       const sel = window.getSelection();
       if(!sel || !sel.anchorNode) return;
-      let node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
-      let combined = '';
-      for(let i = 0; i < 3 && node; i++){ combined += (node.textContent || ''); node = node.parentNode; }
+      // 커서가 위치한 top-level 문단을 찾아 그 인덱스의 음영만 해제
+      let block = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
+      while(block && block.parentNode !== el) block = block.parentNode;
+      if(!block) return;
+      const idx = _reinspectParaEls(el).indexOf(block);
+      if(idx < 0) return;
       let changed = false;
       for(const b of _reinspectSuspects){
-        if(b.hidden) continue;
-        const probe = (b.text || '').slice(0, 24);
-        if(probe.length >= 4 && combined.indexOf(probe) !== -1){ b.hidden = true; changed = true; }
+        if(!b.hidden && b.para === idx){ b.hidden = true; changed = true; }
       }
       if(changed) _renderReinspectOverlay();
     }, 30);
