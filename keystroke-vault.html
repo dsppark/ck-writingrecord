@@ -452,9 +452,13 @@
   .feature-tag{background:#F5F3FF;color:var(--ck-primary-700);padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:600;border:1px solid #DDD6FE;}
   .insp-actions{position:fixed;left:275px;right:0;bottom:0;padding:14px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   .insp-actions .insp-back{margin-right:auto;}
-  .insp-cta{display:none;background:linear-gradient(90deg,var(--ck-primary-500),var(--ck-brand-gk-500));color:#fff;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  /* 우측 AI 의심 카드 패널 하단 CTA — full-width 강조. 기본 숨김, JS로 노출 제어 */
+  .insp-cta{display:none;width:100%;margin-top:14px;position:sticky;bottom:16px;
+    background:linear-gradient(90deg,var(--ck-primary-500),var(--ck-brand-gk-500));color:#fff;
+    padding:13px 18px;border-radius:10px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;
+    align-items:center;justify-content:center;gap:6px;
+    box-shadow:0 6px 18px rgba(37,99,235,0.28);}
   .insp-cta:hover{filter:brightness(1.05);}
-  body.has-suspect .insp-cta{display:inline-flex;}
   .insp-empty{text-align:center;padding:32px 20px;color:var(--ck-gray-500);font-size:13px;}
 
   /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 상단 안내 배너 + 새 탭 참고 ============ */
@@ -2134,6 +2138,11 @@
             <span class="insp-level-legend">의심 정도 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span></span>
           </div>
           <div id="inspCards"></div>
+          <!-- AI 의심 카드 확인 흐름 바로 다음에 강조 CTA (AI 의심 1개 이상일 때만 노출) -->
+          <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            AI 의심 영역 직접 수정하러 가기
+          </button>
         </aside>
       </div>
     </div>
@@ -2142,10 +2151,6 @@
     <button class="ra-btn ra-btn-ghost insp-back" type="button" onclick="closeInspection()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       결과지로 돌아가기
-    </button>
-    <button id="inspCta" class="insp-cta" type="button" onclick="enterReinspect()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      AI 의심 영역을 직접 수정해보세요
     </button>
   </div>
 </section>
@@ -4997,10 +5002,10 @@ function renderInspectionResult(){
     }
   }
 
-  // CTA 노출 — 의심이 실제로 남아있을 때만 (인정으로 다 빠졌으면 미노출)
+  // CTA 노출 — AI 의심이 1개 이상 남아있을 때만 (인정으로 다 빠졌으면 미노출)
   const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId));
   const cta = document.getElementById('inspCta');
-  if(cta) cta.style.display = activeSuspects.length > 0 ? 'inline-flex' : 'none';
+  if(cta) cta.style.display = activeSuspects.length > 0 ? 'flex' : 'none';
 }
 
 function selectSuspectCard(spanId){
