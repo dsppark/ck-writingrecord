@@ -5212,65 +5212,44 @@ function enterReinspect(){
     document.body.dataset.writeVariant = 'extra';
     return;
   }
-  // 1) 원본 텍스트를 검사 결과와 동일하게 앞/뒤 반쪽 청크로 나눠 에디터에 문단
-  //    단위로 로드. 사용자가 미탐/의심 청크 경계를 시각적으로 인지할 수 있도록
-  //    각 청크를 별도 문단으로 넣고, 청크 사이는 빈 문단 하나 추가 (자연 개행).
+  // 1) 원본 텍스트를 '있는 그대로' 에디터에 로드 — 원래 개행(\n) = 문단.
+  //    (청크로 쪼개거나 빈 문단을 끼우면 문장이 어긋나 음영 매칭이 깨짐)
   const rawText = model.map(m => m.ch).join('');
-  const chunks = _getInspectionChunks(rawText).chunks;
+  const paragraphs = rawText.split('\n').map(line => ({
+    type: 'paragraph',
+    content: line ? [{ type: 'text', text: line }] : []
+  }));
 
-  // 2) events 를 AI 세그먼트별로 push. muha onChange → _syncMuhaModel 의 LCS
-  //    매칭이 model.source='ai' 로 자동 마킹. 청크 원본 텍스트에서 개행은 유지.
   events.length = 0;
   editOps.length = 0;
-  const nowTs = Date.now();
-  currentInspection.suspectSpans.forEach((sp, i) => {
-    events.push({
-      ts: nowTs + i,
-      type: 'ai', srcFamily: 'ai',
-      n: sp.originalCharCount, isInsert: true,
-      meta: { blockMark: (++blockSeq), blockSize: sp.originalCharCount, text: sp.text, prompt: '(작성 검증 원문 로드)' }
-    });
-  });
 
-  // 3) 문서 작성 화면 진입
+  // 2) 문서 작성 화면 진입
   sessionFrozen = false;
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
   window.scrollTo(0, 0);
 
-  // 4) muha 에디터에 chunks 단위로 로드. 각 청크 안 개행은 <br> 로 보존, 청크 사이는
-  //    별도 <p> (문단) 로 자연 개행 처리.
+  // 3) muha 에디터에 원본 문단 그대로 로드
   try {
     const controller = window.__muhaController;
-    const chunkToParagraphs = (chunkText) => {
-      // 청크 안에 이미 개행이 있으면 그것으로 sub-paragraph 분리
-      return chunkText.split('\n').map(line => ({
-        type: 'paragraph',
-        content: line ? [{ type: 'text', text: line }] : []
-      }));
-    };
-    const paragraphNodes = chunks.flatMap((c, idx) => {
-      const paras = chunkToParagraphs(c.text);
-      // 청크 사이에 빈 문단 하나 넣어 시각적 구분
-      if(idx < chunks.length - 1) paras.push({ type: 'paragraph', content: [] });
-      return paras;
-    });
-    const body = { type: 'doc', content: paragraphNodes };
+    const body = { type: 'doc', content: paragraphs };
     if(controller && typeof controller.replaceBody === 'function'){
       controller.replaceBody(body);
     } else {
       const el = _findMuhaEditable();
-      if(el){
-        el.innerHTML = chunks.map(c => {
-          const lines = c.text.split('\n').map(ln => '<p>' + (ln || '<br/>') + '</p>').join('');
-          return lines;
-        }).join('<p><br/></p>');
-      }
+      if(el) el.innerHTML = paragraphs.map(pn => '<p>' + (pn.content[0] ? _escInsp(pn.content[0].text) : '<br/>') + '</p>').join('');
     }
   } catch(e){ console.warn('reinspect body replace fail', e); }
 
-  // 5) AI 의심 영역에 보라 음영 overlay 씌우기. 커서 클릭 시 해당 영역 음영 해제.
-  _reinspectSuspects = currentInspection.suspectSpans.map(sp => ({ text: sp.text, hidden: false }));
+  // 4) AI 의심 영역 음영 — 의심 텍스트를 개행 기준 라인으로 분해해서 각 라인을
+  //    음영 대상으로. innerText(문단 사이 \n\n)에서 개행 없는 라인은 매칭 성공.
+  _reinspectSuspects = [];
+  currentInspection.suspectSpans.forEach(sp => {
+    (sp.text || '').split('\n').forEach(line => {
+      const t = line.trim();
+      if(t.length >= 4) _reinspectSuspects.push({ text: t, hidden: false });
+    });
+  });
   setTimeout(() => {
     try { _bindReinspectOverlay(); _renderReinspectOverlay(); } catch(e){ console.warn('reinspect overlay fail', e); }
   }, 400);
