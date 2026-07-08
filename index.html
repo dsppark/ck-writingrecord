@@ -4295,18 +4295,54 @@ function _recountFromAuditLog(){
 // model 이 실시간 동기화되지 않으므로(위 카운트는 getBody 로 계산), 저장 스냅샷·문서
 // 열람·문서 수정이 쓰는 model 에 '텍스트 + 글자별 출처(source)'를 채워 넣는다.
 // → 저장 문서에 출처가 함께 남아, 문서 수정으로 다시 열 때 카운터가 리셋되지 않음.
+// origin(ai/paste/typing) 배열 → 결과지용 세분화 source 배열.
+// typing 런이 블록에 둘러싸이면 그 블록 종류에 따라 ai-internal / paste-internal(수정),
+// 아니면 typing(직접). ai/paste 는 그대로. (결과지 '텍스트 유입 분석' 색상 = 이 값)
+function _fineSourcePerChar(origin){
+  const isBlock = x => (x === 'ai' || x === 'paste');
+  const fine = new Array(origin.length);
+  let i = 0;
+  while(i < origin.length){
+    const o = origin[i];
+    if(o === 'ai' || o === 'paste'){ fine[i] = o; i++; continue; }
+    let j = i; while(j < origin.length && origin[j] === 'typing') j++;   // typing 런 [i,j)
+    const left = (i - 1 >= 0) ? origin[i - 1] : null;
+    const right = (j < origin.length) ? origin[j] : null;
+    let kind = 'typing';
+    if(isBlock(left) && isBlock(right)){                                 // 블록 내부 = 수정
+      const blk = (left === 'ai' || right === 'ai') ? 'ai' : 'paste';
+      kind = (blk === 'ai') ? 'ai-internal' : 'paste-internal';
+    }
+    for(let k = i; k < j; k++) fine[k] = kind;
+    i = j;
+  }
+  return fine;
+}
+
 function _syncModelFromMuha(){
   if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();  // 최신 _srcState 확정
   const origin = (_srcState && _srcState.origin) ? _srcState.origin : [];
-  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처는 비개행 순서대로 origin 매핑.
+  const fine = _fineSourcePerChar(origin);                               // 결과지용 세분화 출처
+  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처는 비개행 순서대로 fine 매핑.
   // 개행이 몇 개든 oi 는 비개행에서만 증가하므로 정렬이 어긋나지 않는다.
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const fullText = el ? (el.innerText || '') : '';
+  // 연속된 ai-family / paste-family 런마다 고유 blockMark 부여 → 결과지 렌더러가
+  // 블록으로 묶어 내부 색상(_paint)을 칠한다. typing(직접)은 blockMark 없음.
+  const fam = s => (s === 'ai' || s === 'ai-internal') ? 'ai' : (s === 'paste' || s === 'paste-internal') ? 'paste' : null;
   model.length = 0;
-  let oi = 0;
+  let oi = 0, curFam = null, curBm = 0, bmSeq = 0;
   for(const ch of fullText){
-    if(ch === '\n') model.push({ ch: '\n', source: 'typing' });
-    else { model.push({ ch, source: origin[oi] || 'typing' }); oi++; }
+    if(ch === '\n'){ model.push({ ch: '\n', source: 'typing' }); continue; }
+    const src = fine[oi] || 'typing'; oi++;
+    const f = fam(src);
+    if(f){
+      if(f !== curFam){ curFam = f; curBm = ++bmSeq; }
+      model.push({ ch, source: src, blockMark: curBm });
+    } else {
+      curFam = null;
+      model.push({ ch, source: src });
+    }
   }
 }
 
@@ -4774,7 +4810,14 @@ function boxOpenDoc(id){
   // 원래 직접/AI/붙여넣기/수정 구분이 그대로 유지된다. (source 는 ai/paste/그외=typing)
   const _mdl = d.model || [];
   const _savedChars = [], _savedOrigin = [];
-  for(const m of _mdl){ if(m.ch !== '\n'){ _savedChars.push(m.ch); _savedOrigin.push((m.source === 'ai' || m.source === 'paste') ? m.source : 'typing'); } }
+  for(const m of _mdl){
+    if(m.ch === '\n') continue;
+    _savedChars.push(m.ch);
+    // 결과지 세분화 source → 카운터 origin(ai/paste/typing) 역매핑.
+    // ai/ai-edited→ai, paste/paste-edited→paste, ai-internal/paste-internal/그외→typing.
+    const s = m.source;
+    _savedOrigin.push((s === 'ai' || s === 'ai-edited') ? 'ai' : (s === 'paste' || s === 'paste-edited') ? 'paste' : 'typing');
+  }
   _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin } : null;
   const rawText = _mdl.map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
@@ -5674,12 +5717,37 @@ function _rebuildModelFromMuha(){
   return;
 }
 
+// 결과지 '텍스트 유입 분석' 본문을 실제 문서(model.source)로 렌더한다.
+// source 색상: ai(보라)/ai-internal(AI+수정,연파랑)/paste(빨강)/paste-internal(붙여넣기+수정,오렌지)/그외 직접(무색).
+function renderInflowPassage(){
+  const host = document.getElementById('originDoc');
+  if(!host) return;
+  const title = (document.getElementById('docTitle')?.value || '제목 없음');
+  const clsOf = s => s==='ai' ? 'origin-ai' : s==='ai-internal' ? 'origin-ai-edited'
+    : s==='paste' ? 'origin-paste' : s==='paste-internal' ? 'origin-paste-edited' : '';
+  const paras = []; let cur = [];
+  const push = (ch, src) => { const last = cur[cur.length-1]; if(last && last.src===src) last.text += ch; else cur.push({src, text: ch}); };
+  (model || []).forEach(m => { if(m.ch === '\n'){ paras.push(cur); cur = []; } else push(m.ch, m.source || 'typing'); });
+  paras.push(cur);
+  const html = '<h3 class="text-lg font-bold text-slate-900 mb-3">' + _escInsp(title) + '</h3>' +
+    paras.map(segs => '<p class="mb-3">' + (segs.length ? segs.map(s => {
+      const cls = clsOf(s.src);
+      const doOrigin = (s.src === 'typing' || !s.src) ? 'direct' : s.src;
+      return '<span class="origin-seg ' + cls + '" data-origin="' + doOrigin + '">' + _escInsp(s.text) + '</span>';
+    }).join('') : '<br/>') + '</p>').join('');
+  host.innerHTML = html;
+}
+
 async function buildReportFromSession(){
   // 결과지 진입 직전 — muha 실제 텍스트 기반으로 model 재구성 (extra 한정)
   _rebuildModelFromMuha();
-  // 인용 붙여넣기 자동 분류 (extra variant 한정) — 후처리로 model.source 변환
-  detectQuotePasteBlocks();
-  applyQuoteLabel();
+  // 인용 붙여넣기 자동 분류는 legacy 한정 (extra 는 우리 세분화 source 를 그대로 사용)
+  if(document.body.dataset.writeVariant !== 'extra'){
+    detectQuotePasteBlocks();
+    applyQuoteLabel();
+  }
+  // 텍스트 유입 분석 본문을 실제 문서로 렌더 (정적 목업 대체)
+  try { renderInflowPassage(); } catch(e){ console.warn('inflow render fail', e); }
   const cleanModel=model.filter(m=>m.ch!=='\n' || true); // keep newlines for paragraph split
   const totalChars=model.filter(m=>m.ch!=='\n').length;
   const c=counts();
