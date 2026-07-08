@@ -4291,6 +4291,25 @@ function _recountFromAuditLog(){
   return _auditCounts;
 }
 
+// 저장 직전: muha 문서 텍스트 + _srcState 출처로 model 을 재구성한다. extra variant 는
+// model 이 실시간 동기화되지 않으므로(위 카운트는 getBody 로 계산), 저장 스냅샷·문서
+// 열람·문서 수정이 쓰는 model 에 '텍스트 + 글자별 출처(source)'를 채워 넣는다.
+// → 저장 문서에 출처가 함께 남아, 문서 수정으로 다시 열 때 카운터가 리셋되지 않음.
+function _syncModelFromMuha(){
+  if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();  // 최신 _srcState 확정
+  const origin = (_srcState && _srcState.origin) ? _srcState.origin : [];
+  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처는 비개행 순서대로 origin 매핑.
+  // 개행이 몇 개든 oi 는 비개행에서만 증가하므로 정렬이 어긋나지 않는다.
+  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+  const fullText = el ? (el.innerText || '') : '';
+  model.length = 0;
+  let oi = 0;
+  for(const ch of fullText){
+    if(ch === '\n') model.push({ ch: '\n', source: 'typing' });
+    else { model.push({ ch, source: origin[oi] || 'typing' }); oi++; }
+  }
+}
+
 // audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (setTimeout — 백그라운드 안전)
 let _recountTimer = 0;
 function _scheduleRecount(){
@@ -4373,6 +4392,10 @@ function boxSaveDocs(arr){
 function boxSaveCurrentDoc(){
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
+  // extra: 저장 전 muha 텍스트+출처로 model 재구성 (model 실시간 미동기화 → 텍스트·출처 유실 방지)
+  if(document.body.dataset.writeVariant === 'extra' && typeof _syncModelFromMuha === 'function'){
+    try { _syncModelFromMuha(); } catch(e){ console.warn('syncModel fail', e); }
+  }
   const titleEl = document.getElementById('docTitle');
   const title = (titleEl?.value || '').trim() || '제목 없음';
   const docs = boxLoadDocs();
@@ -4747,8 +4770,13 @@ function boxOpenDoc(id){
   if(a) a.classList.add('is-active');
   // muha 에디터에 본문 로드 → 로드 후 카운터는 직전 저장 stats 로 복구해 유지
   if(typeof ensureMuhaEditor === 'function'){ try { ensureMuhaEditor(); } catch(e){} }
-  if(typeof _resetSrcState === 'function') _resetSrcState();  // 로드 문서는 새 출처 세션
-  const rawText = (d.model || []).map(m => m.ch).join('');
+  // 저장 문서의 글자별 출처(source)로 _srcState 복원 → 카운터가 리셋되지 않고
+  // 원래 직접/AI/붙여넣기/수정 구분이 그대로 유지된다. (source 는 ai/paste/그외=typing)
+  const _mdl = d.model || [];
+  const _savedChars = [], _savedOrigin = [];
+  for(const m of _mdl){ if(m.ch !== '\n'){ _savedChars.push(m.ch); _savedOrigin.push((m.source === 'ai' || m.source === 'paste') ? m.source : 'typing'); } }
+  _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin } : null;
+  const rawText = _mdl.map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
     Object.assign(stats, d.stats || {});  // replaceBody audit 후에도 저장 시점 값 유지
     window.__auditLog = [];               // 로드로 유발된 audit 로그 폐기
