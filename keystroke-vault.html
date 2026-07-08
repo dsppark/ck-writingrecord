@@ -4436,6 +4436,10 @@ function boxSaveCurrentDoc(){
   // extra: 저장 전 muha 텍스트+출처로 model 재구성 (model 실시간 미동기화 → 텍스트·출처 유실 방지)
   if(document.body.dataset.writeVariant === 'extra' && typeof _syncModelFromMuha === 'function'){
     try { _syncModelFromMuha(); } catch(e){ console.warn('syncModel fail', e); }
+    // events/글자 ts 도 재구성해 문서에 함께 저장 → 재오픈(조회) 시에도 활동/리플레이/유입로그 유지
+    if((window.__auditLog || []).length > 0 && typeof _reconstructFromAudit === 'function'){
+      try { _reconstructFromAudit(); } catch(e){ console.warn('reconstruct(save) fail', e); }
+    }
   }
   const titleEl = document.getElementById('docTitle');
   const title = (titleEl?.value || '').trim() || '제목 없음';
@@ -5722,6 +5726,63 @@ function _rebuildModelFromMuha(){
   return;
 }
 
+// muha audit 로그(__auditLog: ts+inputSource+steps)로 events/editOps/글자 ts 를 재구성.
+// → 사고정지(idle)·세부 활동 분석·리플레이 타임라인·외부 유입 로그가 실제 데이터로 채워짐.
+// events 유형: typing/keystroke/delete(직접), ai/paste(외부 유입 meta.text·blockMark 포함).
+function _reconstructFromAudit(){
+  events.length = 0; editOps.length = 0;
+  const log = (window.__auditLog || []).filter(e => e && e.source === 'document-delta' && Array.isArray(e.steps) && e.steps[0]);
+  const baseTs = stats.firstTs || (log[0] && log[0].ts) || Date.now();
+  const curve = []; let running = 0;
+  log.forEach(entry => {
+    const ts = entry.ts || baseTs;
+    const src = entry.inputSource || 'typing';
+    const st = entry.steps[0];
+    const from = st.from | 0, to = st.to | 0;
+    let insText = '';
+    const collect = n => { if(n && n.type === 'text') insText += (n.text || ''); else if(n && Array.isArray(n.content)) n.content.forEach(collect); };
+    if(st.slice && Array.isArray(st.slice.content)) st.slice.content.forEach(collect);
+    const insLen = insText.replace(/\n/g, '').length;
+    const delLen = Math.max(0, to - from);
+    if(src === 'ai' || src === 'paste'){
+      if(insLen > 0) events.push({ ts, type: src, srcFamily: src, n: insLen, isInsert: true, meta: { text: insText.replace(/\n/g,''), blockMark: 0, blockSize: insLen } });
+    } else {
+      if(insLen > 0){
+        events.push({ ts, type: 'typing', srcFamily: 'typing', n: insLen, isInsert: true });
+        for(let i = 0; i < insLen; i++) events.push({ ts, type: 'keystroke', n: 1 });
+        editOps.push({ ts, isContent: insLen >= 1 });
+      }
+      if(delLen > insLen){
+        events.push({ ts, type: 'delete', srcFamily: 'typing', n: delLen - insLen, isInsert: false });
+        editOps.push({ ts, isContent: false });
+      }
+    }
+    running = Math.max(0, running + insLen - delLen);
+    curve.push({ ts, total: running });
+  });
+  // 외부 유입 event 를 model 의 blockMark 에 순서로 연결 (Nth ai/paste 블록 ↔ Nth ai/paste event)
+  const famOf = {}, order = [];
+  model.forEach(m => { if(m.blockMark && !famOf[m.blockMark]){ famOf[m.blockMark] = (m.source==='ai'||m.source==='ai-internal') ? 'ai' : 'paste'; order.push(m.blockMark); } });
+  const aiBlocks = order.filter(bm => famOf[bm] === 'ai');
+  const pasteBlocks = order.filter(bm => famOf[bm] === 'paste');
+  let aii = 0, pii = 0;
+  events.forEach(e => {
+    if(e.type === 'ai' && aii < aiBlocks.length){ e.meta.blockMark = aiBlocks[aii++]; }
+    else if(e.type === 'paste' && pii < pasteBlocks.length){ e.meta.blockMark = pasteBlocks[pii++]; }
+    if((e.type === 'ai' || e.type === 'paste') && e.meta.blockMark){
+      e.meta.blockSize = model.filter(m => m.blockMark === e.meta.blockMark).length;
+    }
+  });
+  // 글자별 ts (리플레이용): 문서 순 k번째 비개행 글자 = 문서가 k자에 처음 도달한 시각
+  const reachTs = []; let maxSeen = 0;
+  curve.forEach(pt => { while(maxSeen < pt.total){ maxSeen++; reachTs[maxSeen] = pt.ts; } });
+  let k = 0, lastTs = baseTs;
+  model.forEach(m => {
+    if(m.ch === '\n'){ m.ts = lastTs; return; }
+    k++; m.ts = reachTs[k] || lastTs; lastTs = m.ts;
+  });
+}
+
 // 결과지 '텍스트 유입 분석' 본문을 실제 문서(model.source)로 렌더한다.
 // source 색상: ai(보라)/ai-internal(AI+수정,연파랑)/paste(빨강)/paste-internal(붙여넣기+수정,오렌지)/그외 직접(무색).
 function renderInflowPassage(){
@@ -5750,6 +5811,11 @@ async function buildReportFromSession(){
   if(document.body.dataset.writeVariant !== 'extra'){
     detectQuotePasteBlocks();
     applyQuoteLabel();
+  }
+  // audit 로그로 events/editOps/글자 ts 재구성 (사고정지·세부활동·리플레이·외부유입로그 데이터).
+  // __auditLog 가 있을 때(현재 작성 세션)만 재구성. 재오픈(조회)이면 저장된 events/model.ts 사용.
+  if(document.body.dataset.writeVariant === 'extra' && (window.__auditLog || []).length > 0){
+    try { _reconstructFromAudit(); } catch(e){ console.warn('reconstruct fail', e); }
   }
   // 텍스트 유입 분석 본문을 실제 문서로 렌더 (정적 목업 대체)
   try { renderInflowPassage(); } catch(e){ console.warn('inflow render fail', e); }
