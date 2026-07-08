@@ -4344,6 +4344,11 @@ function _syncModelFromMuha(){
       model.push({ ch, source: src });
     }
   }
+  // blockSize = 같은 blockMark 글자 수. (결과지 블록 생존/보존율 계산이 m.blockSize 를
+  // 원본 크기로 사용 → 없으면 size=1 로 잡혀 보존율이 600% 처럼 폭주하고 지수가 음수가 됨)
+  const _bmCount = {};
+  model.forEach(m => { if(m.blockMark) _bmCount[m.blockMark] = (_bmCount[m.blockMark] || 0) + 1; });
+  model.forEach(m => { if(m.blockMark) m.blockSize = _bmCount[m.blockMark]; });
 }
 
 // audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (setTimeout — 백그라운드 안전)
@@ -5888,7 +5893,8 @@ async function buildReportFromSession(){
     if(!fam) return;
     if(!blocks[m.blockMark]) blocks[m.blockMark]={fam, intact:0, edited:0, size:m.blockSize||1};
     if(m.source==='ai' || m.source==='paste' || m.source==='quote-paste') blocks[m.blockMark].intact++;
-    else if(m.source==='ai-edited' || m.source==='paste-edited' || m.source==='quote-paste-edited') blocks[m.blockMark].edited++;
+    else if(m.source==='ai-edited' || m.source==='paste-edited' || m.source==='quote-paste-edited'
+         || m.source==='ai-internal' || m.source==='paste-internal' || m.source==='quote-paste-internal') blocks[m.blockMark].edited++;
   });
   let aiSize=0,aiIntact=0,aiEdited=0,pSize=0,pIntact=0,pEdited=0;
   Object.values(blocks).forEach(b=>{
