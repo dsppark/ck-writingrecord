@@ -4330,14 +4330,34 @@ function _fineSourcePerChar(origin, block){
   return fine;
 }
 
+// muha 문서 텍스트를 '문단 경계 = 개행 1개'로 정규화해 반환. innerText 는 문단 사이를
+// '\n\n'(2개)로 주기 때문에, 그대로 저장하면 재오픈 split 시 빈 문단이 생겨 줄이
+// 늘어나고 매 저장마다 누적됨. getBody 문단을 단일 '\n' 으로 조인해 방지.
+function _muhaDocText(){
+  const c = window.__muhaController;
+  let body = null;
+  try { body = (c && typeof c.getBody === 'function') ? c.getBody() : null; } catch(e){ body = null; }
+  if(!(body && body.doc)){ const el = _findMuhaEditable(); return el ? (el.innerText || '') : ''; }
+  const paraText = (node) => {
+    let t = '';
+    (node.content || []).forEach(x => {
+      if(x.type === 'text') t += (x.text || '');
+      else if(x.type && /break/i.test(x.type)) t += '\n';   // hardBreak 등 soft 개행
+      else if(Array.isArray(x.content)) t += paraText(x);
+    });
+    return t;
+  };
+  return (body.doc.content || []).map(paraText).join('\n');   // 문단 경계 = 개행 1개
+}
+
 function _syncModelFromMuha(){
   if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();  // 최신 _srcState 확정
   const origin = (_srcState && _srcState.origin) ? _srcState.origin : [];
   const block = (_srcState && _srcState.block) ? _srcState.block : [];
   const fine = _fineSourcePerChar(origin, block);                        // 결과지용 세분화 출처
-  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처·이벤트 id 는 비개행 순서대로 매핑.
-  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  const fullText = el ? (el.innerText || '') : '';
+  // 텍스트는 문단 경계 개행 1개로 정규화(innerText 의 \n\n 누적 방지). 출처·이벤트 id 는
+  // 비개행 순서대로 매핑(개행은 oi 증가 안 함).
+  const fullText = _muhaDocText();
   model.length = 0;
   let oi = 0, lastBid = null;
   for(const ch of fullText){
