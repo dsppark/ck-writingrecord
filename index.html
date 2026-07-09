@@ -4227,7 +4227,8 @@ let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
 // _srcState.block[i] = 그 글자가 속한 '유입 이벤트 id'(같은 AI/붙여넣기 이벤트 = 같은 id).
 // typing 은 null. '수정'은 좌우가 '같은 이벤트 id'로 둘러싸였을 때만(=한 이벤트 내부).
 let _srcState = null;   // {chars, origin:['typing'|'ai'|'paste'], block:[id|null]}
-function _resetSrcState(){ _srcState = null; }
+let _eventSize = {};    // 이벤트 id → 유입 당시 '원본 글자수'(잔존율 분모). 현재 남은 수가 아님.
+function _resetSrcState(){ _srcState = null; _eventSize = {}; }
 
 // 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시 + 이벤트마다 고유 id 부여.
 // muha 라벨은 신뢰 못하므로 출처는 우리 이벤트로 확정. 그 외 삽입(키보드/IME)=typing.
@@ -4273,6 +4274,8 @@ function _recountFromAuditLog(){
     if(flag){ origin[i] = flag.kind; block[i] = flag.id; }
     else { origin[i] = 'typing'; block[i] = null; }
   }
+  // 유입 이벤트의 '원본 글자수' 기록(최초 삽입 때만) — 잔존율 분모(현재 남은 수 아님)
+  if(flag) _eventSize[flag.id] = insEnd - p;
   // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
   if(!composing) _srcState = { chars: newChars, origin, block };
 
@@ -4373,11 +4376,11 @@ function _syncModelFromMuha(){
     if(bid != null) model.push({ ch, source: src, blockMark: bid });
     else model.push({ ch, source: src });
   }
-  // blockSize = 같은 blockMark(이벤트) 글자 수. (블록 생존/보존율이 m.blockSize 를 원본
-  // 크기로 사용 → 없으면 size=1 로 잡혀 보존율 폭주·지수 음수)
+  // blockSize = 이벤트 '원본 글자수'(_eventSize). 현재 남은 수가 아니라 유입 당시 크기여야
+  // 잔존율(=현재 남은 원본 / 원본)이 맞음. _eventSize 없으면(이전 저장분 등) 현재수로 폴백.
   const _bmCount = {};
   model.forEach(m => { if(m.blockMark != null) _bmCount[m.blockMark] = (_bmCount[m.blockMark] || 0) + 1; });
-  model.forEach(m => { if(m.blockMark != null) m.blockSize = _bmCount[m.blockMark]; });
+  model.forEach(m => { if(m.blockMark != null) m.blockSize = (_eventSize[m.blockMark] != null) ? _eventSize[m.blockMark] : _bmCount[m.blockMark]; });
 }
 
 // audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (setTimeout — 백그라운드 안전)
@@ -4861,6 +4864,10 @@ function boxOpenDoc(id){
     if(m.blockMark != null && m.blockMark > _maxBm) _maxBm = m.blockMark;
   }
   if(_maxBm > _blockSeq) _blockSeq = _maxBm;   // 새 삽입 이벤트 id 충돌 방지
+  // 이벤트별 원본 글자수(_eventSize) 복원 — 저장된 blockMark 별 blockSize(원본) 사용.
+  // (재편집 후 재저장 시 잔존율 분모가 현재수로 바뀌지 않도록)
+  _eventSize = {};
+  for(const m of _mdl){ if(m.blockMark != null && m.blockSize != null && _eventSize[m.blockMark] == null) _eventSize[m.blockMark] = m.blockSize; }
   _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin, block: _savedBlock } : null;
   const rawText = _mdl.map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
@@ -5992,9 +5999,10 @@ async function buildReportFromSession(){
                 (m.source==='quote-paste'||m.source==='quote-paste-edited'||m.source==='quote-paste-internal') ? 'quote-paste' : null;
     if(!fam) return;
     if(!blocks[m.blockMark]) blocks[m.blockMark]={fam, intact:0, edited:0, size:m.blockSize||1};
+    // intact = 남아있는 '원본' 글자('ai'/'paste'). ai-internal/paste-internal(사용자 추가분)은
+    // 원본 잔존이 아니므로 intact·edited 어디에도 넣지 않음 → 잔존율 = 남은 원본/원본.
     if(m.source==='ai' || m.source==='paste' || m.source==='quote-paste') blocks[m.blockMark].intact++;
-    else if(m.source==='ai-edited' || m.source==='paste-edited' || m.source==='quote-paste-edited'
-         || m.source==='ai-internal' || m.source==='paste-internal' || m.source==='quote-paste-internal') blocks[m.blockMark].edited++;
+    else if(m.source==='ai-edited' || m.source==='paste-edited' || m.source==='quote-paste-edited') blocks[m.blockMark].edited++;
   });
   let aiSize=0,aiIntact=0,aiEdited=0,pSize=0,pIntact=0,pEdited=0;
   Object.values(blocks).forEach(b=>{
