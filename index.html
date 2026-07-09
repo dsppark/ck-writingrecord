@@ -4246,15 +4246,23 @@ function _recountFromAuditLog(){
   try { composing = !!(c && typeof c.isComposing === 'function' && c.isComposing()); } catch(e){}
   let body = null;
   try { if(c && typeof c.getBody === 'function') body = c.getBody(); } catch(e){ body = null; }
-  // 문서의 비개행 문자를 순서대로 수집
-  const newChars = [];
-  const walk = (content) => {
-    (content || []).forEach(node => {
-      if(node.type === 'text'){ for(const ch of (node.text || '')) if(ch !== '\n') newChars.push(ch); }
-      else if(Array.isArray(node.content)) walk(node.content);
+  // 문서의 비개행 문자를 순서대로 수집. newBrk[i]=true → 글자 i 앞에 개행(문단 경계
+  // 또는 soft break)이 있음. '수정'은 블록과 개행 없이 붙어있을 때만이라 이 정보가 필요.
+  const newChars = [], newBrk = [];
+  let started = false, pendingBreak = false;
+  const collect = (nodes) => {
+    (nodes || []).forEach(node => {
+      if(node.type === 'text'){
+        for(const ch of (node.text || '')){
+          if(ch === '\n'){ if(started) pendingBreak = true; continue; }   // soft break
+          newChars.push(ch); newBrk.push(pendingBreak); started = true; pendingBreak = false;
+        }
+      } else if(Array.isArray(node.content)){ collect(node.content); }
     });
   };
-  if(body && body.doc){ try { walk(body.doc.content); } catch(e){} }
+  if(body && body.doc){
+    try { (body.doc.content || []).forEach((para, pi) => { if(pi > 0 && started) pendingBreak = true; collect([para]); }); } catch(e){}
+  }
 
   // shadow diff — 공통 prefix/suffix 의 '원천'은 이전 값 보존(구조편집으로 muha 가
   // 재-source 해도 안 흔들림). 가운데(삽입분)만 새로 판정.
@@ -4270,25 +4278,32 @@ function _recountFromAuditLog(){
   let kind = null;
   if(insEnd > p && _pendingInsert){ kind = _pendingInsert; _pendingInsert = null; clearTimeout(_pendingInsertTimer); }
   for(let i = p; i < insEnd; i++) origin[i] = kind || 'typing';
-  // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
-  if(!composing) _srcState = { chars: newChars, origin };
+  // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지). brk 는 구조라 매번 fresh.
+  if(!composing) _srcState = { chars: newChars, origin, brk: newBrk };
 
   // 집계 — '수정'은 매번 스캔으로 재계산(self-healing): typing 런이 양옆 모두 블록
-  // (ai/paste)에 둘러싸이면 '수정'(블록 내부 입력), 아니면 직접타이핑.
-  // 블록 첫 글자 앞·마지막 글자 뒤(=한쪽 이웃만 블록)는 직접타이핑.
+  // (ai/paste)에 '개행 없이 붙어' 둘러싸이면 '수정'(블록 내부 입력), 아니면 직접타이핑.
+  // 개행(문단 경계)으로 끊긴 별도 줄의 직접 입력은 두 블록 사이여도 '직접타이핑'.
+  _auditCounts = _scanCounts(origin, newBrk);
+  return _auditCounts;
+}
+
+// origin(+brk)로 4종 카운트 산출. brk[i]=글자 i 앞 개행 → 개행으로 끊기면 블록 내부 아님.
+function _scanCounts(origin, brk){
   const isBlock = (x) => (x === 'ai' || x === 'paste');
+  const len = origin.length;
   let ai = 0, paste = 0, revised = 0, direct = 0, i = 0;
-  while(i < newLen){
+  while(i < len){
     const o = origin[i];
     if(o === 'ai'){ ai++; i++; continue; }
     if(o === 'paste'){ paste++; i++; continue; }
-    let j = i; while(j < newLen && origin[j] === 'typing') j++;         // typing 런 [i, j)
-    const enclosed = (i - 1 >= 0) && isBlock(origin[i - 1]) && (j < newLen) && isBlock(origin[j]);
-    if(enclosed) revised += (j - i); else direct += (j - i);
+    let j = i; while(j < len && origin[j] === 'typing') j++;            // typing 런 [i, j)
+    const leftAttached  = (i - 1 >= 0) && isBlock(origin[i - 1]) && !(brk && brk[i]);
+    const rightAttached = (j < len)   && isBlock(origin[j])     && !(brk && brk[j]);
+    if(leftAttached && rightAttached) revised += (j - i); else direct += (j - i);
     i = j;
   }
-  _auditCounts = { typing: direct, ai, paste, revised, total: newLen };
-  return _auditCounts;
+  return { typing: direct, ai, paste, revised, total: len };
 }
 
 // 저장 직전: muha 문서 텍스트 + _srcState 출처로 model 을 재구성한다. extra variant 는
@@ -4298,7 +4313,7 @@ function _recountFromAuditLog(){
 // origin(ai/paste/typing) 배열 → 결과지용 세분화 source 배열.
 // typing 런이 블록에 둘러싸이면 그 블록 종류에 따라 ai-internal / paste-internal(수정),
 // 아니면 typing(직접). ai/paste 는 그대로. (결과지 '텍스트 유입 분석' 색상 = 이 값)
-function _fineSourcePerChar(origin){
+function _fineSourcePerChar(origin, brk){
   const isBlock = x => (x === 'ai' || x === 'paste');
   const fine = new Array(origin.length);
   let i = 0;
@@ -4306,11 +4321,12 @@ function _fineSourcePerChar(origin){
     const o = origin[i];
     if(o === 'ai' || o === 'paste'){ fine[i] = o; i++; continue; }
     let j = i; while(j < origin.length && origin[j] === 'typing') j++;   // typing 런 [i,j)
-    const left = (i - 1 >= 0) ? origin[i - 1] : null;
-    const right = (j < origin.length) ? origin[j] : null;
+    // 블록 내부(수정) = 좌우가 블록이면서 개행(문단 경계)으로 끊기지 않은 경우만
+    const leftBlk  = (i - 1 >= 0) && isBlock(origin[i - 1]) && !(brk && brk[i]);
+    const rightBlk = (j < origin.length) && isBlock(origin[j]) && !(brk && brk[j]);
     let kind = 'typing';
-    if(isBlock(left) && isBlock(right)){                                 // 블록 내부 = 수정
-      const blk = (left === 'ai' || right === 'ai') ? 'ai' : 'paste';
+    if(leftBlk && rightBlk){
+      const blk = (origin[i - 1] === 'ai' || origin[j] === 'ai') ? 'ai' : 'paste';
       kind = (blk === 'ai') ? 'ai-internal' : 'paste-internal';
     }
     for(let k = i; k < j; k++) fine[k] = kind;
@@ -4322,7 +4338,8 @@ function _fineSourcePerChar(origin){
 function _syncModelFromMuha(){
   if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();  // 최신 _srcState 확정
   const origin = (_srcState && _srcState.origin) ? _srcState.origin : [];
-  const fine = _fineSourcePerChar(origin);                               // 결과지용 세분화 출처
+  const brk = (_srcState && _srcState.brk) ? _srcState.brk : [];
+  const fine = _fineSourcePerChar(origin, brk);                          // 결과지용 세분화 출처
   // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처는 비개행 순서대로 fine 매핑.
   // 개행이 몇 개든 oi 는 비개행에서만 증가하므로 정렬이 어긋나지 않는다.
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
