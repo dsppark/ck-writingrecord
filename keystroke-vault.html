@@ -4234,6 +4234,9 @@ let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
 // typing 은 null. '수정'은 좌우가 '같은 이벤트 id'로 둘러싸였을 때만(=한 이벤트 내부).
 let _srcState = null;   // {chars, origin:['typing'|'ai'|'paste'], block:[id|null]}
 let _eventSize = {};    // 이벤트 id → 유입 당시 '원본 글자수'(잔존율 분모). 현재 남은 수가 아님.
+// 이벤트 id → 유입 이벤트 메타{type, ts, text(원본), size}. 외부 유입 로그를 audit 이 아닌
+// 이 메타 + 최종 문서 잔존 블록 기준으로 구성 → 문서 수정·재오픈 후에도 유입 로그 유지.
+let _inflowMeta = {};
 function _resetSrcState(){ _srcState = null; _eventSize = {}; }
 
 // 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시 + 이벤트마다 고유 id 부여.
@@ -4280,8 +4283,11 @@ function _recountFromAuditLog(){
     if(flag){ origin[i] = flag.kind; block[i] = flag.id; }
     else { origin[i] = 'typing'; block[i] = null; }
   }
-  // 유입 이벤트의 '원본 글자수' 기록(최초 삽입 때만) — 잔존율 분모(현재 남은 수 아님)
-  if(flag) _eventSize[flag.id] = insEnd - p;
+  // 유입 이벤트의 '원본 글자수'+메타 기록(최초 삽입 때만) — 잔존율 분모·유입 로그 원본
+  if(flag){
+    _eventSize[flag.id] = insEnd - p;
+    _inflowMeta[flag.id] = { type: flag.kind, ts: Date.now(), text: newChars.slice(p, insEnd).join(''), size: insEnd - p };
+  }
   // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
   if(!composing) _srcState = { chars: newChars, origin, block };
 
@@ -4492,7 +4498,8 @@ function boxSaveCurrentDoc(){
     model: model.map(m=>({ch:m.ch, source:m.source, ts:m.ts, blockMark:m.blockMark, blockSize:m.blockSize})),
     events: events.map(e=>({...e})),
     stats: {...stats},
-    editOps: editOps.map(o=>({...o}))
+    editOps: editOps.map(o=>({...o})),
+    inflowMeta: JSON.parse(JSON.stringify(_inflowMeta || {}))   // 유입 이벤트 메타(원본텍스트·시각·크기) 영속
   };
   let id;
   if(currentDocId){
@@ -4693,6 +4700,7 @@ function newWrite(variant){
   window.__auditLog = [];
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
   if(typeof _resetSrcState === 'function') _resetSrcState();  // 출처 shadow 맵 초기화
+  _inflowMeta = {};                                            // 유입 이벤트 메타 초기화(새 문서)
   // 검사→에디터 AI 의심 음영 초기화 (새 문서엔 음영 없음)
   if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
@@ -4779,6 +4787,7 @@ function _loadDocIntoSession(d){
   d.model.forEach(m => model.push({...m}));
   d.events.forEach(e => events.push({...e}));
   if(d.editOps) d.editOps.forEach(o => editOps.push({...o}));
+  _inflowMeta = d.inflowMeta ? JSON.parse(JSON.stringify(d.inflowMeta)) : {};   // 유입 이벤트 메타 복원
   Object.assign(stats, d.stats||{});
   selectedType = d.type || null;
   currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
@@ -5863,6 +5872,24 @@ async function buildReportFromSession(){
   // __auditLog 가 있을 때(현재 작성 세션)만 재구성. 재오픈(조회)이면 저장된 events/model.ts 사용.
   if(document.body.dataset.writeVariant === 'extra' && (window.__auditLog || []).length > 0){
     try { _reconstructFromAudit(); } catch(e){ console.warn('reconstruct fail', e); }
+  }
+  // 외부 유입 로그(ai/paste) 는 audit 이 아니라 '_inflowMeta ∩ 최종 문서에 남아있는 블록'
+  // 기준으로 구성 → 문서 수정·재오픈(편집 세션에 원 삽입 이벤트가 없어도) 유입 로그 유지.
+  if(document.body.dataset.writeVariant === 'extra'){
+    try {
+      const surviving = new Set();
+      model.forEach(m => { if(m.blockMark != null) surviving.add(m.blockMark); });
+      const kept = events.filter(e => e.type !== 'ai' && e.type !== 'paste');  // typing/keystroke/delete 유지
+      const inflow = [];
+      Object.keys(_inflowMeta || {}).forEach(bm => {
+        const id = +bm; if(!surviving.has(id)) return;   // 최종 문서에 남아있는 유입 블록만
+        const m = _inflowMeta[bm];
+        inflow.push({ ts: m.ts || (stats.firstTs||0), type: m.type, srcFamily: m.type, n: m.size || 0, isInsert: true,
+                      meta: { blockMark: id, blockSize: m.size || 0, text: m.text || '' } });
+      });
+      inflow.sort((a, b) => a.ts - b.ts);
+      events.length = 0; events.push(...kept, ...inflow);
+    } catch(e){ console.warn('inflow events fail', e); }
   }
   // 텍스트 유입 분석 본문을 실제 문서로 렌더 (정적 목업 대체)
   try { renderInflowPassage(); } catch(e){ console.warn('inflow render fail', e); }
