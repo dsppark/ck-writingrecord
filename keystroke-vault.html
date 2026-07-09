@@ -1552,18 +1552,18 @@
         </div>
       </div>
 
-      <!-- 2. 평균 타이핑 간격 -->
+      <!-- 2. 작성 소요 시간 -->
       <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 3"/></svg>
           </span>
-          <div class="text-[13px] font-bold text-slate-900">평균 타이핑 간격</div>
+          <div class="text-[13px] font-bold text-slate-900">작성 소요 시간</div>
         </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">글자 입력과 입력 사이의 평균 멈춤 시간</div>
+        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">첫 입력부터 마지막 입력까지 걸린 시간</div>
         <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_interval">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">초</span>
+          <div class="text-2xl font-bold text-slate-900 leading-none" id="m_duration">—</div>
+          <div class="text-[11px] text-slate-400 mt-1.5" id="m_activeTime">순 타이핑 —</div>
         </div>
       </div>
 
@@ -2366,7 +2366,7 @@
       <h2>5. 종합 지표</h2>
       <table class="print-kv"><tbody>
         <tr><th>평균 타이핑 속도</th><td><span data-print="m-speed">-</span> 타/분</td></tr>
-        <tr><th>평균 타이핑 간격</th><td><span data-print="m-interval">-</span> 초</td></tr>
+        <tr><th>작성 소요 시간</th><td><span data-print="m-duration">-</span></td></tr>
         <tr><th>총 수정 횟수</th><td><span data-print="m-edits">-</span> 회</td></tr>
         <tr><th>총 삭제 횟수</th><td><span data-print="m-deletes">-</span> 회</td></tr>
         <tr><th>최장 무중단 타이핑</th><td data-print="m-longest">-</td></tr>
@@ -2659,7 +2659,7 @@ async function issueCert(){
     'paste-deleted':bind('paste-deleted-pct'),
     'paste-badge': bind('paste-badge'),
     'm-speed':   txt('#m_speed','0'),
-    'm-interval':txt('#m_interval','0'),
+    'm-duration':txt('#m_duration','—'),
     'm-edits':   txt('#m_edits','0'),
     'm-deletes': txt('#m_deletes','0'),
     'm-longest': txt('#m_longest','-'),
@@ -6159,14 +6159,9 @@ async function buildReportFromSession(){
   // 1. 평균 타이핑 속도 (chars/min) = 직접 타이핑 글자수 / 활성 분 수
   const activeMin = activeMs / 60000;
   const avgSpeed = activeMin>0 ? Math.round(c.typing / activeMin) : 0;
-  // 2. 평균 타이핑 간격 (초) — typing events 인접 ts diff 평균, idle(15초+) 제외
+  // 2. 작성 소요 시간 = totalDurationMs(첫 입력~마지막 입력), 순 타이핑 = activeMs(idle 제외).
+  //    둘 다 상단(C-01)에서 이미 산출됨. tEv 는 아래 '최장 무중단' fallback 에 사용.
   const tEv = events.filter(e=>e.type==='typing').sort((a,b)=>a.ts-b.ts);
-  let gapSum=0, gapN=0;
-  for(let i=1;i<tEv.length;i++){
-    const g = tEv[i].ts - tEv[i-1].ts;
-    if(g>0 && g<15000){ gapSum+=g; gapN++; }
-  }
-  const avgInterval = gapN>0 ? (gapSum/gapN/1000) : 0;
   // 3. 총 수정 횟수 — editOps (삭제 포함 op) + paste/ai 블록 삽입
   const externalIns = events.filter(e=>e.type==='paste'||e.type==='ai').length;
   const editsCount = editOps.length + externalIns;
@@ -6199,7 +6194,10 @@ async function buildReportFromSession(){
   // DOM 주입
   const setText=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   setText('m_speed', String(avgSpeed));
-  setText('m_interval', avgInterval.toFixed(1));
+  const _durEl=document.getElementById('m_duration');
+  if(_durEl) _durEl.innerHTML = totalDurationMs>0 ? fmtHMS(totalDurationMs) : '—';
+  const _actEl=document.getElementById('m_activeTime');
+  if(_actEl) _actEl.textContent = totalDurationMs>0 ? ('순 타이핑 '+fmtHMS(activeMs).replace(/<[^>]+>/g,'').trim()) : '순 타이핑 —';
   setText('m_edits', String(editsCount));
   setText('m_deletes', String(deletesCount));
   setText('m_runChars', String(longest.chars));
