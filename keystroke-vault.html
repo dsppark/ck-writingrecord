@@ -4224,16 +4224,16 @@ function counts(){
    뒤는 직접), 직접타이핑=그 외. 개행 제외. 합=총 비개행 글자수.
    ============================================================ */
 let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
-let _srcState = null;   // {chars:[비개행 문자...], origin:['typing'|'ai'|'paste'...]}
+// _srcState.block[i] = 그 글자가 속한 '유입 이벤트 id'(같은 AI/붙여넣기 이벤트 = 같은 id).
+// typing 은 null. '수정'은 좌우가 '같은 이벤트 id'로 둘러싸였을 때만(=한 이벤트 내부).
+let _srcState = null;   // {chars, origin:['typing'|'ai'|'paste'], block:[id|null]}
 function _resetSrcState(){ _srcState = null; }
 
-// 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시. muha getSourceRanges 의
-// ai/paste 라벨은 내부 입력을 확장 보고하는 등 신뢰할 수 없어, 출처는 muha 가 아니라
-// '우리 이벤트'로 확정한다: appendToEditor(AI)·paste 리스너에서만 flag 를 세우고,
-// 그 외 모든 삽입(키보드/IME)은 사용자 타이핑으로 본다.
-let _pendingInsert = null, _pendingInsertTimer = 0;
+// 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시 + 이벤트마다 고유 id 부여.
+// muha 라벨은 신뢰 못하므로 출처는 우리 이벤트로 확정. 그 외 삽입(키보드/IME)=typing.
+let _pendingInsert = null, _pendingInsertTimer = 0, _blockSeq = 0;
 function _markPendingInsert(kind){
-  _pendingInsert = kind;
+  _pendingInsert = { kind, id: ++_blockSeq };
   clearTimeout(_pendingInsertTimer);
   _pendingInsertTimer = setTimeout(() => { _pendingInsert = null; }, 1500);  // 미소비 시 안전 해제
 }
@@ -4246,50 +4246,44 @@ function _recountFromAuditLog(){
   try { composing = !!(c && typeof c.isComposing === 'function' && c.isComposing()); } catch(e){}
   let body = null;
   try { if(c && typeof c.getBody === 'function') body = c.getBody(); } catch(e){ body = null; }
-  // 문서의 비개행 문자를 순서대로 수집. newBrk[i]=true → 글자 i 앞에 개행(문단 경계
-  // 또는 soft break)이 있음. '수정'은 블록과 개행 없이 붙어있을 때만이라 이 정보가 필요.
-  const newChars = [], newBrk = [];
-  let started = false, pendingBreak = false;
+  // 문서의 비개행 문자를 순서대로 수집
+  const newChars = [];
   const collect = (nodes) => {
     (nodes || []).forEach(node => {
-      if(node.type === 'text'){
-        for(const ch of (node.text || '')){
-          if(ch === '\n'){ if(started) pendingBreak = true; continue; }   // soft break
-          newChars.push(ch); newBrk.push(pendingBreak); started = true; pendingBreak = false;
-        }
-      } else if(Array.isArray(node.content)){ collect(node.content); }
+      if(node.type === 'text'){ for(const ch of (node.text || '')) if(ch !== '\n') newChars.push(ch); }
+      else if(Array.isArray(node.content)){ collect(node.content); }
     });
   };
-  if(body && body.doc){
-    try { (body.doc.content || []).forEach((para, pi) => { if(pi > 0 && started) pendingBreak = true; collect([para]); }); } catch(e){}
-  }
+  if(body && body.doc){ try { collect(body.doc.content); } catch(e){} }
 
-  // shadow diff — 공통 prefix/suffix 의 '원천'은 이전 값 보존(구조편집으로 muha 가
-  // 재-source 해도 안 흔들림). 가운데(삽입분)만 새로 판정.
-  const old = _srcState || { chars: [], origin: [] };
-  const oldC = old.chars, oldO = old.origin, oldLen = oldC.length, newLen = newChars.length;
+  // shadow diff — 공통 prefix/suffix 의 '원천'+'이벤트 id'는 이전 값 보존(구조편집으로
+  // muha 가 재-source 해도 안 흔들림). 가운데(삽입분)만 새로 판정.
+  const old = _srcState || { chars: [], origin: [], block: [] };
+  const oldC = old.chars, oldO = old.origin, oldB = old.block || [], oldLen = oldC.length, newLen = newChars.length;
   let p = 0; while(p < oldLen && p < newLen && oldC[p] === newChars[p]) p++;
   let s = 0; while(s < (oldLen - p) && s < (newLen - p) && oldC[oldLen-1-s] === newChars[newLen-1-s]) s++;
-  const origin = new Array(newLen);
-  for(let i = 0; i < p; i++) origin[i] = oldO[i];                       // prefix 보존
-  for(let i = 0; i < s; i++) origin[newLen-1-i] = oldO[oldLen-1-i];     // suffix 보존
-  // 삽입분 원천: 우리가 세운 flag(ai/paste)면 그것, 아니면 사용자 타이핑('typing').
+  const origin = new Array(newLen), block = new Array(newLen);
+  for(let i = 0; i < p; i++){ origin[i] = oldO[i]; block[i] = (oldB[i] != null) ? oldB[i] : null; }
+  for(let i = 0; i < s; i++){ origin[newLen-1-i] = oldO[oldLen-1-i]; block[newLen-1-i] = (oldB[oldLen-1-i] != null) ? oldB[oldLen-1-i] : null; }
+  // 삽입분: 우리가 세운 flag(ai/paste)면 그 kind+이벤트 id, 아니면 사용자 타이핑.
   const insEnd = newLen - s;
-  let kind = null;
-  if(insEnd > p && _pendingInsert){ kind = _pendingInsert; _pendingInsert = null; clearTimeout(_pendingInsertTimer); }
-  for(let i = p; i < insEnd; i++) origin[i] = kind || 'typing';
-  // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지). brk 는 구조라 매번 fresh.
-  if(!composing) _srcState = { chars: newChars, origin, brk: newBrk };
+  let flag = null;
+  if(insEnd > p && _pendingInsert){ flag = _pendingInsert; _pendingInsert = null; clearTimeout(_pendingInsertTimer); }
+  for(let i = p; i < insEnd; i++){
+    if(flag){ origin[i] = flag.kind; block[i] = flag.id; }
+    else { origin[i] = 'typing'; block[i] = null; }
+  }
+  // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
+  if(!composing) _srcState = { chars: newChars, origin, block };
 
-  // 집계 — '수정'은 매번 스캔으로 재계산(self-healing): typing 런이 양옆 모두 블록
-  // (ai/paste)에 '개행 없이 붙어' 둘러싸이면 '수정'(블록 내부 입력), 아니면 직접타이핑.
-  // 개행(문단 경계)으로 끊긴 별도 줄의 직접 입력은 두 블록 사이여도 '직접타이핑'.
-  _auditCounts = _scanCounts(origin, newBrk);
+  _auditCounts = _scanCounts(origin, block);
   return _auditCounts;
 }
 
-// origin(+brk)로 4종 카운트 산출. brk[i]=글자 i 앞 개행 → 개행으로 끊기면 블록 내부 아님.
-function _scanCounts(origin, brk){
+// origin(+block 이벤트 id)로 4종 카운트. '수정' = typing 런의 좌우가 '같은 이벤트 id'로
+// 둘러싸인 경우만(=한 AI/붙여넣기 이벤트 내부). 서로 다른 이벤트 사이·블록 시작 앞·끝 뒤
+// (=한쪽만 블록이거나 id 불일치)는 개행 여부와 무관하게 직접타이핑.
+function _scanCounts(origin, block){
   const isBlock = (x) => (x === 'ai' || x === 'paste');
   const len = origin.length;
   let ai = 0, paste = 0, revised = 0, direct = 0, i = 0;
@@ -4298,9 +4292,10 @@ function _scanCounts(origin, brk){
     if(o === 'ai'){ ai++; i++; continue; }
     if(o === 'paste'){ paste++; i++; continue; }
     let j = i; while(j < len && origin[j] === 'typing') j++;            // typing 런 [i, j)
-    const leftAttached  = (i - 1 >= 0) && isBlock(origin[i - 1]) && !(brk && brk[i]);
-    const rightAttached = (j < len)   && isBlock(origin[j])     && !(brk && brk[j]);
-    if(leftAttached && rightAttached) revised += (j - i); else direct += (j - i);
+    const leftId  = (i - 1 >= 0 && isBlock(origin[i - 1])) ? block[i - 1] : null;
+    const rightId = (j < len && isBlock(origin[j]))        ? block[j]     : null;
+    if(leftId != null && rightId != null && leftId === rightId) revised += (j - i);
+    else direct += (j - i);
     i = j;
   }
   return { typing: direct, ai, paste, revised, total: len };
@@ -4313,7 +4308,9 @@ function _scanCounts(origin, brk){
 // origin(ai/paste/typing) 배열 → 결과지용 세분화 source 배열.
 // typing 런이 블록에 둘러싸이면 그 블록 종류에 따라 ai-internal / paste-internal(수정),
 // 아니면 typing(직접). ai/paste 는 그대로. (결과지 '텍스트 유입 분석' 색상 = 이 값)
-function _fineSourcePerChar(origin, brk){
+// origin + block(이벤트 id) → 결과지용 세분화 source. typing 런이 '같은 이벤트 id'로
+// 둘러싸이면 그 종류에 따라 ai-internal/paste-internal(수정), 아니면 typing(직접).
+function _fineSourcePerChar(origin, block){
   const isBlock = x => (x === 'ai' || x === 'paste');
   const fine = new Array(origin.length);
   let i = 0;
@@ -4321,13 +4318,11 @@ function _fineSourcePerChar(origin, brk){
     const o = origin[i];
     if(o === 'ai' || o === 'paste'){ fine[i] = o; i++; continue; }
     let j = i; while(j < origin.length && origin[j] === 'typing') j++;   // typing 런 [i,j)
-    // 블록 내부(수정) = 좌우가 블록이면서 개행(문단 경계)으로 끊기지 않은 경우만
-    const leftBlk  = (i - 1 >= 0) && isBlock(origin[i - 1]) && !(brk && brk[i]);
-    const rightBlk = (j < origin.length) && isBlock(origin[j]) && !(brk && brk[j]);
+    const leftId  = (i - 1 >= 0 && isBlock(origin[i - 1])) ? block[i - 1] : null;
+    const rightId = (j < origin.length && isBlock(origin[j])) ? block[j] : null;
     let kind = 'typing';
-    if(leftBlk && rightBlk){
-      const blk = (origin[i - 1] === 'ai' || origin[j] === 'ai') ? 'ai' : 'paste';
-      kind = (blk === 'ai') ? 'ai-internal' : 'paste-internal';
+    if(leftId != null && rightId != null && leftId === rightId){         // 같은 이벤트 내부 = 수정
+      kind = (origin[i - 1] === 'ai') ? 'ai-internal' : 'paste-internal';
     }
     for(let k = i; k < j; k++) fine[k] = kind;
     i = j;
@@ -4338,34 +4333,31 @@ function _fineSourcePerChar(origin, brk){
 function _syncModelFromMuha(){
   if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();  // 최신 _srcState 확정
   const origin = (_srcState && _srcState.origin) ? _srcState.origin : [];
-  const brk = (_srcState && _srcState.brk) ? _srcState.brk : [];
-  const fine = _fineSourcePerChar(origin, brk);                          // 결과지용 세분화 출처
-  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처는 비개행 순서대로 fine 매핑.
-  // 개행이 몇 개든 oi 는 비개행에서만 증가하므로 정렬이 어긋나지 않는다.
+  const block = (_srcState && _srcState.block) ? _srcState.block : [];
+  const fine = _fineSourcePerChar(origin, block);                        // 결과지용 세분화 출처
+  // 텍스트는 innerText 로(개행 포함 시각 그대로), 출처·이벤트 id 는 비개행 순서대로 매핑.
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const fullText = el ? (el.innerText || '') : '';
-  // 연속된 ai-family / paste-family 런마다 고유 blockMark 부여 → 결과지 렌더러가
-  // 블록으로 묶어 내부 색상(_paint)을 칠한다. typing(직접)은 blockMark 없음.
-  const fam = s => (s === 'ai' || s === 'ai-internal') ? 'ai' : (s === 'paste' || s === 'paste-internal') ? 'paste' : null;
   model.length = 0;
-  let oi = 0, curFam = null, curBm = 0, bmSeq = 0;
+  let oi = 0, lastBid = null;
   for(const ch of fullText){
     if(ch === '\n'){ model.push({ ch: '\n', source: 'typing' }); continue; }
-    const src = fine[oi] || 'typing'; oi++;
-    const f = fam(src);
-    if(f){
-      if(f !== curFam){ curFam = f; curBm = ++bmSeq; }
-      model.push({ ch, source: src, blockMark: curBm });
-    } else {
-      curFam = null;
-      model.push({ ch, source: src });
-    }
+    const src = fine[oi] || 'typing';
+    let bid = block[oi];   // 이벤트 id (ai/paste 원본 글자만)
+    oi++;
+    if(bid != null){ lastBid = bid; }                                   // 원본 블록 글자
+    else if(src === 'ai-internal' || src === 'paste-internal'){ bid = lastBid; }  // 수정 = 소속 이벤트에 편입
+    else { lastBid = null; }                                            // 순수 직접타이핑 → 블록 밖
+    // blockMark = 이벤트 id (결과지 렌더러 블록 그룹핑·색상·생존율용). 같은 이벤트면 같은 id →
+    // 중간을 사용자가 수정으로 쪼개도 한 블록으로 집계.
+    if(bid != null) model.push({ ch, source: src, blockMark: bid });
+    else model.push({ ch, source: src });
   }
-  // blockSize = 같은 blockMark 글자 수. (결과지 블록 생존/보존율 계산이 m.blockSize 를
-  // 원본 크기로 사용 → 없으면 size=1 로 잡혀 보존율이 600% 처럼 폭주하고 지수가 음수가 됨)
+  // blockSize = 같은 blockMark(이벤트) 글자 수. (블록 생존/보존율이 m.blockSize 를 원본
+  // 크기로 사용 → 없으면 size=1 로 잡혀 보존율 폭주·지수 음수)
   const _bmCount = {};
-  model.forEach(m => { if(m.blockMark) _bmCount[m.blockMark] = (_bmCount[m.blockMark] || 0) + 1; });
-  model.forEach(m => { if(m.blockMark) m.blockSize = _bmCount[m.blockMark]; });
+  model.forEach(m => { if(m.blockMark != null) _bmCount[m.blockMark] = (_bmCount[m.blockMark] || 0) + 1; });
+  model.forEach(m => { if(m.blockMark != null) m.blockSize = _bmCount[m.blockMark]; });
 }
 
 // audit 이벤트가 몰릴 때 짧은 debounce 로 한 번만 재계산 (setTimeout — 백그라운드 안전)
@@ -4835,16 +4827,21 @@ function boxOpenDoc(id){
   // 저장 문서의 글자별 출처(source)로 _srcState 복원 → 카운터가 리셋되지 않고
   // 원래 직접/AI/붙여넣기/수정 구분이 그대로 유지된다. (source 는 ai/paste/그외=typing)
   const _mdl = d.model || [];
-  const _savedChars = [], _savedOrigin = [];
+  const _savedChars = [], _savedOrigin = [], _savedBlock = [];
+  let _maxBm = 0;
   for(const m of _mdl){
     if(m.ch === '\n') continue;
     _savedChars.push(m.ch);
     // 결과지 세분화 source → 카운터 origin(ai/paste/typing) 역매핑.
-    // ai/ai-edited→ai, paste/paste-edited→paste, ai-internal/paste-internal/그외→typing.
     const s = m.source;
-    _savedOrigin.push((s === 'ai' || s === 'ai-edited') ? 'ai' : (s === 'paste' || s === 'paste-edited') ? 'paste' : 'typing');
+    const isAi = (s === 'ai' || s === 'ai-edited'), isPaste = (s === 'paste' || s === 'paste-edited');
+    _savedOrigin.push(isAi ? 'ai' : isPaste ? 'paste' : 'typing');
+    // block(이벤트 id) = 원본 ai/paste 글자의 blockMark. internal/typing 은 null(=typing 런).
+    _savedBlock.push((isAi || isPaste) && m.blockMark != null ? m.blockMark : null);
+    if(m.blockMark != null && m.blockMark > _maxBm) _maxBm = m.blockMark;
   }
-  _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin } : null;
+  if(_maxBm > _blockSeq) _blockSeq = _maxBm;   // 새 삽입 이벤트 id 충돌 방지
+  _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin, block: _savedBlock } : null;
   const rawText = _mdl.map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
     Object.assign(stats, d.stats || {});  // replaceBody audit 후에도 저장 시점 값 유지
