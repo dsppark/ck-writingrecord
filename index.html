@@ -1293,7 +1293,7 @@
   <div class="card p-6">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 검증 결과">작성 증명 지수</h2>
+        <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 검증 결과">작성 검증 결과</h2>
         <p class="text-sm text-slate-500 mt-1">독립적 기여도 0~100점 · 3개 영역 · 8개 항목 가중 평균</p>
       </div>
       <button onclick="openCriteriaModal()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
@@ -1537,22 +1537,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      <!-- 1. 평균 타이핑 속도 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">평균 타이핑 속도</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">1분간 직접 타이핑한 텍스트 수의 평균</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_speed">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">타/분</span>
-        </div>
-      </div>
-
-      <!-- 2. 작성 소요 시간 -->
+      <!-- 1. 작성 소요 시간 -->
       <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
@@ -1567,37 +1552,7 @@
         </div>
       </div>
 
-      <!-- 3. 총 수정 횟수 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">총 수정 횟수</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">오타 수정, 내용 변경 등 텍스트의 수정과 삽입을 모두 합한 횟수</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_edits">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
-        </div>
-      </div>
-
-      <!-- 4. 총 삭제 횟수 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">총 삭제 횟수</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">Backspace, Delete 등으로 텍스트를 삭제한 누적 횟수</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_deletes">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
-        </div>
-      </div>
-
-      <!-- 5. 최장 무중단 타이핑 -->
+      <!-- 2. 최장 무중단 타이핑 -->
       <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -1612,6 +1567,51 @@
           <span class="text-slate-300 mx-1.5">·</span>
           <span class="text-2xl font-bold text-slate-900" id="m_runDur">—</span>
           <span class="text-xs font-semibold text-slate-500 ml-0.5">초</span>
+        </div>
+      </div>
+
+      <!-- 3. 평균 타이핑 속도 -->
+      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <div class="text-[13px] font-bold text-slate-900">평균 타이핑 속도</div>
+        </div>
+        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">1분간 직접 타이핑한 텍스트 수의 평균</div>
+        <div class="text-right">
+          <span class="text-2xl font-bold text-slate-900" id="m_speed">—</span>
+          <span class="text-xs font-semibold text-slate-500 ml-0.5">타/분</span>
+        </div>
+      </div>
+
+      <!-- 4. 총 수정 횟수 -->
+      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </span>
+          <div class="text-[13px] font-bold text-slate-900">총 수정 횟수</div>
+        </div>
+        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">오타 수정, 내용 변경 등 텍스트의 수정과 삽입을 모두 합한 횟수</div>
+        <div class="text-right">
+          <span class="text-2xl font-bold text-slate-900" id="m_edits">—</span>
+          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
+        </div>
+      </div>
+
+      <!-- 5. 총 삭제 횟수 -->
+      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </span>
+          <div class="text-[13px] font-bold text-slate-900">총 삭제 횟수</div>
+        </div>
+        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">Backspace, Delete 등으로 텍스트를 삭제한 누적 횟수</div>
+        <div class="text-right">
+          <span class="text-2xl font-bold text-slate-900" id="m_deletes">—</span>
+          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
         </div>
       </div>
 
@@ -4032,7 +4032,7 @@ function appendToEditor(text, source, promptHint){
         // 로 직접타이핑이 AI 로 뒤집히는 걸 막는다.
         if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();
         // 이 삽입은 우리가 일으킨 AI 이벤트임을 표시 → 카운터가 'AI생성'으로 확정
-        if(typeof _markPendingInsert === 'function') _markPendingInsert('ai');
+        if(typeof _markPendingInsert === 'function') _markPendingInsert('ai', promptHint);
         el && el.focus();
         if(typeof controller.collapseSelectionToEnd === 'function') controller.collapseSelectionToEnd();
         // 문서 끝에 이미 내용이 있으면 개행으로 문단 분리
@@ -4242,8 +4242,8 @@ function _resetSrcState(){ _srcState = null; _eventSize = {}; }
 // 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시 + 이벤트마다 고유 id 부여.
 // muha 라벨은 신뢰 못하므로 출처는 우리 이벤트로 확정. 그 외 삽입(키보드/IME)=typing.
 let _pendingInsert = null, _pendingInsertTimer = 0, _blockSeq = 0;
-function _markPendingInsert(kind){
-  _pendingInsert = { kind, id: ++_blockSeq };
+function _markPendingInsert(kind, prompt){
+  _pendingInsert = { kind, id: ++_blockSeq, prompt: prompt || '' };
   clearTimeout(_pendingInsertTimer);
   _pendingInsertTimer = setTimeout(() => { _pendingInsert = null; }, 1500);  // 미소비 시 안전 해제
 }
@@ -4286,7 +4286,7 @@ function _recountFromAuditLog(){
   // 유입 이벤트의 '원본 글자수'+메타 기록(최초 삽입 때만) — 잔존율 분모·유입 로그 원본
   if(flag){
     _eventSize[flag.id] = insEnd - p;
-    _inflowMeta[flag.id] = { type: flag.kind, ts: Date.now(), text: newChars.slice(p, insEnd).join(''), size: insEnd - p };
+    _inflowMeta[flag.id] = { type: flag.kind, ts: Date.now(), text: newChars.slice(p, insEnd).join(''), size: insEnd - p, prompt: flag.prompt || '' };
   }
   // 조합 중이 아닐 때만 shadow 맵 확정 (과도기 상태 저장 방지)
   if(!composing) _srcState = { chars: newChars, origin, block };
@@ -5885,7 +5885,7 @@ async function buildReportFromSession(){
         const id = +bm; if(!surviving.has(id)) return;   // 최종 문서에 남아있는 유입 블록만
         const m = _inflowMeta[bm];
         inflow.push({ ts: m.ts || (stats.firstTs||0), type: m.type, srcFamily: m.type, n: m.size || 0, isInsert: true,
-                      meta: { blockMark: id, blockSize: m.size || 0, text: m.text || '' } });
+                      meta: { blockMark: id, blockSize: m.size || 0, text: m.text || '', prompt: m.prompt || '' } });
       });
       inflow.sort((a, b) => a.ts - b.ts);
       events.length = 0; events.push(...kept, ...inflow);
@@ -6366,7 +6366,7 @@ async function buildReportFromSession(){
           <td class="px-4 py-2.5">${typeChip}</td>
           <td class="px-4 py-2.5 font-mono text-[12px] text-slate-700">${tstr}</td>
           <td class="px-4 py-2.5 font-semibold">${p.n.toLocaleString()}자</td>
-          <td class="px-4 py-2.5 text-slate-600 text-[12.5px]">P${(p.meta?.blockMark||i)+1}</td>
+          <td class="px-4 py-2.5 text-slate-600 text-[12.5px]">P${i+1}</td>
           <td class="col-origret px-4 py-2.5">
             <div class="flex items-center gap-2">
               <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${ret>=50?'bg-amber-400':'bg-emerald-500'}" style="width:${ret}%"></div></div>
