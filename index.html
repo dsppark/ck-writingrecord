@@ -1366,7 +1366,7 @@
               <div class="bd-bar"><div style="width:58.3%;background:var(--ck-green-500);"></div></div>
             </div>
             <div>
-              <div class="bd-row"><span>AI 영역 내 수정</span><span><b class="bd-val">22.1%</b><span class="bd-w">(20%)</span></span></div>
+              <div class="bd-row"><span>AI 생성 후 수정</span><span><b class="bd-val">22.1%</b><span class="bd-w">(20%)</span></span></div>
               <div class="bd-bar"><div style="width:22.1%;background:var(--ck-tertiary-500);"></div></div>
             </div>
             <div>
@@ -1593,7 +1593,7 @@
           </span>
           <div class="text-[13px] font-bold text-slate-900">총 수정 횟수</div>
         </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">오타 수정, 내용 변경 등 텍스트의 수정과 삽입을 모두 합한 횟수</div>
+        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">작성 중 텍스트를 직접 고친 편집 오퍼레이션 횟수 (AI 생성·붙여넣기 유입은 제외)</div>
         <div class="text-right">
           <span class="text-2xl font-bold text-slate-900" id="m_edits">—</span>
           <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
@@ -2317,7 +2317,7 @@
       </div>
       <table class="print-kv"><tbody>
         <tr><th>직접 타이핑 기여</th><td data-print="bd-typing">-</td></tr>
-        <tr><th>AI 영역 내 수정</th><td data-print="bd-ai-edit">-</td></tr>
+        <tr><th>AI 생성 후 수정</th><td data-print="bd-ai-edit">-</td></tr>
         <tr><th>붙여넣기 후 수정</th><td data-print="bd-paste-edit">-</td></tr>
         <tr><th>수정 품질</th><td data-print="bd-depth">-</td></tr>
         <tr><th>비선형 커서 이동</th><td data-print="bd-nav">-</td></tr>
@@ -2635,7 +2635,7 @@ async function issueCert(){
     score: txt('#sec02Score'),
     tier: '주도적 작성',
     'bd-typing':    bdMap['직접 타이핑 기여']     || '-',
-    'bd-ai-edit':   bdMap['AI 영역 내 수정']      || '-',
+    'bd-ai-edit':   bdMap['AI 생성 후 수정']      || '-',
     'bd-paste-edit':bdMap['붙여넣기 후 수정']     || '-',
     'bd-depth':     bdMap['수정 품질']            || '-',
     'bd-nav':       bdMap['비선형 커서 이동']     || '-',
@@ -6162,9 +6162,10 @@ async function buildReportFromSession(){
   // 2. 작성 소요 시간 = totalDurationMs(첫 입력~마지막 입력), 순 타이핑 = activeMs(idle 제외).
   //    둘 다 상단(C-01)에서 이미 산출됨. tEv 는 아래 '최장 무중단' fallback 에 사용.
   const tEv = events.filter(e=>e.type==='typing').sort((a,b)=>a.ts-b.ts);
-  // 3. 총 수정 횟수 — editOps (삭제 포함 op) + paste/ai 블록 삽입
-  const externalIns = events.filter(e=>e.type==='paste'||e.type==='ai').length;
-  const editsCount = editOps.length + externalIns;
+  // 3. 총 수정 횟수 — 사용자 직접 편집 오퍼레이션 수만 집계.
+  //    AI생성·붙여넣기 '유입'은 문서의 출처(유형)이지 수정이 아니므로 제외
+  //    (삭제와 동일하게 '오퍼레이션이 일어난 횟수'로 카운트).
+  const editsCount = editOps.length;
   // 4. 총 삭제 횟수 — delete events 수 (한 번의 액션 = 1)
   const deletesCount = events.filter(e=>e.type==='delete').length;
   // 5. 최장 무중단 타이핑 — 실 keydown 시퀀스(type:'keystroke') 기준으로 2초 이내
