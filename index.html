@@ -4717,6 +4717,10 @@ function _bindMuhaEvents(){
       if(typeof _recountFromAuditLog === 'function') _recountFromAuditLog();   // 삽입 전 기존 origin 확정
       if(typeof _markPendingInsert === 'function') _markPendingInsert('paste'); // 이 삽입은 붙여넣기 이벤트
     } catch(e){}
+    // muha 는 붙여넣기에 대해 onAudit 을 발화하지 않아(관측), _scheduleRecount 가 안 돈다.
+    // 붙여넣기가 문서에 적용된 직후(다음 tick) 직접 recount 를 트리거 → _pendingInsert('paste')
+    // 플래그가 1.5s 자동해제되기 전에 소비되어 '붙여넣기'로 정확히 집계된다.
+    setTimeout(() => { try { if(typeof updateStats === 'function') updateStats(); } catch(e){} }, 0);
   }, true);
 }
 
