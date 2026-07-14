@@ -892,6 +892,33 @@
   .chat-send:disabled{background:#CBD5E1;cursor:not-allowed;}
   .chat-foot{padding:8px 16px 14px;font-size:11px;color:#94A3B8;line-height:1.5;}
 
+  /* 좌측: AI 초안 생성 폼 */
+  .draftgen{flex:1;display:flex;flex-direction:column;height:100%;overflow-y:auto;}
+  .dg-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .dg-ico{width:30px;height:30px;border-radius:8px;background:#DEF4FB;color:#0b647e;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .dg-title{font-size:15px;font-weight:700;color:#0F172A;line-height:1.3;}
+  .dg-desc{font-size:12.5px;color:#64748B;line-height:1.6;margin:0 0 14px;}
+  .dg-label{font-size:11.5px;font-weight:600;color:#64748B;margin-bottom:6px;}
+  .dg-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .dg-preset{padding:5px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:999px;font-size:12.5px;color:#334155;cursor:pointer;transition:all .15s;font-family:inherit;}
+  .dg-preset:hover{border-color:#00C2FF;background:#EFFAFF;color:#0078AB;}
+  .dg-prompt{width:100%;resize:none;padding:11px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;line-height:1.55;outline:none;min-height:66px;}
+  .dg-prompt:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,0.12);}
+  .dg-select{width:100%;height:40px;padding:0 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;color:#334155;background:#fff;outline:none;cursor:pointer;}
+  .dg-select:focus{border-color:#00C2FF;}
+  .dg-generate{width:100%;margin-top:14px;height:44px;border:none;border-radius:10px;background:var(--ck-primary-500);color:#06303c;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s;}
+  .dg-generate:hover{opacity:.9;}
+  .dg-generate:disabled{background:#CBD5E1;color:#fff;cursor:progress;}
+  .dg-note{margin-top:11px;display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:#94A3B8;line-height:1.5;}
+  .dg-note svg{flex-shrink:0;margin-top:2px;}
+  .dg-note b{color:#7C52F1;font-weight:700;}
+  .dg-result{margin-top:14px;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;background:#F8FAFC;}
+  .dg-result-msg{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#0f9d58;margin-bottom:10px;}
+  .dg-result-msg svg{color:#0f9d58;flex-shrink:0;}
+  .dg-result-actions{display:flex;gap:8px;}
+  .dg-mini{flex:1;height:34px;border:1px solid #CBD5E1;background:#fff;border-radius:8px;font-size:12.5px;color:#334155;cursor:pointer;font-family:inherit;}
+  .dg-mini:hover{border-color:#00C2FF;color:#0078AB;background:#EFFAFF;}
+
   /* 우측: 에디터 */
   .doc-panel{display:flex;flex-direction:column;overflow:hidden;}
   .title-row{padding:14px 18px 0;}
@@ -1048,13 +1075,52 @@
   <div class="editor-grid">
     <!-- 좌측 패널 — 항상 채팅 모드 -->
     <div class="ed-panel type-panel">
-      <div id="chatPanel" style="display:flex;">
-        <div class="chat-msgs" id="chatMsgs"></div>
-        <div class="chat-input-wrap">
-          <textarea class="chat-input" id="chatInput" rows="1" maxlength="3000" placeholder="요청할 내용을 입력해주세요. (최대 3,000자)"></textarea>
-          <button class="chat-send" id="btnSend" title="보내기" disabled>↑</button>
+      <div id="draftGenPanel" class="draftgen">
+        <div class="dg-head">
+          <span class="dg-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg></span>
+          <span class="dg-title">카피킬러 AI 초안 생성 어시스턴트</span>
         </div>
-        <div class="chat-foot">AI가 작성한 초안은 우측 에디터에 자동 삽입됩니다. 본인의 색채를 입혀 글을 완성해보세요.</div>
+        <p class="dg-desc">주제를 입력하면 초안을 만들어 우측 에디터에 넣어드려요. 초안은 시작점이에요 — 직접 다듬어 내 글로 완성하세요.</p>
+
+        <div class="dg-label">예시 주제</div>
+        <div class="dg-presets">
+          <button class="dg-preset" type="button" data-prompt="프론트엔드 개발 직무 자기소개서 초안을 500자 이내로 작성해줘.">자기소개서</button>
+          <button class="dg-preset" type="button" data-prompt="데미안의 이방인에 대한 독후감 초안을 300자 이내로 작성해줘.">독후감</button>
+          <button class="dg-preset" type="button" data-prompt="인공지능과 기초과학의 미래에 대한 에세이 초안을 500자 이내로 작성해줘.">에세이</button>
+        </div>
+
+        <textarea id="dgPrompt" class="dg-prompt" rows="3" maxlength="3000" placeholder="어떤 글의 초안이 필요하세요?  예) 프론트엔드 개발 직무 자기소개서 초안"></textarea>
+
+        <label class="dg-label" for="dgType" style="margin-top:10px;">문서 유형</label>
+        <select id="dgType" class="dg-select">
+          <option value="" disabled selected>선택해주세요.</option>
+          <option>과제물</option>
+          <option>자기소개서</option>
+          <option>학위논문</option>
+          <option>학술논문</option>
+          <option>연구/정책보고서</option>
+          <option>연구대회/공모자료</option>
+          <option>독후감</option>
+          <option>보도자료</option>
+          <option>블로그</option>
+          <option>생활기록부</option>
+          <option>기타</option>
+        </select>
+
+        <button id="dgGenerate" class="dg-generate" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
+          <span id="dgGenLabel">초안 생성</span>
+        </button>
+
+        <div class="dg-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>생성한 초안은 ‘작성 검증’에서 <b>AI 생성</b>으로 표시돼요.</span></div>
+
+        <div id="dgResult" class="dg-result" style="display:none;">
+          <div class="dg-result-msg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 초안을 에디터에 추가했어요</div>
+          <div class="dg-result-actions">
+            <button id="dgRegen" class="dg-mini" type="button">다시 생성</button>
+            <button id="dgReset" class="dg-mini" type="button">조건 바꿔 생성</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -3650,36 +3716,53 @@ function _parseMaxChars(text){
   if(m){ const n = parseInt(m[1], 10); if(n >= 50 && n <= 3000) return n; }
   return 400;
 }
-function enterChat(typeName){
-  selectedType=typeName;
-  const msgs=document.getElementById('chatMsgs');
-  msgs.innerHTML='';
-  const greet=document.createElement('div');
-  greet.className='msg msg-ai';
-  greet.innerHTML = `
-    <div class="ai-label">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
-      카피킬러 AI 어시스턴트
-    </div>
-    <div class="ai-body">
-      안녕하세요! 문서 작성을 도와드릴게요.<br>
-      저에게 요청할 내용을 입력해주시거나 아래 가이드 항목을 클릭해보세요.
-    </div>
-    <div class="guide-chips">
-      ${DEFAULT_GUIDE_CHIPS.map((g,i)=>`<button class="guide-chip" type="button" data-idx="${i}">${g.label.replace(/</g,'&lt;')}</button>`).join('')}
-    </div>
-  `;
-  greet.querySelectorAll('.guide-chip').forEach(c=>{
-    c.addEventListener('click',()=>{
-      const g = DEFAULT_GUIDE_CHIPS[parseInt(c.dataset.idx,10)];
-      if(!g) return;
-      runAssistant(g.label, g.kind, g.max);
-    });
-  });
-  msgs.appendChild(greet);
+/* ---------- AI 초안 생성 폼 (대화형 아님, 1회성 초안 생성) ---------- */
+let _dgLastPrompt = '';
+function _resetDraftGenUI(){
+  const p=document.getElementById('dgPrompt'); if(p) p.value='';
+  const t=document.getElementById('dgType'); if(t) t.selectedIndex=0;
+  const r=document.getElementById('dgResult'); if(r) r.style.display='none';
+  _dgLastPrompt='';
 }
-// 페이지 진입 시 자유 유형 채팅 자동 표시
-enterChat(null);
+function initDraftGen(){
+  const panel = document.getElementById('draftGenPanel');
+  if(!panel) return;
+  const promptEl = document.getElementById('dgPrompt');
+  const typeEl   = document.getElementById('dgType');
+  const genBtn   = document.getElementById('dgGenerate');
+  const genLabel = document.getElementById('dgGenLabel');
+  const resultEl = document.getElementById('dgResult');
+  // 예시 주제 칩 → 입력란에 프롬프트 채우기
+  panel.querySelectorAll('.dg-preset').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ if(promptEl){ promptEl.value = btn.dataset.prompt || ''; promptEl.focus(); } });
+  });
+  // 문서 유형 → 문서 type 메타
+  if(typeEl) typeEl.addEventListener('change', ()=>{ selectedType = typeEl.value || null; });
+  // 프롬프트 기반 문장 풀 kind 추론(목업 초안 품질용)
+  const _kindFromPrompt = p => /자기소개서|자소서/.test(p) ? 'cover' : /에세이|essay/i.test(p) ? 'essay' : 'free';
+  function _generate(prompt){
+    prompt = (prompt || '').trim();
+    if(!prompt){ if(promptEl) promptEl.focus(); if(typeof showToast==='function') showToast('생성할 주제를 입력해주세요'); return; }
+    _dgLastPrompt = prompt;
+    if(genBtn) genBtn.disabled = true;
+    if(genLabel) genLabel.textContent = '초안 생성 중…';
+    setTimeout(()=>{
+      try {
+        const draft = _genAiDraft(_kindFromPrompt(prompt), _parseMaxChars(prompt));
+        if(typeof appendToEditor === 'function') appendToEditor(draft, 'ai', prompt);
+      } catch(e){ console.warn('draft gen fail', e); }
+      if(genBtn) genBtn.disabled = false;
+      if(genLabel) genLabel.textContent = '초안 생성';
+      if(resultEl) resultEl.style.display = '';
+    }, 900);
+  }
+  if(genBtn) genBtn.addEventListener('click', ()=> _generate(promptEl ? promptEl.value : ''));
+  const regen = document.getElementById('dgRegen');
+  if(regen) regen.addEventListener('click', ()=> _generate(_dgLastPrompt || (promptEl ? promptEl.value : '')));
+  const reset = document.getElementById('dgReset');
+  if(reset) reset.addEventListener('click', ()=>{ _resetDraftGenUI(); if(promptEl) promptEl.focus(); });
+}
+initDraftGen();
 
 /* ---------- LNB 접기/열기 토글 ---------- */
 (function bindLnbCollapse(){
@@ -3700,25 +3783,7 @@ enterChat(null);
   });
 })();
 
-/* ---------- 채팅 입력 ---------- */
-const chatInput=document.getElementById('chatInput');
-const btnSend=document.getElementById('btnSend');
-chatInput.addEventListener('input',()=>{
-  btnSend.disabled=!chatInput.value.trim();
-  chatInput.style.height='auto';
-  // 4줄까지는 늘어나고(≈92px), 5줄부터는 max-height + overflow 로 스크롤
-  chatInput.style.height=Math.min(92,chatInput.scrollHeight)+'px';
-});
-chatInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
-});
-btnSend.onclick=sendChat;
-// 자유 입력 전송 — 프롬프트에서 목표 글자수 파싱, 범용 톤으로 생성
-function sendChat(){
-  const text=chatInput.value.trim(); if(!text) return;
-  chatInput.value=''; chatInput.style.height='auto'; btnSend.disabled=true;
-  runAssistant(text, 'free', _parseMaxChars(text));
-}
+/* ---------- (구 채팅 입력 바인딩 제거 — 초안 생성 폼(initDraftGen)으로 대체) ---------- */
 // 가이드/자유 공통 — 사용자 메시지 → 타이핑 → 임의 텍스트 생성·에디터 삽입 → 답변
 function runAssistant(promptText, kind, maxChars){
   const msgs=document.getElementById('chatMsgs');
@@ -4730,6 +4795,7 @@ function newWrite(variant){
   sessionFrozen = false;
   selectedType = null;
   const t = document.getElementById('docTitle'); if(t) t.value = '';
+  if(typeof _resetDraftGenUI === 'function') _resetDraftGenUI();   // 초안 생성 폼 초기화
   if(typeof renderEditor === 'function') renderEditor();
   // variant 분기 — 상위 '문서 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
   document.body.dataset.writeVariant = variant || '';
