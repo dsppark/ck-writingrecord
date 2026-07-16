@@ -1443,11 +1443,11 @@
               <div class="bd-bar"><div style="width:68%;background:#EC4899;"></div></div>
             </div>
             <div>
-              <div class="bd-row"><span>비선형 커서 이동</span><span><b class="bd-val">72 / 100</b><span class="bd-w">(13%)</span></span></div>
+              <div class="bd-row"><span>비선형 이동 밀도</span><span><b class="bd-val">72 / 100</b><span class="bd-w">(13%)</span></span></div>
               <div class="bd-bar"><div style="width:72%;background:#92400E;"></div></div>
             </div>
             <div>
-              <div class="bd-row"><span>사고 시간(비활성 비율)</span><span><b class="bd-val">55 / 100</b><span class="bd-w">(14%)</span></span></div>
+              <div class="bd-row"><span>사고정지</span><span><b class="bd-val">55 / 100</b><span class="bd-w">(14%)</span></span></div>
               <div class="bd-bar"><div style="width:55%;background:var(--ck-yellow-500);"></div></div>
             </div>
           </div>
@@ -2377,8 +2377,8 @@
         <tr><th>AI 생성 후 수정</th><td data-print="bd-ai-edit">-</td></tr>
         <tr><th>붙여넣기 후 수정</th><td data-print="bd-paste-edit">-</td></tr>
         <tr><th>수정 품질</th><td data-print="bd-depth">-</td></tr>
-        <tr><th>비선형 커서 이동</th><td data-print="bd-nav">-</td></tr>
-        <tr><th>사고 시간(비활성 비율)</th><td data-print="bd-idle">-</td></tr>
+        <tr><th>비선형 이동 밀도</th><td data-print="bd-nav">-</td></tr>
+        <tr><th>사고정지</th><td data-print="bd-idle">-</td></tr>
       </tbody></table>
     </section>
 
@@ -2714,8 +2714,8 @@ async function issueCert(){
     'bd-ai-edit':   bdMap['AI 생성 후 수정']      || '-',
     'bd-paste-edit':bdMap['붙여넣기 후 수정']     || '-',
     'bd-depth':     bdMap['수정 품질']            || '-',
-    'bd-nav':       bdMap['비선형 커서 이동']     || '-',
-    'bd-idle':      bdMap['사고 시간(비활성 비율)']|| '-',
+    'bd-nav':       bdMap['비선형 이동 밀도']     || '-',
+    'bd-idle':      bdMap['사고정지']            || '-',
     'dist-typing-n':    distN('typing'),
     'dist-typing-pct':  distP('typing'),
     'dist-ai-n':        distN('ai'),
@@ -4141,6 +4141,7 @@ function appendToEditor(text, source, promptHint){
     stats.lastTs = Date.now();
     if(typeof showRec === 'function') showRec();
     if(typeof updateStats === 'function') updateStats();
+    if(typeof _navUpdateFrontier === 'function') setTimeout(_navUpdateFrontier, 0);  // AI 삽입 후 프론티어=끝
     return;
   }
   // ── legacy(#editor) 경로 ─────────────────────
@@ -4332,6 +4333,8 @@ let _eventSize = {};    // 이벤트 id → 유입 당시 '원본 글자수'(잔
 // 이벤트 id → 유입 이벤트 메타{type, ts, text(원본), size}. 외부 유입 로그를 audit 이 아닌
 // 이 메타 + 최종 문서 잔존 블록 기준으로 구성 → 문서 수정·재오픈 후에도 유입 로그 유지.
 let _inflowMeta = {};
+// 비선형 이동 밀도 — 프론티어(최근 입력 위치)·역방향 점프(≥10자) 카운트
+let _navFrontier = 0, _navBackJumps = 0, _navWasBack = false;
 function _resetSrcState(){ _srcState = null; _eventSize = {}; }
 
 // 다음 삽입이 '우리가 일으킨' AI/붙여넣기 이벤트임을 표시 + 이벤트마다 고유 id 부여.
@@ -4594,7 +4597,8 @@ function boxSaveCurrentDoc(){
     events: events.map(e=>({...e})),
     stats: {...stats},
     editOps: editOps.map(o=>({...o})),
-    inflowMeta: JSON.parse(JSON.stringify(_inflowMeta || {}))   // 유입 이벤트 메타(원본텍스트·시각·크기) 영속
+    inflowMeta: JSON.parse(JSON.stringify(_inflowMeta || {})),   // 유입 이벤트 메타(원본텍스트·시각·크기) 영속
+    navBackJumps: _navBackJumps                                  // 비선형 이동 밀도 — 역방향 점프 횟수
   };
   let id;
   if(currentDocId){
@@ -4724,6 +4728,29 @@ function _bindMuhaEvents(){
     // 플래그가 1.5s 자동해제되기 전에 소비되어 '붙여넣기'로 정확히 집계된다.
     setTimeout(() => { try { if(typeof updateStats === 'function') updateStats(); } catch(e){} }, 0);
   }, true);
+
+  // 비선형 이동 밀도 — 입력 시 프론티어 갱신, 커서 이동 시 역방향 점프(≥10자) 집계
+  el.addEventListener('input', _navUpdateFrontier);
+  if(!window.__navSelBound){ document.addEventListener('selectionchange', _navTrackCaret); window.__navSelBound = true; }
+}
+
+// muha 커서의 문자 오프셋(개행 포함). 캐럿이 muha 밖이면 null.
+function _muhaCaretOffset(){
+  const el = _findMuhaEditable(); if(!el) return null;
+  const sel = window.getSelection(); if(!sel || !sel.rangeCount) return null;
+  const r = sel.getRangeAt(0);
+  if(!el.contains(r.startContainer)) return null;
+  try { const pre = r.cloneRange(); pre.selectNodeContents(el); pre.setEnd(r.startContainer, r.startOffset); return pre.toString().length; }
+  catch(e){ return null; }
+}
+// 입력 발생 → 프론티어(최근 입력 위치) 갱신
+function _navUpdateFrontier(){ const c = _muhaCaretOffset(); if(c != null){ _navFrontier = c; _navWasBack = false; } }
+// 커서가 프론티어보다 10자 이상 앞부분으로 점프하면 역방향 이동 1회(상승엣지, 지터 배제)
+function _navTrackCaret(){
+  const c = _muhaCaretOffset(); if(c == null) return;
+  const isBack = (_navFrontier - c) >= 10;
+  if(isBack && !_navWasBack) _navBackJumps++;
+  _navWasBack = isBack;
 }
 
 // [정리] _caretInside* / _syncMuhaModel (diff 수집) 제거
@@ -4800,6 +4827,7 @@ function newWrite(variant){
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
   if(typeof _resetSrcState === 'function') _resetSrcState();  // 출처 shadow 맵 초기화
   _inflowMeta = {};                                            // 유입 이벤트 메타 초기화(새 문서)
+  _navFrontier = 0; _navBackJumps = 0; _navWasBack = false;    // 비선형 이동 밀도 초기화
   // 검사→에디터 AI 의심 음영 초기화 (새 문서엔 음영 없음)
   if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
@@ -4888,6 +4916,7 @@ function _loadDocIntoSession(d){
   d.events.forEach(e => events.push({...e}));
   if(d.editOps) d.editOps.forEach(o => editOps.push({...o}));
   _inflowMeta = d.inflowMeta ? JSON.parse(JSON.stringify(d.inflowMeta)) : {};   // 유입 이벤트 메타 복원
+  _navBackJumps = d.navBackJumps || 0; _navFrontier = 0; _navWasBack = false;   // 비선형 이동 밀도 복원
   Object.assign(stats, d.stats||{});
   selectedType = d.type || null;
   currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
@@ -6057,12 +6086,17 @@ async function buildReportFromSession(){
   // idle 15초 이상 합산 (events 인접 ts 차)
   const sortedEv=[...events].sort((a,b)=>a.ts-b.ts);
   let idleMsTotal=0;
+  let pauseCount=0;                                        // 사고정지 — 5~15초 멈춤 횟수(외부 유입 인접 제외)
   const idlePeriods=[];
   for(let i=1;i<sortedEv.length;i++){
     const gap=sortedEv[i].ts-sortedEv[i-1].ts;
     if(gap>=15000){
       idleMsTotal+=gap;
       idlePeriods.push({startMs:sortedEv[i-1].ts-stats.firstTs, endMs:sortedEv[i].ts-stats.firstTs, durMs:gap});
+    } else if(gap>=5000){
+      // 붙여넣기/AI 유입 전후 공백은 창 전환·응답 대기이므로 사고정지에서 제외
+      const a=sortedEv[i-1].type, b=sortedEv[i].type;
+      if(!(a==='paste'||a==='ai'||b==='paste'||b==='ai')) pauseCount++;
     }
   }
   const activeMs = Math.max(0, totalDurationMs - idleMsTotal);
@@ -6287,10 +6321,19 @@ async function buildReportFromSession(){
   const totalOps = editOps.length;
   const contentOps = editOps.filter(o=>o.isContent).length;
   const depthScore = totalOps>0 ? Math.round(contentOps/totalOps*100) : 0;
-  const navBack = events.filter(e=>e.type==='nav' && e.srcFamily==='back').length;
-  const navScore = Math.min(100, navBack*5);
-  const idleRatio = totalDurationMs>0 ? idleMsTotal/totalDurationMs : 0;
-  const idleScore = Math.min(100, Math.round(idleRatio*200));
+  // 비선형 이동 밀도 — 역방향 점프(프론티어 대비 ≥10자 앞부분으로 이동) 횟수를 분량 대비 밀도로 점수화.
+  const isExtraNav = document.body.dataset.writeVariant === 'extra';
+  const backJumps = isExtraNav ? (_navBackJumps || 0) : events.filter(e=>e.type==='nav' && e.srcFamily==='back').length;
+  const _navVolume = Math.max(totalChars || 0, 200);          // 짧은 글 밀도 폭주 방지용 바닥값
+  const navDensity = backJumps / (_navVolume / 100);          // 100자당 역방향 이동 횟수
+  const _navDstar = 2.0;                                      // 만점 기준 밀도(포화점): 100자당 2회면 100점
+  const navScore = Math.min(100, Math.round(navDensity / _navDstar * 100));
+  const idleRatio = totalDurationMs>0 ? idleMsTotal/totalDurationMs : 0;   // sec-09(비활성 구간)용 유지
+  // 사고정지 — 5~15초 멈춤(순수 시간)의 문서 분량 대비 밀도. D*=0.5(100자당 0.5회면 만점).
+  const _idleVolume = Math.max(totalChars || 0, 200);        // 짧은 글 밀도 폭주 방지용 바닥값
+  const pauseDensity = pauseCount / (_idleVolume / 100);     // 100자당 5~15초 멈춤 횟수
+  const _idleDstar = 0.5;                                    // 만점 기준 밀도(포화점)
+  const idleScore = Math.min(100, Math.round(pauseDensity / _idleDstar * 100));
   // 직접 타이핑 비율 — score 계산용 로컬 변수
   // 인용 붙여넣기(quote-*)는 정직한 인용으로 간주 — 직접 타이핑 비중 산출 시 typing처럼 분자에 포함
   const _q = c.quotePaste + c.quotePasteEdited + c.quotePasteInternal;
@@ -6360,12 +6403,12 @@ async function buildReportFromSession(){
     {v:((c.aiInternal/Math.max(1,c.ai+c.aiEdited+c.aiInternal))*100).toFixed(1)+'%', w:Math.min(100,(c.aiInternal/Math.max(1,c.ai+c.aiEdited+c.aiInternal))*100)},
     {v:((c.pasteInternal/Math.max(1,c.paste+c.pasteEdited+c.pasteInternal))*100).toFixed(1)+'%', w:Math.min(100,(c.pasteInternal/Math.max(1,c.paste+c.pasteEdited+c.pasteInternal))*100)},
     {v:depthScore+' / 100', w:depthScore},
-    {v:navScore+' / 100', w:navScore},
-    {v:idleScore+' / 100', w:idleScore},
+    {v:navScore+' / 100', w:navScore, title:'100자당 '+navDensity.toFixed(1)+'회'},
+    {v:idleScore+' / 100', w:idleScore, title:'5~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회'},
   ];
   bdData.forEach((d,i)=>{
     if(bdBars[i]) bdBars[i].style.width=d.w+'%';
-    if(bdValues[i]) bdValues[i].textContent=d.v;
+    if(bdValues[i]){ bdValues[i].textContent=d.v; if(d.title) bdValues[i].title=d.title; }
   });
 
   // ---- C-04 origin map (1안): 블록 단위 1세그먼트 + 내부에 색깔 paint span 중첩 ----
