@@ -648,6 +648,45 @@
   .ra-btn-primary:hover{background:var(--ck-primary-600);}
   @media print{ .report-actions{display:none !important;} }
 
+  /* ============ 공유 링크 팝오버 (버튼 바로 위에 뜨는 모달) ============ */
+  .share-anchor{position:relative;display:inline-flex;}
+  .share-pop{position:absolute;bottom:calc(100% + 10px);right:0;width:340px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:14px;box-shadow:0 12px 32px rgba(15,23,42,.16);padding:18px;z-index:70;display:none;text-align:left;cursor:default;}
+  .share-pop.open{display:block;}
+  .share-pop::after{content:"";position:absolute;top:100%;right:26px;border:7px solid transparent;border-top-color:#fff;}
+  .share-pop::before{content:"";position:absolute;top:calc(100% + 1px);right:26px;border:7px solid transparent;border-top-color:var(--ck-secondary-200);}
+  .share-pop-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .share-pop-title{font-size:14px;font-weight:800;color:var(--ck-gray-900);}
+  .share-pop-close{border:none;background:none;color:var(--ck-gray-400);cursor:pointer;font-size:16px;line-height:1;padding:2px;}
+  .share-pop-desc{font-size:12px;color:var(--ck-gray-500);line-height:1.5;margin-bottom:14px;}
+  .share-pop-label{font-size:11.5px;font-weight:700;color:var(--ck-gray-500);margin-bottom:5px;}
+  .share-field{display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+  .share-field input{flex:1;min-width:0;height:36px;padding:0 10px;border:1px solid var(--ck-secondary-200);border-radius:8px;font-size:12.5px;font-family:inherit;color:var(--ck-gray-700);background:var(--ck-secondary-50);outline:none;}
+  .share-pw{display:inline-flex;align-items:center;height:36px;padding:0 14px;border:1px solid var(--ck-secondary-200);border-radius:8px;background:var(--ck-secondary-50);font-family:'Courier New',monospace;font-size:15px;font-weight:700;letter-spacing:3px;color:var(--ck-gray-900);}
+  .share-copy-btns{display:flex;gap:8px;margin-top:4px;}
+  .share-copy-btns button{flex:1;height:38px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--ck-primary-300);background:var(--ck-primary-50);color:var(--ck-primary-700);}
+  .share-copy-btns button.primary{background:var(--ck-primary-500);border-color:var(--ck-primary-500);color:#fff;}
+  .share-copy-btns button:hover{filter:brightness(.97);}
+  .share-pop-expire{font-size:11px;color:var(--ck-gray-400);margin-top:12px;display:flex;align-items:center;gap:5px;}
+
+  /* ============ 만료된 결과 페이지 ============ */
+  #view-expired{display:none;}
+  body[data-view="expired"] #view-expired{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;padding:24px;}
+  body[data-view="expired"]{background:#fff;}
+  body[data-view="expired"] #view-write,
+  body[data-view="expired"] #view-report,
+  body[data-view="expired"] #view-box,
+  body[data-view="expired"] #header-write,
+  body[data-view="expired"] #header-report,
+  body[data-view="expired"] #lnb,
+  body[data-view="expired"] .report-actions{display:none !important;}
+  .expired-card{max-width:400px;width:100%;text-align:center;}
+  .expired-ico{width:64px;height:64px;border-radius:16px;background:var(--ck-secondary-50);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;color:var(--ck-gray-400);position:relative;}
+  .expired-ico .lock{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;border-radius:8px;background:var(--ck-gray-700);display:flex;align-items:center;justify-content:center;color:#fff;}
+  .expired-title{font-size:19px;font-weight:800;color:var(--ck-gray-900);margin-bottom:10px;}
+  .expired-msg{font-size:13.5px;color:var(--ck-gray-500);line-height:1.6;margin-bottom:24px;}
+  .expired-btn{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 22px;border-radius:10px;background:var(--ck-primary-500);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;text-decoration:none;}
+  .expired-btn:hover{background:var(--ck-primary-600);}
+
   /* ============ view-print (작성 증명 인증서 — PDF/인쇄용) ============ */
   #view-print{display:none;}
   body[data-view="print"] #view-print{display:block;}
@@ -1015,6 +1054,10 @@
       <span class="lnb-chevron">›</span>
     </div>
     <div class="lnb-sub" data-menu="write-legacy" onclick="newWrite()">초기 기획안</div>
+    <div class="lnb-item" data-menu="expired" onclick="showExpiredPage()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <span>만료된 결과 페이지</span>
+    </div>
     <div class="lnb-item">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v10H3z"/><path d="M7 12h2M11 12h6"/></svg>
       <span>이용권 관리</span>
@@ -1234,10 +1277,35 @@
     </button>
   </div>
   <div class="ra-right">
-    <button class="ra-btn ra-btn-ghost" type="button" onclick="copyShareLink()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      공유 링크 생성
-    </button>
+    <div class="share-anchor">
+      <button class="ra-btn ra-btn-ghost" type="button" onclick="toggleSharePopover(event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        공유 링크 생성
+      </button>
+      <div class="share-pop" id="sharePop" onclick="event.stopPropagation()">
+        <div class="share-pop-head">
+          <span class="share-pop-title">공유 링크</span>
+          <button class="share-pop-close" type="button" onclick="closeSharePopover()" aria-label="닫기">✕</button>
+        </div>
+        <p class="share-pop-desc">이 결과를 볼 수 있는 링크와 비밀번호예요.<br>받는 분께 함께 전달하세요.</p>
+        <div class="share-pop-label">링크</div>
+        <div class="share-field">
+          <input type="text" id="shareUrl" readonly />
+        </div>
+        <div class="share-pop-label">비밀번호</div>
+        <div class="share-field">
+          <span class="share-pw" id="sharePw">------</span>
+        </div>
+        <div class="share-copy-btns">
+          <button type="button" onclick="copyShareUrlOnly()">URL만 복사</button>
+          <button type="button" class="primary" onclick="copyShareUrlWithPw()">URL + 비밀번호 복사</button>
+        </div>
+        <div class="share-pop-expire">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          <span id="shareExpireNote">생성 후 48시간 뒤 자동 만료돼요.</span>
+        </div>
+      </div>
+    </div>
     <button class="ra-btn ra-btn-ghost" type="button" onclick="issueCert()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       PDF 다운로드
@@ -2348,6 +2416,24 @@
 
 <!-- (문서 보기 단순 열람 화면 제거) — 목록에서 '수정'은 에디터로, '작성 검증 결과'는 리포트로 직행 -->
 
+<!-- ============ 만료된 결과 페이지 (공유 링크 만료/접근 불가 시) ============ -->
+<section id="view-expired">
+  <div class="expired-card">
+    <div class="expired-ico">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="lock">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </span>
+    </div>
+    <div class="expired-title">페이지를 열 수 없습니다</div>
+    <p class="expired-msg">이 페이지는 만료되었거나 접근 권한이 없습니다.<br>작성자에게 문의해주세요.</p>
+    <a class="expired-btn" href="#" onclick="goCopyKillerHome(event)">
+      카피킬러 서비스 바로가기
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</section>
+
 <!-- ============ 작성 증명 인증서 (PDF/인쇄용) ============ -->
 <section id="view-print">
   <div class="print-page">
@@ -2674,9 +2760,81 @@ function showToast(msg){
   clearTimeout(window._tt);
   window._tt=setTimeout(()=>t.classList.remove('show'),2000);
 }
-function copyShareLink(){
-  navigator.clipboard?.writeText('https://ksvault.io/share/abc123def').catch(()=>{});
-  showToast('링크가 복사되었습니다');
+/* ================= 공유 링크 (목업) =================
+   정책: 작성 검증 결과당 링크 1개. 생성 시 영문+숫자 6자리 비번 랜덤 발급.
+   링크·비번은 48시간 유지. 만료 조건: ① 48h 경과 ② 문서 수정으로 버전 변경 ③ 문서 삭제.
+   ※ 목업은 localStorage 기반. 실제 서버(비번 서버검증·rate limit·스냅샷 저장·자동삭제)는 개발 단계에서 연동. */
+const SHARE_TTL_HOURS = 48;              // ★ 만료 정책 상수 (정책 변경 시 이 값만 수정)
+const SHARE_STORE_PREFIX = 'ksv_share_';
+function _genSharePw(){
+  const cs = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';  // 혼동 문자(0,O,1,I,L) 제외
+  let s = ''; for(let i=0;i<6;i++) s += cs[Math.floor(Math.random()*cs.length)];
+  return s;
+}
+function _genShareToken(){
+  const cs = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let s = ''; for(let i=0;i<16;i++) s += cs[Math.floor(Math.random()*cs.length)];
+  return s;
+}
+// 리포트 문서 버전 시그니처 — 문서 수정(재저장)되면 값이 바뀌어 기존 링크가 만료로 판정됨
+function _shareDocVersion(){
+  if(!currentDocId) return 'session';
+  const d = boxLoadDocs().find(x => x.id === currentDocId);
+  return d ? String(d.savedAt || d.saveCount || '') : 'deleted';
+}
+// 문서당 링크 1개 — 유효한 게 있으면 재사용, 없거나 만료/버전변경이면 새로 발급
+function _getOrCreateShareLink(){
+  const key = SHARE_STORE_PREFIX + (currentDocId || 'session');
+  const ver = _shareDocVersion();
+  let rec = null;
+  try { rec = JSON.parse(localStorage.getItem(key) || 'null'); } catch(e){}
+  const now = Date.now();
+  const fresh = rec && (now - rec.createdAt < SHARE_TTL_HOURS*3600*1000) && rec.version === ver;
+  if(!fresh){
+    rec = { token:_genShareToken(), password:_genSharePw(), createdAt:now, version:ver };
+    try { localStorage.setItem(key, JSON.stringify(rec)); } catch(e){}
+  }
+  return rec;
+}
+function _shareUrlFromToken(token){ return `${location.origin}${location.pathname}?share=${token}`; }
+function toggleSharePopover(ev){
+  if(ev) ev.stopPropagation();
+  const pop = document.getElementById('sharePop');
+  if(!pop) return;
+  if(pop.classList.contains('open')){ closeSharePopover(); return; }
+  const rec = _getOrCreateShareLink();
+  document.getElementById('shareUrl').value = _shareUrlFromToken(rec.token);
+  document.getElementById('sharePw').textContent = rec.password;
+  pop.classList.add('open');
+  setTimeout(() => document.addEventListener('click', _shareOutsideClose), 0);  // 바깥 클릭 닫기
+}
+function _shareOutsideClose(e){
+  const anchor = document.querySelector('.share-anchor');
+  if(anchor && !anchor.contains(e.target)) closeSharePopover();
+}
+function closeSharePopover(){
+  document.getElementById('sharePop')?.classList.remove('open');
+  document.removeEventListener('click', _shareOutsideClose);
+}
+function copyShareUrlOnly(){
+  navigator.clipboard?.writeText(document.getElementById('shareUrl').value).catch(()=>{});
+  showToast('URL이 복사되었습니다');
+}
+function copyShareUrlWithPw(){
+  const url = document.getElementById('shareUrl').value;
+  const pw = document.getElementById('sharePw').textContent;
+  navigator.clipboard?.writeText(`${url}, ${pw}`).catch(()=>{});
+  showToast('URL과 비밀번호가 복사되었습니다');
+}
+/* 만료된 결과 페이지 — LNB 프리뷰 / (실제) 공유 링크 만료·접근불가 시 */
+function showExpiredPage(){
+  closeSharePopover();
+  document.body.dataset.view = 'expired';
+  window.scrollTo(0,0);
+}
+function goCopyKillerHome(ev){
+  if(ev) ev.preventDefault();
+  if(typeof openMyDocs === 'function') openMyDocs();   // 목업: 카피킬러 서비스 = 내 문서 랜딩
 }
 function copyHash(){
   navigator.clipboard?.writeText(document.getElementById('rootHash').textContent).catch(()=>{});
