@@ -701,7 +701,7 @@
   .box-newbtn:hover{background:var(--ck-primary-600);}
   /* 필터 바 */
   .box-filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:6px 0;}
-  .box-filterbar .box-checkall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ck-gray-700);font-weight:600;margin-right:6px;}
+  .box-filterbar .box-checkall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ck-gray-700);font-weight:600;margin-right:auto;}
   .box-filterbar select,
   .box-filterbar input[type="text"],
   .box-filterbar input[type="date"]{font-size:13px;padding:7px 10px;border:1px solid var(--ck-gray-300);border-radius:6px;color:var(--ck-gray-700);background:#fff;font-family:inherit;}
@@ -922,13 +922,15 @@
 
   /* 우측: 에디터 */
   .doc-panel{display:flex;flex-direction:column;overflow:hidden;}
-  .title-row{padding:14px 18px 0;display:flex;flex-direction:column;align-items:flex-start;gap:9px;}
-  /* 문서 유형 — 제목 위 칩(문서 속성 태그). 미선택=점선 회색, 선택=브랜드 톤 */
-  .doctype-chip{display:inline-flex;align-items:center;height:28px;padding:0 27px 0 11px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:inherit;color:var(--ck-primary-700);background:var(--ck-primary-50);border:1px solid var(--ck-primary-300);outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:12px;}
-  .doctype-chip:required:invalid{color:#94A3B8;background:#fff;border:1px dashed #CBD5E1;font-weight:500;}
-  .doctype-chip:focus{border-color:var(--ck-primary-500);}
+  .title-row{padding:14px 18px 0;display:flex;flex-direction:column;align-items:stretch;gap:12px;}
   .title-in{width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0F172A;padding:0;}
   .title-in::placeholder{color:#CBD5E1;font-weight:500;}
+  /* 문서 유형 — 제목 아래 레이블 + 드롭다운(문서 속성 필드) */
+  .doctype-field{display:inline-flex;align-items:center;gap:10px;}
+  .doctype-field .doctype-label{font-size:13px;font-weight:600;color:#475569;flex-shrink:0;}
+  .doctype-select{height:36px;min-width:160px;padding:0 12px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:inherit;color:#334155;background:#fff;outline:none;cursor:pointer;}
+  .doctype-select:focus{border-color:var(--ck-primary-500);}
+  .doctype-select:required:invalid{color:#94A3B8;}
   .stat-row{display:flex;align-items:center;gap:12px;padding:6px 18px 14px;border-bottom:1px solid #F1F5F9;flex-wrap:wrap;}
   .stat-left{font-size:11.5px;color:#64748B;}
   .stat-left b{color:var(--ck-primary-700);font-family:'JetBrains Mono',monospace;}
@@ -1111,21 +1113,24 @@
     <!-- 우측: 에디터 -->
     <div class="ed-panel doc-panel">
       <div class="title-row">
-        <select class="doctype-chip" id="docType" required aria-label="문서 유형">
-          <option value="" disabled selected>＋ 문서 유형</option>
-          <option>과제물</option>
-          <option>자기소개서</option>
-          <option>학위논문</option>
-          <option>학술논문</option>
-          <option>연구/정책보고서</option>
-          <option>연구대회/공모자료</option>
-          <option>독후감</option>
-          <option>보도자료</option>
-          <option>블로그</option>
-          <option>생활기록부</option>
-          <option>기타</option>
-        </select>
         <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
+        <div class="doctype-field">
+          <label class="doctype-label" for="docType">문서 유형</label>
+          <select class="doctype-select" id="docType" required aria-label="문서 유형">
+            <option value="" disabled selected>선택해주세요</option>
+            <option>과제물</option>
+            <option>자기소개서</option>
+            <option>학위논문</option>
+            <option>학술논문</option>
+            <option>연구/정책보고서</option>
+            <option>연구대회/공모자료</option>
+            <option>독후감</option>
+            <option>보도자료</option>
+            <option>블로그</option>
+            <option>생활기록부</option>
+            <option>기타</option>
+          </select>
+        </div>
       </div>
       <div class="stat-row">
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
@@ -2309,13 +2314,14 @@
 
     <div class="box-filterbar">
       <label class="box-checkall"><input type="checkbox" id="boxCheckAll" /> 전체 선택</label>
-      <select id="boxPeriod" title="빠른 기간 선택 (종료일은 항상 오늘)">
+      <select id="boxPeriod" title="기간 필터">
+        <option value="all" selected>전체</option>
         <option value="7d">일주일</option>
         <option value="1m">1개월</option>
         <option value="3m">3개월</option>
         <option value="6m">6개월</option>
         <option value="1y">1년</option>
-        <option value="custom" selected>직접입력</option>
+        <option value="custom">직접입력</option>
       </select>
       <div class="box-range">
         <input type="date" id="boxDateStart" /> <span style="color:var(--ck-gray-400);">-</span> <input type="date" id="boxDateEnd" disabled />
@@ -5120,25 +5126,32 @@ function boxApplyPeriod(){
   const endEl = document.getElementById('boxDateEnd');
   if(!sel || !startEl || !endEl) return;
   const today = new Date();
-  endEl.value = _boxFmtDate(today);   // 종료일은 항상 오늘 (고정)
-  endEl.disabled = true;
-  if(sel.value === 'custom'){          // 직접입력 — 시작일 수동
-    startEl.disabled = false;
+  const v = sel.value;
+  if(v === 'all'){                       // 전체 — 기간 제한 없음
+    startEl.value = ''; endEl.value = '';
+    startEl.disabled = true; endEl.disabled = true;
     return;
   }
+  if(v === 'custom'){                     // 직접입력 — 시작·종료 모두 수동 선택
+    startEl.disabled = false; endEl.disabled = false;
+    return;                              // 값은 사용자 편집 유지
+  }
+  // 프리셋(일주일~1년) — 종료일=오늘(고정), 시작일=오늘−기간(고정)
+  endEl.value = _boxFmtDate(today);
+  endEl.disabled = true;
   const s = new Date(today);
-  switch(sel.value){
+  switch(v){
     case '7d': s.setDate(s.getDate() - 7); break;
     case '1m': s.setMonth(s.getMonth() - 1); break;
     case '3m': s.setMonth(s.getMonth() - 3); break;
     case '6m': s.setMonth(s.getMonth() - 6); break;
     case '1y': s.setFullYear(s.getFullYear() - 1); break;
   }
-  startEl.value = _boxFmtDate(s);       // 시작일 = 오늘 − 기간
-  startEl.disabled = true;              // 프리셋 — 시작일 파생(수정 불가)
+  startEl.value = _boxFmtDate(s);
+  startEl.disabled = true;
 }
 document.getElementById('boxPeriod')?.addEventListener('change', boxApplyPeriod);
-boxApplyPeriod();   // 초기화 (기본 '직접입력' → 종료일=오늘, 시작일 수동)
+boxApplyPeriod();   // 초기화 (기본 '전체' → 기간 제한 없음, 날짜 비움)
 
 // 페이지 진입 시 초기 렌더
 renderBoxList();
