@@ -922,8 +922,12 @@
 
   /* 우측: 에디터 */
   .doc-panel{display:flex;flex-direction:column;overflow:hidden;}
-  .title-row{padding:14px 18px 0;}
-  .title-in{width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0F172A;padding:6px 0;}
+  .title-row{padding:14px 18px 0;display:flex;flex-direction:column;align-items:flex-start;gap:9px;}
+  /* 문서 유형 — 제목 위 칩(문서 속성 태그). 미선택=점선 회색, 선택=브랜드 톤 */
+  .doctype-chip{display:inline-flex;align-items:center;height:28px;padding:0 27px 0 11px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:inherit;color:var(--ck-primary-700);background:var(--ck-primary-50);border:1px solid var(--ck-primary-300);outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:12px;}
+  .doctype-chip:required:invalid{color:#94A3B8;background:#fff;border:1px dashed #CBD5E1;font-weight:500;}
+  .doctype-chip:focus{border-color:var(--ck-primary-500);}
+  .title-in{width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0F172A;padding:0;}
   .title-in::placeholder{color:#CBD5E1;font-weight:500;}
   .stat-row{display:flex;align-items:center;gap:12px;padding:6px 18px 14px;border-bottom:1px solid #F1F5F9;flex-wrap:wrap;}
   .stat-left{font-size:11.5px;color:#64748B;}
@@ -1092,22 +1096,6 @@
 
         <textarea id="dgPrompt" class="dg-prompt" rows="3" maxlength="3000" placeholder="어떤 글의 초안이 필요하세요?  예) 프론트엔드 개발 직무 자기소개서 초안"></textarea>
 
-        <label class="dg-label" for="dgType" style="margin-top:10px;">문서 유형</label>
-        <select id="dgType" class="dg-select">
-          <option value="" disabled selected>선택해주세요.</option>
-          <option>과제물</option>
-          <option>자기소개서</option>
-          <option>학위논문</option>
-          <option>학술논문</option>
-          <option>연구/정책보고서</option>
-          <option>연구대회/공모자료</option>
-          <option>독후감</option>
-          <option>보도자료</option>
-          <option>블로그</option>
-          <option>생활기록부</option>
-          <option>기타</option>
-        </select>
-
         <button id="dgGenerate" class="dg-generate" type="button" disabled>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
           <span id="dgGenLabel">초안 생성</span>
@@ -1123,6 +1111,20 @@
     <!-- 우측: 에디터 -->
     <div class="ed-panel doc-panel">
       <div class="title-row">
+        <select class="doctype-chip" id="docType" required aria-label="문서 유형">
+          <option value="" disabled selected>＋ 문서 유형</option>
+          <option>과제물</option>
+          <option>자기소개서</option>
+          <option>학위논문</option>
+          <option>학술논문</option>
+          <option>연구/정책보고서</option>
+          <option>연구대회/공모자료</option>
+          <option>독후감</option>
+          <option>보도자료</option>
+          <option>블로그</option>
+          <option>생활기록부</option>
+          <option>기타</option>
+        </select>
         <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
       </div>
       <div class="stat-row">
@@ -2307,9 +2309,16 @@
 
     <div class="box-filterbar">
       <label class="box-checkall"><input type="checkbox" id="boxCheckAll" /> 전체 선택</label>
-      <select><option>전체</option><option>자기소개서</option><option>독서감상문</option><option>과제물</option></select>
+      <select id="boxPeriod" title="빠른 기간 선택 (종료일은 항상 오늘)">
+        <option value="7d">일주일</option>
+        <option value="1m">1개월</option>
+        <option value="3m">3개월</option>
+        <option value="6m">6개월</option>
+        <option value="1y">1년</option>
+        <option value="custom" selected>직접입력</option>
+      </select>
       <div class="box-range">
-        <input type="date" value="2024-02-01" /> <span style="color:var(--ck-gray-400);">-</span> <input type="date" />
+        <input type="date" id="boxDateStart" /> <span style="color:var(--ck-gray-400);">-</span> <input type="date" id="boxDateEnd" disabled />
       </div>
       <select><option>전체</option><option>제목</option><option>내용</option></select>
       <input type="text" placeholder="검색어를 입력하세요" />
@@ -2331,18 +2340,7 @@
   </div>
 </section>
 
-<!-- ============ 문서 보기 (단순 열람) ============ -->
-<section id="view-doc">
-  <div class="docview-page">
-    <h1 class="docview-title" id="docViewTitle">제목 없음</h1>
-    <div class="docview-body" id="docViewBody"></div>
-  </div>
-  <div class="docview-actions">
-    <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
-    <button class="dv-btn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button>
-    <button class="dv-btn dv-btn-primary" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 검증 결과 조회</button>
-  </div>
-</section>
+<!-- (문서 보기 단순 열람 화면 제거) — 목록에서 '수정'은 에디터로, '작성 검증 결과'는 리포트로 직행 -->
 
 <!-- ============ 작성 증명 인증서 (PDF/인쇄용) ============ -->
 <section id="view-print">
@@ -2634,6 +2632,24 @@
       <label class="block text-[12px] font-semibold text-slate-500 mb-1">문서 제목 <span style="color:#EF4444;">*</span></label>
       <input id="leaveTitleInput" type="text" maxlength="100" placeholder="제목을 입력해주세요" class="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none focus:border-slate-400" />
       <p id="leaveTitleErr" class="hidden mt-1.5 text-[12px]" style="color:#EF4444;">제목을 입력해야 저장할 수 있어요.</p>
+    </div>
+    <div id="leaveTypeWrap" class="hidden mt-4">
+      <label class="block text-[12px] font-semibold text-slate-500 mb-1">문서 유형 <span style="color:#EF4444;">*</span></label>
+      <select id="leaveTypeSelect" class="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none focus:border-slate-400 bg-white">
+        <option value="" disabled selected>선택해주세요</option>
+        <option>과제물</option>
+        <option>자기소개서</option>
+        <option>학위논문</option>
+        <option>학술논문</option>
+        <option>연구/정책보고서</option>
+        <option>연구대회/공모자료</option>
+        <option>독후감</option>
+        <option>보도자료</option>
+        <option>블로그</option>
+        <option>생활기록부</option>
+        <option>기타</option>
+      </select>
+      <p id="leaveTypeErr" class="hidden mt-1.5 text-[12px]" style="color:#EF4444;">문서 유형을 선택해야 저장할 수 있어요.</p>
     </div>
     <div class="mt-5 flex flex-col gap-2">
       <button id="btnSaveAndLeave" type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);">저장하고 나가기</button>
@@ -3714,15 +3730,15 @@ function _parseMaxChars(text){
 }
 /* ---------- AI 초안 생성 폼 (대화형 아님, 1회성 초안 생성) ---------- */
 let _dgLastPrompt = '';
-// 초안 생성 버튼 활성 조건: 프롬프트 10자 이상 + 문서 유형 택1
+// 초안 생성 버튼 활성 조건: 프롬프트 10자 이상
+// (문서 유형은 초안 생성 옵션이 아니라 문서 단위 속성 → 상단 #docType 으로 분리)
 function _dgSyncGenBtn(){
-  const p=document.getElementById('dgPrompt'), t=document.getElementById('dgType'), b=document.getElementById('dgGenerate');
-  if(!p||!t||!b) return;
-  b.disabled = !(p.value.trim().length >= 10 && !!t.value);
+  const p=document.getElementById('dgPrompt'), b=document.getElementById('dgGenerate');
+  if(!p||!b) return;
+  b.disabled = !(p.value.trim().length >= 10);
 }
 function _resetDraftGenUI(){
   const p=document.getElementById('dgPrompt'); if(p) p.value='';
-  const t=document.getElementById('dgType'); if(t) t.selectedIndex=0;
   const r=document.getElementById('dgResult'); if(r) r.style.display='none';
   _dgLastPrompt='';
   _dgSyncGenBtn();
@@ -3731,7 +3747,6 @@ function initDraftGen(){
   const panel = document.getElementById('draftGenPanel');
   if(!panel) return;
   const promptEl = document.getElementById('dgPrompt');
-  const typeEl   = document.getElementById('dgType');
   const genBtn   = document.getElementById('dgGenerate');
   const genLabel = document.getElementById('dgGenLabel');
   const resultEl = document.getElementById('dgResult');
@@ -3746,8 +3761,6 @@ function initDraftGen(){
     promptEl.addEventListener('focus', _hideResult);
     promptEl.addEventListener('input', ()=>{ _hideResult(); _dgSyncGenBtn(); });
   }
-  // 문서 유형 변경 → 확인 문구 숨김 + type 메타 + 버튼 활성 상태 갱신
-  if(typeEl) typeEl.addEventListener('change', ()=>{ selectedType = typeEl.value || null; _hideResult(); _dgSyncGenBtn(); });
   // 프롬프트 기반 문장 풀 kind 추론(목업 초안 품질용)
   const _kindFromPrompt = p => /자기소개서|자소서/.test(p) ? 'cover' : /에세이|essay/i.test(p) ? 'essay' : 'free';
   function _generate(prompt){
@@ -3770,6 +3783,21 @@ function initDraftGen(){
   _dgSyncGenBtn();   // 초기 상태(비활성)
 }
 initDraftGen();
+
+/* ---------- 문서 유형 (문서 단위 속성) — 제목 옆 셀렉트, selectedType 단일 출처 ---------- */
+function _setDocTypeUI(type){
+  const el = document.getElementById('docType');
+  if(!el) return;
+  el.value = type || '';   // 옵션에 없는 값(예: 구버전 '자유')이면 placeholder(미선택)로 표시
+}
+(function bindDocType(){
+  const el = document.getElementById('docType');
+  if(!el) return;
+  el.addEventListener('change', ()=>{
+    selectedType = el.value || null;
+    if(typeof updateStats === 'function') updateStats();   // 검증 진입 버튼 활성 재평가
+  });
+})();
 
 /* ---------- LNB 접기/열기 토글 ---------- */
 (function bindLnbCollapse(){
@@ -4532,9 +4560,10 @@ function updateStats(){
     if(mins>0) speed=Math.round(stats.keystrokes/mins);
   }
   document.getElementById('stSpeed').textContent=speed;
-  // 저장 후 작성 검증 결과 확인 — 본문 10자 이상 + 제목 1자 이상일 때만 활성
+  // 저장 후 작성 검증 결과 확인 — 본문 10자 이상 + 제목 1자 이상 + 문서 유형 택1일 때만 활성
   const _titleLen = ((document.getElementById('docTitle')||{}).value || '').trim().length;
-  document.getElementById('btnComplete').disabled = totalChars<10 || _titleLen<1;
+  const _hasType  = !!((document.getElementById('docType')||{}).value);
+  document.getElementById('btnComplete').disabled = totalChars<10 || _titleLen<1 || !_hasType;
 }
 // 제목 입력 시에도 완료 버튼 활성 상태 재평가 (제목만 바꿔도 즉시 토글)
 document.getElementById('docTitle')?.addEventListener('input', () => {
@@ -4834,6 +4863,7 @@ function newWrite(variant){
   sessionFrozen = false;
   selectedType = null;
   const t = document.getElementById('docTitle'); if(t) t.value = '';
+  if(typeof _setDocTypeUI === 'function') _setDocTypeUI('');        // 문서 유형 셀렉트 초기화
   if(typeof _resetDraftGenUI === 'function') _resetDraftGenUI();   // 초안 생성 폼 초기화
   if(typeof renderEditor === 'function') renderEditor();
   // variant 분기 — 상위 '문서 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
@@ -4895,11 +4925,12 @@ function renderBoxList(){
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
-        <div class="box-rowtitle" role="button" tabindex="0" onclick="boxViewDoc('${d.id}')">${(d.title||'').replace(/[<>]/g,'')}</div>
+        <div class="box-rowtitle" role="button" tabindex="0" onclick="boxOpenDoc('${d.id}')">${(d.title||'').replace(/[<>]/g,'')}</div>
         <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글자 수</b> ${(d.chars||0).toLocaleString()}자 <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn solid" onclick="boxViewDoc('${d.id}')">문서 열기</button>
+        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">문서 열기</button>
+        <button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">작성 검증 결과 확인하기</button>
       </div>
     </div>
   `).join('');
@@ -4919,6 +4950,7 @@ function _loadDocIntoSession(d){
   _navBackJumps = d.navBackJumps || 0; _navFrontier = 0; _navWasBack = false;   // 비선형 이동 밀도 복원
   Object.assign(stats, d.stats||{});
   selectedType = d.type || null;
+  if(typeof _setDocTypeUI === 'function') _setDocTypeUI(d.type || '');   // 유형 셀렉트 UI 반영
   currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
   saveCount = d.saveCount || 1;
   document.body.dataset.writeVariant = d.writeVariant || '';
@@ -4926,23 +4958,6 @@ function _loadDocIntoSession(d){
   if(typeof renderEditor === 'function') renderEditor();
   const t = document.getElementById('docTitle');
   if(t) t.value = d.title || '';
-}
-// 문서 보기 (단순 열람)
-function boxViewDoc(id){
-  const docs = boxLoadDocs();
-  const d = docs.find(x => x.id===id);
-  if(!d) return;
-  currentDocId = d.id;
-  // 보기 화면에 데이터 채움
-  const titleEl = document.getElementById('docViewTitle');
-  if(titleEl) titleEl.textContent = d.title || '제목 없음';
-  const bodyEl = document.getElementById('docViewBody');
-  if(bodyEl){
-    const text = (d.model||[]).map(m=>m.ch).join('');
-    bodyEl.textContent = text;
-  }
-  document.body.dataset.view = 'doc';
-  window.scrollTo(0,0);
 }
 // rawText 를 muha 에디터에 문단(원래 개행=문단) 그대로 로드. 컨트롤러 준비될
 // 때까지 폴링 후 replaceBody. done 콜백은 로드 완료 시 1회 실행.
@@ -5093,12 +5108,46 @@ function boxDeleteSelected(){
 document.getElementById('boxCheckAll')?.addEventListener('change', e=>{
   document.querySelectorAll('#boxList .box-rowchk').forEach(c => c.checked = e.target.checked);
 });
+
+/* ---------- 빠른 기간 선택 — 종료일=항상 오늘, 시작일=오늘−{기간} ---------- */
+function _boxFmtDate(d){
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function boxApplyPeriod(){
+  const sel = document.getElementById('boxPeriod');
+  const startEl = document.getElementById('boxDateStart');
+  const endEl = document.getElementById('boxDateEnd');
+  if(!sel || !startEl || !endEl) return;
+  const today = new Date();
+  endEl.value = _boxFmtDate(today);   // 종료일은 항상 오늘 (고정)
+  endEl.disabled = true;
+  if(sel.value === 'custom'){          // 직접입력 — 시작일 수동
+    startEl.disabled = false;
+    return;
+  }
+  const s = new Date(today);
+  switch(sel.value){
+    case '7d': s.setDate(s.getDate() - 7); break;
+    case '1m': s.setMonth(s.getMonth() - 1); break;
+    case '3m': s.setMonth(s.getMonth() - 3); break;
+    case '6m': s.setMonth(s.getMonth() - 6); break;
+    case '1y': s.setFullYear(s.getFullYear() - 1); break;
+  }
+  startEl.value = _boxFmtDate(s);       // 시작일 = 오늘 − 기간
+  startEl.disabled = true;              // 프리셋 — 시작일 파생(수정 불가)
+}
+document.getElementById('boxPeriod')?.addEventListener('change', boxApplyPeriod);
+boxApplyPeriod();   // 초기화 (기본 '직접입력' → 종료일=오늘, 시작일 수동)
+
 // 페이지 진입 시 초기 렌더
 renderBoxList();
 
 /* ---------- '내 문서에 저장' → localStorage 저장 + 내 문서함으로 이동 ---------- */
 document.getElementById('btnSaveOnly').onclick=()=>{
   if(model.length === 0){ showToast('저장할 내용이 없습니다'); return; }
+  const _dt = document.getElementById('docType');
+  if(!(_dt && _dt.value)){ showToast('문서 유형을 선택해주세요'); if(_dt) _dt.focus(); return; }
   const id = boxSaveCurrentDoc();
   saveCount++;
   renderBoxList();
@@ -5159,25 +5208,49 @@ function onBackToListClick(){
       if(titleErr) titleErr.classList.add('hidden');
     }
   }
-  // [저장하고 나가기] — 제목 확보 후 저장 + 목록 이동
+  // 문서 유형 필수 — 유형이 없으면 모달에서 반드시 선택받는다.
+  const typeEl     = document.getElementById('docType');
+  const typeWrap   = document.getElementById('leaveTypeWrap');
+  const typeSelect = document.getElementById('leaveTypeSelect');
+  const typeErr    = document.getElementById('leaveTypeErr');
+  const hasType    = !!((typeEl && typeEl.value) || '');
+  if(typeWrap){
+    if(hasType){ typeWrap.classList.add('hidden'); }
+    else {
+      typeWrap.classList.remove('hidden');
+      if(typeSelect) typeSelect.selectedIndex = 0;
+      if(typeErr) typeErr.classList.add('hidden');
+    }
+  }
+  // [저장하고 나가기] — 제목·유형 확보 후 저장 + 목록 이동
   saveBtn.onclick = () => {
     if(!hasTitle){
       const v = (titleInput?.value || '').trim();
       if(!v){ if(titleErr) titleErr.classList.remove('hidden'); titleInput?.focus(); return; }  // 제목 없으면 막음
       if(titleEl){ titleEl.value = v; titleEl.dispatchEvent(new Event('input', {bubbles:true})); }
     }
+    if(!hasType){
+      const tv = (typeSelect?.value || '');
+      if(!tv){ if(typeErr) typeErr.classList.remove('hidden'); typeSelect?.focus(); return; }  // 유형 없으면 막음
+      if(typeEl){ typeEl.value = tv; }
+      selectedType = tv;
+    }
     try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
     closeLeaveConfirm();
     if(typeof showToast === 'function') showToast('내 문서에 저장되었습니다');
     _goToBoxList();
   };
-  // [그냥 나가기] — 저장 없이 목록 이동 (제목 불필요)
+  // [그냥 나가기] — 저장 없이 목록 이동 (제목·유형 불필요)
   leaveBtn.onclick = () => { closeLeaveConfirm(); _goToBoxList(); };
   // 제목 입력 편의 — 입력 시 에러 숨김, Enter 로 저장, 자동 포커스
   if(titleInput && !hasTitle){
     titleInput.oninput = () => { if(titleErr) titleErr.classList.add('hidden'); };
     titleInput.onkeydown = (ev) => { if(ev.key==='Enter'){ ev.preventDefault(); saveBtn.click(); } };
     setTimeout(()=>{ try{ titleInput.focus(); }catch(e){} }, 50);
+  }
+  // 유형 선택 편의 — 선택 시 에러 숨김
+  if(typeSelect && !hasType){
+    typeSelect.onchange = () => { if(typeErr) typeErr.classList.add('hidden'); };
   }
   modal.classList.remove('hidden');
 }
