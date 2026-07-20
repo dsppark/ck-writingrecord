@@ -711,6 +711,10 @@
   .sgate-btn:hover{background:var(--ck-primary-600);}
   /* 공유(수신자) 모드 — '작성 기록 Replay' 버튼 미제공 */
   body[data-shared="1"] #btnOpenReplay{display:none !important;}
+  /* 공유(수신자) 모드 — LNB 없는 풀스크린 (리포트 좌측 오프셋 제거) */
+  body[data-shared="1"] #lnb{display:none !important;}
+  body[data-shared="1"] #view-report{padding-left:0 !important;}
+  body[data-shared="1"] .report-actions{left:0 !important;}
 
   /* ============ view-print (작성 증명 인증서 — PDF/인쇄용) ============ */
   #view-print{display:none;}
@@ -2455,7 +2459,7 @@
       </span>
     </div>
     <div class="expired-title">페이지를 열 수 없습니다</div>
-    <p class="expired-msg">이 페이지는 만료되었거나 접근 권한이 없습니다.<br>작성자에게 문의해주세요.</p>
+    <p class="expired-msg">이 페이지는 만료되었거나 접근 권한이 없습니다.<br>링크 제공자에게 문의해주세요.</p>
     <a class="expired-btn" href="#" onclick="goCopyKillerHome(event)">
       카피킬러 서비스 바로가기
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -5168,7 +5172,7 @@ function renderBoxList(){
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="boxOpenDoc('${d.id}')">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글자 수</b> ${(d.chars||0).toLocaleString()}자 <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>문서 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
         <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">문서 열기</button>
