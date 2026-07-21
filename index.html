@@ -478,6 +478,11 @@
   .insp-content p.ai-suspect.is-flash{background:#DDD6FE;box-shadow:0 0 0 2px #7C3AED;transition:background .3s,box-shadow .3s;}
   .insp-content p.ai-acknowledged{padding:10px 14px;border-radius:6px;border-bottom:2px solid #10B981;background:#ECFDF5;position:relative;}
   .ack-badge{display:inline-block;font-size:10px;font-weight:700;color:#047857;background:#D1FAE5;padding:3px 8px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+  /* 작성 검증 완료 영역 — 첫 의심 영역을 '사람 작성 검증' 그린 영역으로 표기 */
+  .insp-content p.ai-verified{background:#ECFDF5;padding:10px 14px 10px 16px;border-radius:6px;border-left:3px solid #10B981;}
+  .verified-tag{display:flex;width:fit-content;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:#059669;background:#D1FAE5;padding:5px 12px;border-radius:999px;margin-bottom:10px;}
+  .verified-dot{width:11px;height:11px;border-radius:50%;background:#10B981;flex-shrink:0;}
+  .verified-detail .verified-chk{color:#10B981;}
   .insp-sidebar{width:320px;flex-shrink:0;border-left:1px solid var(--ck-secondary-100);padding-left:20px;}
   .insp-sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .insp-sidebar-title{font-size:13px;font-weight:700;color:var(--ck-gray-800);display:inline-flex;align-items:center;gap:6px;}
@@ -5746,12 +5751,17 @@ function renderInspectionResult(){
   const info = _getInspectionChunks(rawText);
   const spanByChunkIdx = {};
   suspectSpans.forEach(sp => { if(sp.chunkIdx != null) spanByChunkIdx[sp.chunkIdx] = sp; });
+  // 문서상 먼저 잡히는 의심 영역 1개는 '작성 검증 완료'(사람 작성 검증) 그린 영역으로 표기
+  const verifiedSpanId = suspectSpans.length ? suspectSpans[0].spanId : null;
   const content = document.getElementById('inspContent');
   if(content){
     content.innerHTML = info.chunks.map(c => {
       const txt = _escInsp(c.text).replace(/\n/g, '<br>');
       const sp = spanByChunkIdx[c.chunkIdx];
       if(sp){
+        if(sp.spanId === verifiedSpanId){
+          return `<p class="ai-verified" data-span-id="${sp.spanId}"><span class="verified-tag"><span class="verified-dot"></span>작성 검증 완료</span>${txt}</p>`;
+        }
         const isAck = acknowledgedSpans.includes(sp.spanId);
         const cls = isAck ? 'ai-acknowledged' : 'ai-suspect';
         const badge = isAck ? '<span class="ack-badge">작성 증명 인정</span>' : '';
@@ -5761,8 +5771,8 @@ function renderInspectionResult(){
     }).join('');
   }
 
-  // 우측 상세 카드 — 실제 서비스처럼 '선택된 1개'만 상세 표시. 첫 활성 의심 영역 자동 선택.
-  const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId));
+  // 우측 상세 카드 — '선택된 1개'만 상세 표시. verified·ack 제외한 첫 실제 의심 영역 자동 선택.
+  const activeSuspects = suspectSpans.filter(sp => !acknowledgedSpans.includes(sp.spanId) && sp.spanId !== verifiedSpanId);
   if(activeSuspects.length){
     selectSuspectCard(activeSuspects[0].spanId);
   } else {
@@ -5840,7 +5850,6 @@ function selectSuspectCard(spanId){
   const target = document.querySelector(`#inspContent p[data-span-id="${spanId}"]`);
   if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
 }
-
 
 function switchInspTab(name){
   document.querySelectorAll('.insp-tab').forEach(t => t.classList.toggle('is-active', t.dataset.inspTab === name));
