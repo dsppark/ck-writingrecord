@@ -762,12 +762,17 @@
   .print-action.ghost{background:#fff;color:var(--ck-gray-700);border:1px solid var(--ck-gray-300);}
   .print-action.ghost:hover{background:var(--ck-secondary-50);}
   .print-mark{font-size:10px;color:var(--ck-gray-400);margin-top:14px;}
+  .print-intro{font-size:12px;line-height:1.7;color:var(--ck-gray-600);background:#FCFCFD;border:1px solid var(--ck-gray-200);border-radius:6px;padding:14px 16px;margin-bottom:24px;}
+  .print-desc{font-size:12px;color:var(--ck-gray-500);line-height:1.6;margin:-2px 0 12px;}
+  .print-kv th.print-subhead{font-size:11.5px;font-weight:800;color:var(--ck-primary-700);padding:10px 0 4px;}
+  .print-page-footer{display:none;}
   @media print{
     body[data-view="print"]{background:#fff;}
     .print-page{box-shadow:none;border:0;padding:24px 32px;max-width:none;}
     .print-footer{display:none !important;}
     .print-body-text{background:#fff;}
-    @page{size:A4;margin:14mm;}
+    .print-page-footer{display:block;position:fixed;left:0;right:0;bottom:0;text-align:center;font-size:8px;line-height:1.5;color:var(--ck-gray-400);padding:6px 14mm;border-top:1px solid var(--ck-gray-200);background:#fff;}
+    @page{size:A4;margin:14mm 14mm 26mm;}
   }
   /* 내 문서함 페이지 내부 */
   .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
@@ -2491,8 +2496,7 @@
 <section id="view-print">
   <div class="print-page">
     <header class="print-header">
-      <h1>작성 증명 인증서</h1>
-      <p class="sub">Writing Authenticity Certificate · 카피킬러 KeyStroke Vault</p>
+      <h1>작성 검증 결과</h1>
       <div class="print-issued">발급일 <span data-print="issuedAt">-</span></div>
     </header>
 
@@ -2510,15 +2514,17 @@
     </section>
 
     <section class="print-sec">
-      <h2>2. 작성 증명 지수</h2>
+      <h2>2. 작성 검증 결과</h2>
       <div class="print-score-row">
         <div class="print-score-num"><span data-print="score">-</span><span class="of"> / 100</span></div>
         <div class="print-score-tier" data-print="tier">-</div>
       </div>
       <table class="print-kv"><tbody>
+        <tr><th colspan="2" class="print-subhead">입력 증거</th></tr>
         <tr><th>직접 타이핑 기여</th><td data-print="bd-typing">-</td></tr>
         <tr><th>AI 생성 후 수정</th><td data-print="bd-ai-edit">-</td></tr>
         <tr><th>붙여넣기 후 수정</th><td data-print="bd-paste-edit">-</td></tr>
+        <tr><th colspan="2" class="print-subhead">사고 과정 증거</th></tr>
         <tr><th>수정 품질</th><td data-print="bd-depth">-</td></tr>
         <tr><th>비선형 이동 밀도</th><td data-print="bd-nav">-</td></tr>
         <tr><th>사고정지</th><td data-print="bd-idle">-</td></tr>
@@ -2540,24 +2546,18 @@
     </section>
 
     <section class="print-sec">
-      <h2>4. 원본 보존율 (외부 유입 텍스트)</h2>
+      <h2>4. 외부 유입 로그</h2>
       <table class="print-table">
-        <thead><tr><th style="width:24%;">영역</th><th class="num">원형 유지</th><th class="num">수정됨</th><th class="num">삭제됨</th><th style="width:22%;">판정</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>AI 생성</td>
-            <td class="num" data-print="ai-intact">-</td>
-            <td class="num" data-print="ai-edited">-</td>
-            <td class="num" data-print="ai-deleted">-</td>
-            <td data-print="ai-badge">-</td>
-          </tr>
-          <tr>
-            <td>붙여넣기</td>
-            <td class="num" data-print="paste-intact">-</td>
-            <td class="num" data-print="paste-edited">-</td>
-            <td class="num" data-print="paste-deleted">-</td>
-            <td data-print="paste-badge">-</td>
-          </tr>
+        <thead><tr>
+          <th class="num" style="width:7%;">#</th>
+          <th style="width:16%;">유입 유형</th>
+          <th style="width:18%;">발생 시각</th>
+          <th class="num" style="width:12%;">길이</th>
+          <th class="num" style="width:18%;">원본 보존율</th>
+          <th>잔존 텍스트</th>
+        </tr></thead>
+        <tbody id="printInflowBody">
+          <tr><td colspan="6" style="text-align:center;color:#94A3B8;">-</td></tr>
         </tbody>
       </table>
     </section>
@@ -2579,20 +2579,7 @@
       <div class="print-body-text" data-print="body">-</div>
     </section>
 
-    <section class="print-sec">
-      <h2>7. 무결성 정보</h2>
-      <table class="print-kv"><tbody>
-        <tr><th>SHA-256 루트 해시</th><td class="print-mono" data-print="hash">-</td></tr>
-        <tr><th>발급 시각 (KST)</th><td data-print="tsaTime">-</td></tr>
-        <tr><th>검증 URL</th><td class="print-mono" data-print="verifyUrl">-</td></tr>
-      </tbody></table>
-    </section>
-
-    <footer class="print-footer">
-      <button class="print-action" type="button" onclick="window.print()">PDF 저장 / 인쇄</button>
-      <button class="print-action ghost" type="button" onclick="window.close()">닫기</button>
-      <p class="print-mark">본 인증서는 카피킬러 KeyStroke Vault에서 자동 생성되었으며, 위의 SHA-256 해시로 무결성을 검증할 수 있습니다.</p>
-    </footer>
+    <footer class="print-page-footer">본 작성 검증 결과는 <span data-print="author">-</span> 사용자가 카피킬러에서 작성한 문서 작성 과정에 대한 검증 결과로 카피킬러 시스템이 생성한 자료입니다. 문서 작성과 평가에 대한 기준이 각 학교, 기관마다 다르므로 본 결과와 최종 평가자의 평가는 다를 수 있습니다.</footer>
   </div>
 </section>
 
@@ -2928,7 +2915,7 @@ function copyHash(){
 async function issueCert(){
   // 결과지 데이터를 localStorage에 수집해 새 창에서 인증서(view-print)로 렌더
   if(document.body.dataset.view !== 'report'){
-    alert('작성 증명 결과지에서만 발급할 수 있습니다.');
+    alert('작성 검증 결과에서만 발급할 수 있습니다.');
     return;
   }
   const $ = sel => document.querySelector(sel);
@@ -2964,8 +2951,22 @@ async function issueCert(){
     if(label && val) bdMap[label] = val;
   });
 
+  // 외부 유입 로그 — 결과지 테이블에서 전후 비교(마지막 열) 제외한 행 데이터 수집
+  const inflowRows = [...document.querySelectorAll('#pasteRows .ext-row')].map(tr => {
+    const c = tr.querySelectorAll('td');
+    return {
+      idx:     (c[0]?.textContent || '').trim(),
+      type:    (c[1]?.textContent || '').trim(),
+      time:    (c[2]?.textContent || '').trim(),
+      len:     (c[3]?.textContent || '').trim(),
+      origret: (c[4]?.textContent || '').trim(),
+      survive: (c[5]?.textContent || '').replace(/\s+/g,' ').trim()
+    };
+  });
+
   const data = {
     issuedAt: new Date().toLocaleString('ko-KR'),
+    inflowRows,
     title: docTitle,
     type: selectedType || '자유',
     author: 'gb@muhayu.com',
@@ -2974,7 +2975,7 @@ async function issueCert(){
     chars: charsTotal.toLocaleString() + '자',
     saveCount: (saveCount||1) + '회',
     score: txt('#sec02Score'),
-    tier: '주도적 작성',
+    tier: txt('#sec02VerdictName','-'),
     'bd-typing':    bdMap['직접 타이핑 기여']     || '-',
     'bd-ai-edit':   bdMap['AI 생성 후 수정']      || '-',
     'bd-paste-edit':bdMap['붙여넣기 후 수정']     || '-',
@@ -3020,12 +3021,22 @@ function applyPrintData(){
   try{
     const data = JSON.parse(localStorage.getItem('ksv_print_data') || '{}');
     Object.keys(data).forEach(key => {
+      if(key === 'inflowRows') return;   // 배열 — 아래에서 테이블로 렌더
       document.querySelectorAll(`[data-print="${key}"]`).forEach(el => {
         el.textContent = data[key] != null ? String(data[key]) : '-';
       });
     });
+    // 외부 유입 로그 테이블 렌더 (전후 비교 제외)
+    const ib = document.getElementById('printInflowBody');
+    if(ib){
+      const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const rows = Array.isArray(data.inflowRows) ? data.inflowRows : [];
+      ib.innerHTML = rows.length
+        ? rows.map(r => `<tr><td class="num">${esc(r.idx)}</td><td>${esc(r.type)}</td><td>${esc(r.time)}</td><td class="num">${esc(r.len)}</td><td class="num">${esc(r.origret)}</td><td>${esc(r.survive)}</td></tr>`).join('')
+        : '<tr><td colspan="6" style="text-align:center;color:#94A3B8;">외부 유입 없음</td></tr>';
+    }
     document.body.dataset.view = 'print';
-    document.title = `작성 증명 인증서 - ${data.title || ''}`;
+    document.title = `작성 검증 결과 - ${data.title || ''}`;
     window.scrollTo(0,0);
   }catch(e){ console.warn('print data load fail', e); }
 }
