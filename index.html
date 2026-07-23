@@ -853,6 +853,10 @@
   body[data-flow="copy"] .doc-actions #btnComplete{display:none !important;}
   body[data-flow="copy"] .doc-actions #btnCopySave,
   body[data-flow="copy"] .doc-actions #btnCopyVerify{display:inline-flex !important;}
+  /* 저장 버튼이 '작성 검증 결과 보기' 바로 좌측에 붙도록 primary 자동 여백 해제 */
+  body[data-flow="copy"] .doc-actions #btnCopyVerify{margin-left:0 !important;}
+  /* 사본 리포트 — 검증 완료(수정 불가) 문서이므로 '문서 수정' 버튼 숨김 */
+  body[data-flow="copy"] .report-actions #raEditBtn{display:none !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb,
@@ -1332,7 +1336,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       목록으로 이동
     </button>
-    <button class="ra-btn ra-btn-ghost" type="button" onclick="if(currentDocId){boxOpenDoc(currentDocId);}else{goWrite();}">
+    <button id="raEditBtn" class="ra-btn ra-btn-ghost" type="button" onclick="if(currentDocId){boxOpenDoc(currentDocId);}else{goWrite();}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       문서 수정
     </button>
@@ -1363,7 +1367,7 @@
         </div>
         <div class="share-pop-notes">
           <div class="share-pop-note">작성 과정 리플레이를 제외한 모든 콘텐츠가 공유돼요.</div>
-          <div class="share-pop-note">링크 생성 후 48시간이 지나거나 문서를 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.</div>
+          <div class="share-pop-note" id="sharePopExpireNote">링크 생성 후 48시간이 지나거나 문서를 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.</div>
         </div>
       </div>
     </div>
@@ -2784,10 +2788,10 @@
 <div id="copyVerifyModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeCopyVerifyConfirm()"></div>
   <div class="relative max-w-sm w-full bg-white rounded-2xl p-6 shadow-2xl">
-    <h3 class="text-lg font-bold text-slate-900">작성 검증 검사를 하시겠습니까?</h3>
-    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">검증 검사 시, 이 문서는 더이상 수정할 수 없습니다.</p>
+    <h3 class="text-lg font-bold text-slate-900">작성 검증 결과를 확인하시겠습니까?</h3>
+    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">결과 발급 시, 이 문서를 더 이상 수정하실 수 없습니다.</p>
     <div class="mt-5 flex flex-col gap-2">
-      <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmCopyVerify()">작성 검증 검사하기</button>
+      <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmCopyVerify()">작성 검증 결과 보기</button>
       <button type="button" class="w-full h-11 rounded-lg bg-white text-slate-600 text-sm font-semibold border border-slate-200 hover:bg-slate-50" onclick="closeCopyVerifyConfirm()">취소</button>
     </div>
   </div>
@@ -2884,6 +2888,13 @@ function toggleSharePopover(ev){
   const rec = _getOrCreateShareLink();
   document.getElementById('shareUrl').value = _shareUrlFromToken(rec.token);
   document.getElementById('sharePw').textContent = rec.password;
+  // 플로우별 만료 안내 — 사본은 '생성 시점 90일', 원본은 '48시간·문서 수정'
+  const expNote = document.getElementById('sharePopExpireNote');
+  if(expNote){
+    expNote.textContent = (activeFlow === 'copy')
+      ? '링크 생성 시점 기준 90일이 지나면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해주세요.'
+      : '링크 생성 후 48시간이 지나거나 문서를 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.';
+  }
   pop.classList.add('open');
   setTimeout(() => document.addEventListener('click', _shareOutsideClose), 0);  // 바깥 클릭 닫기
 }
@@ -5253,7 +5264,7 @@ function boxViewDoc(id){
   // 검증 완료(잠금) 문서는 수정 불가
   const editBtn = document.getElementById('docViewEditBtn');
   if(editBtn){
-    if(d.verifiedLocked){ editBtn.setAttribute('disabled',''); editBtn.title = '검증 완료된 문서는 수정할 수 없습니다'; }
+    if(_docHasResult(d)){ editBtn.setAttribute('disabled',''); editBtn.title = '이미 작성 검증 검사를 완료하여 문서를 수정할 수 없습니다.'; }
     else { editBtn.removeAttribute('disabled'); editBtn.title = ''; }
   }
   // 작성 검증 결과 확인 — 결과 있을 때만
@@ -5515,14 +5526,23 @@ document.getElementById('btnComplete').onclick=()=>{
 /* ===== 사본(copy) 플로우 전용 하단 액션 ===== */
 // [저장] — 저장만 수행, 작성 화면 유지 (리포트 진입 없음)
 function copyFlowSave(){
+  // 저장 필수 조건 — 제목·내용 최소 1자 + 문서 유형 택1 (미충족 시 안내 후 중단)
+  const titleEl = document.getElementById('docTitle');
+  const typeEl  = document.getElementById('docType');
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const raw = el ? (el.innerText || el.textContent || '') : '';
-  if(raw.replace(/\s/g,'').length < 1){ showToast('저장할 내용이 없습니다'); return; }
+  if((titleEl?.value || '').trim().length < 1){ showToast('제목을 입력해주세요.'); titleEl?.focus(); return; }
+  if(raw.replace(/\s/g,'').length < 1){ showToast('내용을 입력해주세요.'); try{ el?.focus(); }catch(e){} return; }
+  if(!(typeEl && typeEl.value)){ showToast('문서 유형을 선택해주세요.'); typeEl?.focus(); return; }
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('copy save fail', e); }
   saveCount++;
   showToast('저장되었습니다');
+  // 저장 후 내 문서 목록으로 이동 (현재 사본 플로우 유지)
+  document.body.dataset.view = 'box';
+  if(typeof renderBoxList === 'function') renderBoxList();
+  window.scrollTo(0,0);
 }
 // [작성 검증 결과 보기] — 확인 모달 → 검증 시 문서 잠금 + 리포트 진입
 function openCopyVerifyConfirm(){
