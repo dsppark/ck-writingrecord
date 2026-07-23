@@ -291,6 +291,10 @@
   .docview-actions .docview-back{margin-right:auto;}
   .dv-btn{padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
   .dv-btn:hover{background:var(--ck-secondary-50);}
+  /* 비활성 '문서 수정' 안내 — 즉시 뜨는 커스텀 툴팁(네이티브 title 대체) */
+  .dv-tip-wrap{position:relative;display:inline-flex;}
+  .dv-tip-wrap[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--ck-gray-900);color:#fff;font-size:12.5px;font-weight:600;line-height:1.4;padding:9px 13px;border-radius:9px;white-space:nowrap;z-index:200;box-shadow:0 6px 18px rgba(15,23,42,.22);pointer-events:none;}
+  .dv-tip-wrap[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--ck-gray-900);z-index:200;pointer-events:none;}
   .dv-btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);}
   .dv-btn-primary:hover{background:var(--ck-primary-600);}
   /* box meta 구분점 */
@@ -808,6 +812,10 @@
   .box-actionbtn.solid:hover{background:var(--ck-primary-600);}
   .box-actionbtn:disabled{background:var(--ck-secondary-100)!important;color:var(--ck-gray-400)!important;cursor:not-allowed;}
   .dv-btn:disabled{background:var(--ck-secondary-100)!important;color:var(--ck-gray-400)!important;border-color:var(--ck-secondary-200)!important;cursor:not-allowed;}
+  /* 목록 비활성 버튼 안내 — 즉시 뜨는 커스텀 툴팁(문서 수정 툴팁과 동일 스타일, 우측 앵커) */
+  .box-tip-wrap{position:relative;display:inline-flex;}
+  .box-tip-wrap[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);right:0;background:var(--ck-gray-900);color:#fff;font-size:12px;font-weight:600;line-height:1.5;padding:9px 13px;border-radius:9px;white-space:normal;width:max-content;max-width:260px;text-align:left;z-index:200;box-shadow:0 6px 18px rgba(15,23,42,.22);pointer-events:none;}
+  .box-tip-wrap[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 3px);right:24px;border:7px solid transparent;border-top-color:var(--ck-gray-900);z-index:200;pointer-events:none;}
   /* 빈 상태 */
   .box-empty{padding:64px 20px;text-align:center;color:var(--ck-gray-500);font-size:14px;background:#fff;border:1px dashed var(--ck-secondary-200);border-radius:10px;}
   /* 삭제 버튼 (우측 끝) */
@@ -2483,7 +2491,7 @@
   </div>
   <div class="docview-actions">
     <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
-    <button class="dv-btn" id="docViewEditBtn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button>
+    <span class="dv-tip-wrap" id="docViewEditWrap"><button class="dv-btn" id="docViewEditBtn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button></span>
     <button class="dv-btn dv-btn-primary" id="docViewResultBtn" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 검증 결과 확인하기</button>
   </div>
 </section>
@@ -5225,7 +5233,7 @@ function renderBoxList(){
     const hasResult = _docHasResult(d);
     const verifyBtn = hasResult
       ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">작성 검증 결과 확인하기</button>`
-      : `<button class="box-actionbtn solid" disabled title="아직 작성 검증 결과가 없어요. 작성 검증 검사를 먼저 진행해주세요.">작성 검증 결과 확인하기</button>`;
+      : `<span class="box-tip-wrap" data-tip="아직 작성 검증 결과가 없어요. 문서 작성을 완료한 후 작성 검증 검사를 확인해보세요."><button class="box-actionbtn solid" disabled>작성 검증 결과 확인하기</button></span>`;
     return `
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
@@ -5263,9 +5271,16 @@ function boxViewDoc(id){
   }
   // 검증 완료(잠금) 문서는 수정 불가
   const editBtn = document.getElementById('docViewEditBtn');
+  const editWrap = document.getElementById('docViewEditWrap');
   if(editBtn){
-    if(_docHasResult(d)){ editBtn.setAttribute('disabled',''); editBtn.title = '이미 작성 검증 검사를 완료하여 문서를 수정할 수 없습니다.'; }
-    else { editBtn.removeAttribute('disabled'); editBtn.title = ''; }
+    editBtn.removeAttribute('title');   // 네이티브 툴팁 대신 커스텀(data-tip) 사용
+    if(_docHasResult(d)){
+      editBtn.setAttribute('disabled','');
+      if(editWrap) editWrap.setAttribute('data-tip', '이미 작성 검증 검사를 완료하여 문서를 수정할 수 없습니다.');
+    } else {
+      editBtn.removeAttribute('disabled');
+      if(editWrap) editWrap.removeAttribute('data-tip');
+    }
   }
   // 작성 검증 결과 확인 — 결과 있을 때만
   const resBtn = document.getElementById('docViewResultBtn');
