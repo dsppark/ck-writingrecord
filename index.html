@@ -1739,102 +1739,91 @@
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">세부 활동 분석</h2>
-      <p class="text-sm text-slate-500 mt-1">타이핑 속도, 수정·삭제 횟수, 최장 무중단 작성 시간 등 6개 지표로 작성 과정의 양과 리듬을 정량적으로 보여줍니다.</p>
+      <p class="text-sm text-slate-500 mt-1">작성 소요·순 타이핑 시간, 수정·삭제 글자수, 키스트로크, 외부 유입, 저장 이력 등 작성 과정을 정량 지표로 상세히 보여줍니다.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      <!-- 1. 작성 소요 시간 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 3"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">작성 소요 시간</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">첫 입력부터 마지막 입력까지 걸린 시간</div>
-        <div class="text-right">
-          <div class="text-2xl font-bold text-slate-900 leading-none" id="m_duration">—</div>
-          <div class="text-[11px] text-slate-400 mt-1.5" id="m_activeTime">순 타이핑 —</div>
-        </div>
-      </div>
-
-      <!-- 2. 최장 무중단 타이핑 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">최장 무중단 타이핑</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">멈추지 않고 가장 길게 이어서 직접 타이핑한 글자 수와 시간</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_runChars">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">자</span>
-          <span class="text-slate-300 mx-1.5">·</span>
-          <span class="text-2xl font-bold text-slate-900" id="m_runDur">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">초</span>
-        </div>
-      </div>
-
-      <!-- 3. 평균 타이핑 속도 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:var(--ck-green-100);color:var(--ck-green-700);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">평균 타이핑 속도</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">1분간 직접 타이핑한 텍스트 수의 평균</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_speed">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">타/분</span>
-        </div>
-      </div>
-
-      <!-- 4. 총 수정 횟수 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">총 수정 횟수</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">작성 중 텍스트를 직접 고친 편집 오퍼레이션 횟수 (AI 생성·붙여넣기 유입은 제외)</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_edits">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
-        </div>
-      </div>
-
-      <!-- 5. 총 삭제 횟수 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">총 삭제 횟수</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">Backspace, Delete 등으로 텍스트를 삭제한 누적 횟수</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_deletes">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">회</span>
-        </div>
-      </div>
-
-      <!-- 6. 원문 보존율 -->
-      <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50/40 transition-colors">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </span>
-          <div class="text-[13px] font-bold text-slate-900">원문 보존율</div>
-        </div>
-        <div class="text-[11.5px] text-slate-500 mb-3 leading-snug">AI 생성·붙여넣기 텍스트가 최초 유입 후 그대로 남아 있는 비율</div>
-        <div class="text-right">
-          <span class="text-2xl font-bold text-slate-900" id="m_retention">—</span>
-          <span class="text-xs font-semibold text-slate-500 ml-0.5">%</span>
-        </div>
-      </div>
+    <div class="bg-white rounded-xl border border-slate-200" style="overflow:hidden;">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50">
+          <tr class="text-slate-600 text-left">
+            <th class="px-4 py-2.5 font-semibold text-[12px]" style="width:22%;">지표</th>
+            <th class="px-4 py-2.5 font-semibold text-[12px]">설명</th>
+            <th class="px-4 py-2.5 font-semibold text-[12px]" style="width:22%;">측정값</th>
+          </tr>
+        </thead>
+        <tbody class="text-slate-700">
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">작성 소요 시간</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">첫 입력부터 마지막 입력까지 걸린 시간</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_duration">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">순 타이핑 시간</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">15초 이상 멈춤(비활성)을 제외한 실제 작성 몰입 시간</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_netTyping">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">최장 무중단 타이핑</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">멈추지 않고 가장 길게 이어서 직접 타이핑한 글자 수와 시간</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_runChars">—</span>자 · <span id="m_runDur">—</span>초</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">평균 타이핑 속도</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">1분간 직접 입력한 물리 타수(자모 단위)의 평균</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_speed">—</span> 타/분</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">수정 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이미 써 놓은 곳(프론티어 앞)으로 되돌아가 삽입·교체한 글자수</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_edits">—</span> 자</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">삭제 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">백스페이스·Delete·덮어쓰기로 지워진 글자의 총합</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_deletes">—</span> 자</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">원문 보존율</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">AI 생성·붙여넣기 텍스트가 최초 유입 후 그대로 남아 있는 비율</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_retention">—</span> %</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">외부유입 총 비율</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서 중 AI 생성·붙여넣기 등 외부에서 유입된 텍스트의 비율</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_inflow">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 키스트로크 수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">작성 중 누른 전체 키 입력 횟수(편집·이동 키 포함)</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_keystrokes">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">비활성 시간</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">15초 이상 입력이 없던 구간의 합계</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_inactive">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">사고정지 횟수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">3~15초 사이 잠시 멈춘 횟수 (외부 유입 전후 대기는 제외)</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_pause">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">문서 최초 작성 시각</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이 문서에 처음 입력이 시작된 시각</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_firstAuthor">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">마지막 저장 시각</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">가장 최근에 문서를 저장한 시각</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_lastSave">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">누적 저장 횟수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">저장한 총 횟수와 저장 시점별 글자수 변화(BEFORE→AFTER)</td>
+            <td class="px-4 py-2.5 text-[13px]"><span id="m_saveCount">—</span> <span class="text-slate-400 text-[11.5px]" id="m_saveHist"></span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -2603,12 +2592,20 @@
     <section class="print-sec">
       <h2>5. 종합 지표</h2>
       <table class="print-kv"><tbody>
-        <tr><th>평균 타이핑 속도</th><td><span data-print="m-speed">-</span> 타/분</td></tr>
         <tr><th>작성 소요 시간</th><td><span data-print="m-duration">-</span></td></tr>
-        <tr><th>총 수정 횟수</th><td><span data-print="m-edits">-</span> 회</td></tr>
-        <tr><th>총 삭제 횟수</th><td><span data-print="m-deletes">-</span> 회</td></tr>
+        <tr><th>순 타이핑 시간</th><td><span data-print="m-nettyping">-</span></td></tr>
         <tr><th>최장 무중단 타이핑</th><td data-print="m-longest">-</td></tr>
+        <tr><th>평균 타이핑 속도</th><td><span data-print="m-speed">-</span> 타/분</td></tr>
+        <tr><th>수정 글자수</th><td><span data-print="m-edits">-</span> 자</td></tr>
+        <tr><th>삭제 글자수</th><td><span data-print="m-deletes">-</span> 자</td></tr>
         <tr><th>원문 보존율(외부 유입 합산)</th><td data-print="m-retention">-</td></tr>
+        <tr><th>외부유입 총 비율</th><td><span data-print="m-inflow">-</span></td></tr>
+        <tr><th>총 키스트로크 수</th><td><span data-print="m-keystrokes">-</span></td></tr>
+        <tr><th>비활성 시간</th><td><span data-print="m-inactive">-</span></td></tr>
+        <tr><th>사고정지 횟수</th><td><span data-print="m-pause">-</span></td></tr>
+        <tr><th>문서 최초 작성 시각</th><td><span data-print="m-firstauthor">-</span></td></tr>
+        <tr><th>마지막 저장 시각</th><td><span data-print="m-lastsave">-</span></td></tr>
+        <tr><th>누적 저장 횟수</th><td><span data-print="m-savecount">-</span> <span data-print="m-savehist"></span></td></tr>
       </tbody></table>
     </section>
 
@@ -3060,10 +3057,19 @@ async function issueCert(){
     'paste-badge': bind('paste-badge'),
     'm-speed':   txt('#m_speed','0'),
     'm-duration':txt('#m_duration','—'),
+    'm-nettyping':txt('#m_netTyping','—'),
     'm-edits':   txt('#m_edits','0'),
     'm-deletes': txt('#m_deletes','0'),
     'm-longest': txt('#m_longest','-'),
     'm-retention':txt('#m_retention','-'),
+    'm-inflow':  txt('#m_inflow','-'),
+    'm-keystrokes':txt('#m_keystrokes','-'),
+    'm-inactive':txt('#m_inactive','-'),
+    'm-pause':   txt('#m_pause','-'),
+    'm-firstauthor':txt('#m_firstAuthor','-'),
+    'm-lastsave':txt('#m_lastSave','-'),
+    'm-savecount':txt('#m_saveCount','-'),
+    'm-savehist':txt('#m_saveHist',''),
     body: bodyText || '(본문 데이터 없음)',
     hash,
     tsaTime: new Date().toISOString().replace('T',' ').replace('Z',' UTC'),
@@ -3924,7 +3930,7 @@ const AI_GUIDES = {
 let model=[];
 let events=[];
 let editOps=[]; // 삭제가 포함된 오퍼레이션 — {deleted, inserted, isContent, ts}
-let stats={keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0};
+let stats={keystrokes:0, inputKeystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0};
 let selectedType=null;
 let composing=false;
 let blockSeq=0;
@@ -4939,10 +4945,13 @@ function boxSaveCurrentDoc(){
     const idx = docs.findIndex(d => d.id === currentDocId);
     if(idx >= 0){
       const prev = docs[idx];
+      const _prevHist = Array.isArray(prev.saveHistory) ? prev.saveHistory
+                        : (prev.chars!=null ? [{ts: prev.createdAt||prev.savedAt||now, chars: prev.chars}] : []);
       const updated = {
         ...prev, ...snapshot, id: currentDocId,
         saveCount: (prev.saveCount||1) + 1,
         createdAt: prev.createdAt || prev.savedAt,
+        saveHistory: [..._prevHist, {ts: now, chars: snapshot.chars}],   // 저장 시점별 글자수(변동 히스토리)
         // 이전에 누적된 inspHistory 유지, currentInspection 은 최신 회차로 승계
         inspHistory: prev.inspHistory || [],
         currentInspection: currentInspection ? {...currentInspection} : (prev.currentInspection || null)
@@ -4954,12 +4963,14 @@ function boxSaveCurrentDoc(){
       // 메모리상의 id가 store에 없으면 새로 생성
       id = currentDocId;
       docs.unshift({id, ...snapshot, saveCount:1, createdAt: now,
+        saveHistory: [{ts: now, chars: snapshot.chars}],
         inspHistory: [], currentInspection: currentInspection ? {...currentInspection} : null});
     }
   } else {
     id = 'd_' + now;
     currentDocId = id;
     docs.unshift({id, ...snapshot, saveCount:1, createdAt: now,
+      saveHistory: [{ts: now, chars: snapshot.chars}],
       inspHistory: [], currentInspection: currentInspection ? {...currentInspection} : null});
   }
   boxSaveDocs(docs);
@@ -5043,6 +5054,9 @@ function _bindMuhaEvents(){
     if(['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'].includes(e.key)) return;
     if((e.ctrlKey || e.metaKey) && ['v','V','c','C','x','X','a','A','z','Z','y','Y'].includes(e.key)) return;
     stats.keystrokes++;
+    // 순수 입력 타수 — 문자 생성 키만(자모·영문·숫자·특수·스페이스). 편집·이동 키 제외.
+    if(!['Backspace','Delete','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Insert'].includes(e.key))
+      stats.inputKeystrokes = (stats.inputKeystrokes || 0) + 1;
     if(!stats.firstTs) stats.firstTs = Date.now();
     stats.lastTs = Date.now();
     if(typeof updateStats === 'function') updateStats();
@@ -5154,7 +5168,7 @@ function ensureMuhaEditor(){
 function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
-  Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
+  Object.assign(stats, {keystrokes:0, inputKeystrokes:0, editChars:0, deleteChars:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
   // audit 로그·카운터 초기화 (새 문서 세션)
   window.__auditLog = [];
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
@@ -6351,7 +6365,7 @@ function startInspectionFromUpload(){
   model.length = 0;
   events.length = 0;
   editOps.length = 0;
-  Object.assign(stats, {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
+  Object.assign(stats, {keystrokes:0, inputKeystrokes:0, editChars:0, deleteChars:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
   const paras = uploadedText.split(/\r?\n/);
   let ts = Date.now() - paras.length * 1000;
   let bm = 0;
@@ -6456,6 +6470,7 @@ function _reconstructFromAudit(){
   const log = (window.__auditLog || []).filter(e => e && e.source === 'document-delta' && Array.isArray(e.steps) && e.steps[0]);
   const baseTs = stats.firstTs || (log[0] && log[0].ts) || Date.now();
   const curve = []; let running = 0;
+  let frontier = 0, _editChars = 0, _delChars = 0;   // 세부 활동 — 프론티어(도달한 최후 위치)·수정(비선형 삽입)·삭제 글자수
   log.forEach(entry => {
     const ts = entry.ts || baseTs;
     const src = entry.inputSource || 'typing';
@@ -6478,10 +6493,17 @@ function _reconstructFromAudit(){
         events.push({ ts, type: 'delete', srcFamily: 'typing', n: delLen - insLen, isInsert: false });
         editOps.push({ ts, isContent: false });
       }
+      // 삭제 글자수 = 지운 글자 전량 / 수정 글자수 = 프론티어 앞(비선형)에 삽입된 글자수
+      _delChars += delLen;
+      if(insLen > 0 && from < frontier) _editChars += insLen;
     }
+    // 프론티어 갱신(유입 포함): 앞쪽 편집이면 그만큼 밀리고, 끝(순방향)이면 확장
+    frontier = (from < frontier) ? frontier + (insLen - delLen) : from + insLen;
     running = Math.max(0, running + insLen - delLen);
     curve.push({ ts, total: running });
   });
+  stats.editChars = _editChars;      // 수정 글자수(비선형 삽입)
+  stats.deleteChars = _delChars;     // 삭제 글자수
   // 외부 유입 event 를 model 의 blockMark 에 순서로 연결 (Nth ai/paste 블록 ↔ Nth ai/paste event)
   const famOf = {}, order = [];
   model.forEach(m => { if(m.blockMark && !famOf[m.blockMark]){ famOf[m.blockMark] = (m.source==='ai'||m.source==='ai-internal') ? 'ai' : 'paste'; order.push(m.blockMark); } });
@@ -6578,14 +6600,14 @@ async function buildReportFromSession(){
   // idle 15초 이상 합산 (events 인접 ts 차)
   const sortedEv=[...events].sort((a,b)=>a.ts-b.ts);
   let idleMsTotal=0;
-  let pauseCount=0;                                        // 사고정지 — 5~15초 멈춤 횟수(외부 유입 인접 제외)
+  let pauseCount=0;                                        // 사고정지 — 3~15초 멈춤 횟수(외부 유입 인접 제외)
   const idlePeriods=[];
   for(let i=1;i<sortedEv.length;i++){
     const gap=sortedEv[i].ts-sortedEv[i-1].ts;
     if(gap>=15000){
       idleMsTotal+=gap;
       idlePeriods.push({startMs:sortedEv[i-1].ts-stats.firstTs, endMs:sortedEv[i].ts-stats.firstTs, durMs:gap});
-    } else if(gap>=5000){
+    } else if(gap>=3000){
       // 붙여넣기/AI 유입 전후 공백은 창 전환·응답 대기이므로 사고정지에서 제외
       const a=sortedEv[i-1].type, b=sortedEv[i].type;
       if(!(a==='paste'||a==='ai'||b==='paste'||b==='ai')) pauseCount++;
@@ -6821,9 +6843,9 @@ async function buildReportFromSession(){
   const _navDstar = 2.0;                                      // 만점 기준 밀도(포화점): 100자당 2회면 100점
   const navScore = Math.min(100, Math.round(navDensity / _navDstar * 100));
   const idleRatio = totalDurationMs>0 ? idleMsTotal/totalDurationMs : 0;   // sec-09(비활성 구간)용 유지
-  // 사고정지 — 5~15초 멈춤(순수 시간)의 문서 분량 대비 밀도. D*=0.5(100자당 0.5회면 만점).
+  // 사고정지 — 3~15초 멈춤(순수 시간)의 문서 분량 대비 밀도. D*=0.5(100자당 0.5회면 만점).
   const _idleVolume = Math.max(totalChars || 0, 200);        // 짧은 글 밀도 폭주 방지용 바닥값
-  const pauseDensity = pauseCount / (_idleVolume / 100);     // 100자당 5~15초 멈춤 횟수
+  const pauseDensity = pauseCount / (_idleVolume / 100);     // 100자당 3~15초 멈춤 횟수
   const _idleDstar = 0.5;                                    // 만점 기준 밀도(포화점)
   const idleScore = Math.min(100, Math.round(pauseDensity / _idleDstar * 100));
   // 직접 타이핑 비율 — score 계산용 로컬 변수
@@ -6836,18 +6858,32 @@ async function buildReportFromSession(){
   renderScore(score);
 
   // ---- 종합 지표 (6개) ----
-  // 1. 평균 타이핑 속도 (chars/min) = 직접 타이핑 글자수 / 활성 분 수
+  // 1. 평균 타이핑 속도 (타/분) = 순수 입력 타수 / 타이핑 구간 시간(키 입력 버스트 2초 합)
   const activeMin = activeMs / 60000;
-  const avgSpeed = activeMin>0 ? Math.round(c.typing / activeMin) : 0;
+  const _ksSpd = events.filter(e=>e.type==='keystroke').sort((a,b)=>a.ts-b.ts);
+  let typingMs = 0;
+  if(_ksSpd.length > 1){
+    let bStart = _ksSpd[0].ts, bPrev = _ksSpd[0].ts;
+    for(let i=1;i<_ksSpd.length;i++){
+      if(_ksSpd[i].ts - bPrev > 2000){ typingMs += (bPrev - bStart); bStart = _ksSpd[i].ts; }
+      bPrev = _ksSpd[i].ts;
+    }
+    typingMs += (bPrev - bStart);
+  }
+  const inputKs = stats.inputKeystrokes || 0;
+  const avgSpeed = (typingMs > 0 && inputKs > 0)
+      ? Math.round(inputKs / (typingMs / 60000))
+      : (activeMin > 0 ? Math.round(c.typing / activeMin) : 0);   // 데모/구버전(순수타수·keystroke ts 부재) 폴백
   // 2. 작성 소요 시간 = totalDurationMs(첫 입력~마지막 입력), 순 타이핑 = activeMs(idle 제외).
   //    둘 다 상단(C-01)에서 이미 산출됨. tEv 는 아래 '최장 무중단' fallback 에 사용.
   const tEv = events.filter(e=>e.type==='typing').sort((a,b)=>a.ts-b.ts);
-  // 3. 총 수정 횟수 — 사용자 직접 편집 오퍼레이션 수만 집계.
-  //    AI생성·붙여넣기 '유입'은 문서의 출처(유형)이지 수정이 아니므로 제외
-  //    (삭제와 동일하게 '오퍼레이션이 일어난 횟수'로 카운트).
-  const editsCount = editOps.length;
-  // 4. 총 삭제 횟수 — delete events 수 (한 번의 액션 = 1)
-  const deletesCount = events.filter(e=>e.type==='delete').length;
+  // 3. 수정 글자수 — 프론티어 앞(비선형)에 직접 타이핑으로 삽입한 글자수. _reconstructFromAudit 가 stats 에 기록.
+  //    (데모/구버전 문서는 editOps.inserted 합으로 폴백)
+  const editsCount = (stats.editChars != null) ? stats.editChars
+                     : editOps.reduce((s,o)=> s + (o.inserted || 0), 0);
+  // 4. 삭제 글자수 — 지운 글자 전량. _reconstructFromAudit 가 stats 에 기록 (데모/구버전은 editOps.deleted 합 폴백)
+  const deletesCount = (stats.deleteChars != null) ? stats.deleteChars
+                       : editOps.reduce((s,o)=> s + (o.deleted || 0), 0);
   // 5. 최장 무중단 타이핑 — 실 keydown 시퀀스(type:'keystroke') 기준으로 2초 이내
   //    연속 run 의 최장. 각 keystroke 는 사용자가 물리적으로 누른 키 1회에 대응하며
   //    n=1 로 저장돼 있어 부풀림 없음. legacy 세션(keystroke 이벤트 없음)의 경우
@@ -6877,13 +6913,28 @@ async function buildReportFromSession(){
   setText('m_speed', String(avgSpeed));
   const _durEl=document.getElementById('m_duration');
   if(_durEl) _durEl.innerHTML = totalDurationMs>0 ? fmtHMS(totalDurationMs) : '—';
-  const _actEl=document.getElementById('m_activeTime');
-  if(_actEl) _actEl.textContent = totalDurationMs>0 ? ('순 타이핑 '+fmtHMS(activeMs).replace(/<[^>]+>/g,'').trim()) : '순 타이핑 —';
+  const _netEl=document.getElementById('m_netTyping');
+  if(_netEl) _netEl.innerHTML = totalDurationMs>0 ? fmtHMS(activeMs) : '—';
   setText('m_edits', String(editsCount));
   setText('m_deletes', String(deletesCount));
   setText('m_runChars', String(longest.chars));
   setText('m_runDur', String(Math.round(longest.durMs/1000)));
   setText('m_retention', retention===null ? '—' : String(retention));
+  // ---- 확장 활동/메타 정보 ----
+  const _inacEl=document.getElementById('m_inactive');
+  if(_inacEl) _inacEl.innerHTML = idleMsTotal>0 ? fmtHMS(idleMsTotal) : '0초';
+  setText('m_pause', pauseCount + '회');
+  setText('m_keystrokes', (stats.keystrokes||0).toLocaleString() + '회');
+  const inflowPct = total>0 ? Math.round((total - n_typing)/total*100) : 0;
+  setText('m_inflow', inflowPct + '%');
+  const _rec = (typeof boxLoadDocs === 'function' && currentDocId) ? (boxLoadDocs().find(d=>d.id===currentDocId) || {}) : {};
+  const _firstTs = stats.firstTs || _rec.createdAt || 0;
+  setText('m_firstAuthor', _firstTs ? _fmtSaved(_firstTs) : '—');
+  setText('m_lastSave', _rec.savedAt ? _fmtSaved(_rec.savedAt) : '미저장');
+  const _sc = _rec.saveCount || saveCount || 0;
+  setText('m_saveCount', _sc ? (_sc + '회') : '—');
+  const _hist = Array.isArray(_rec.saveHistory) ? _rec.saveHistory : [];
+  setText('m_saveHist', _hist.length ? ('글자수 ' + _hist.map(h=>Number(h.chars||0).toLocaleString()).join(' → ') + '자') : '');
   // breakdown bars — 실제 HTML 구조(.bd-val / .bd-bar > div)에 맞춘 선택자.
   // 구버전 선택자(.font-mono / .h-1.5)는 현재 마크업과 불일치해 하드코딩 목업이
   // 그대로 노출되던 문제 수정. sec-02 안 순서: 직접타이핑/AI수정/붙여넣기수정/
@@ -6896,7 +6947,7 @@ async function buildReportFromSession(){
     {v:((c.pasteInternal/Math.max(1,c.paste+c.pasteEdited+c.pasteInternal))*100).toFixed(1)+'%', w:Math.min(100,(c.pasteInternal/Math.max(1,c.paste+c.pasteEdited+c.pasteInternal))*100)},
     {v:depthScore+' / 100', w:depthScore},
     {v:navScore+' / 100', w:navScore, title:'100자당 '+navDensity.toFixed(1)+'회'},
-    {v:idleScore+' / 100', w:idleScore, title:'5~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회'},
+    {v:idleScore+' / 100', w:idleScore, title:'3~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회'},
   ];
   bdData.forEach((d,i)=>{
     if(bdBars[i]) bdBars[i].style.width=d.w+'%';
@@ -7548,7 +7599,7 @@ function seedDemo(){
   model = [];
   events = [];
   editOps = [];
-  stats = {keystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0};
+  stats = {keystrokes:0, inputKeystrokes:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0};
   blockSeq = 0;
   let bm = 0;
   let ts = Date.now() - 22 * 60 * 1000; // 22분 전 시작
