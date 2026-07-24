@@ -281,11 +281,11 @@
   body[data-view="doc"] #header-report{display:none !important;}
   body[data-view="doc"] #lnb{display:flex;}
   body[data-view="doc"]{background:#fff;}
-  body[data-view="doc"] #view-doc{padding-left:275px;padding-top:0;padding-bottom:84px;min-height:100vh;}
+  body[data-view="doc"] #view-doc{padding-left:275px;padding-top:0;padding-bottom:84px;min-height:100vh;display:flex;flex-direction:column;}
   /* 내부 */
-  .docview-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
-  .docview-title{font-size:18px;font-weight:700;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0 0 18px 4px;}
-  .docview-body{background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;padding:24px 28px;min-height:560px;font-size:14px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;}
+  .docview-page{max-width:1280px;width:100%;margin:0 auto;padding:32px 40px;flex:1;display:flex;flex-direction:column;min-height:0;}
+  .docview-title{font-size:18px;font-weight:700;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0 0 18px 4px;flex-shrink:0;}
+  .docview-body{background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;padding:24px 28px;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;}
   /* 액션 바 (LNB 우측 전체 너비 fixed) */
   .docview-actions{position:fixed;left:275px;right:0;bottom:0;padding:16px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   .docview-actions .docview-back{margin-right:auto;}
@@ -592,6 +592,16 @@
   .verdict-name[data-verdict="neutral"]{background:#CFFAFE;color:#0E7490;}
   .verdict-name[data-verdict="human"]{background:#D1FAE5;color:#047857;}
   .verdict-desc{margin-top:10px;font-size:13.5px;font-weight:500;color:var(--ck-gray-700);line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto;}
+  /* 작성 검증 결과 — 4단계 판정 헤드라인(배경 없음, 초록 텍스트) */
+  #sec-02 #sec02VerdictName{display:inline-flex;align-items:center;gap:6px;font-size:22px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;background:transparent;color:#059669;}
+  #sec-02 #sec02VerdictName svg{width:20px;height:20px;flex-shrink:0;}
+  /* 게이지 색 영역 호버 강조 */
+  #sec-02 #gaugeExt, #sec-02 #gaugeDirect{cursor:pointer;transition:stroke-width .15s ease, filter .15s ease;}
+  #sec-02 #gaugeExt:hover, #sec-02 #gaugeDirect:hover{stroke-width:19;filter:brightness(1.07) saturate(1.05);}
+  /* 주요 콘텐츠 5개 섹션 제목 폰트 축소 (기존 text-xl 20px → 17px) */
+  #sec-02 h2, #sec-replay h2, #sec-metrics h2, #sec-04 h2, #sec-07 h2{font-size:17px;}
+  /* 세부 활동 분석 시간값(작성 소요·순 타이핑·비활성)의 시간·분·초 단위 축소(13px 숫자 대비) */
+  #m_duration span, #m_netTyping span, #m_inactive span{font-size:11.5px;}
   /* extra: SEC-02 하단 해석 박스 hide (칩+안내로 대체) */
   body[data-write-variant="extra"] #sec02InterpretBox{display:none !important;}
   /* extra: 게이지 진행바 단색화 (그라디언트 override) */
@@ -635,11 +645,11 @@
   /* ===== SEC-02 breakdown 3그룹 ===== */
   .bd-group{margin-top:10px;}
   .bd-group:first-child{margin-top:0;}
-  .bd-group-head{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ck-gray-500);letter-spacing:0.04em;padding:8px 0 6px;margin-bottom:6px;border-bottom:1px solid var(--ck-secondary-100);}
+  .bd-group-head{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ck-gray-500);letter-spacing:0.04em;padding:8px 0 6px;margin-bottom:6px;}
   .bd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
   @media (max-width:768px){.bd-grid{grid-template-columns:1fr;}}
   .bd-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--ck-gray-700);margin-bottom:4px;}
-  .bd-val{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ck-gray-900);}
+  .bd-val{font-weight:700;color:var(--ck-gray-900);}
   .bd-w{font-size:10.5px;color:var(--ck-gray-400);font-weight:500;margin-left:6px;}
   .bd-bar{height:6px;background:var(--ck-secondary-100);border-radius:999px;overflow:hidden;}
   .bd-bar > div{height:100%;border-radius:999px;}
@@ -720,8 +730,8 @@
   .sgate-err{font-size:12px;color:#EF4444;margin-top:10px;}
   .sgate-btn{width:100%;height:48px;margin-top:18px;border:none;border-radius:12px;background:var(--ck-primary-500);color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
   .sgate-btn:hover{background:var(--ck-primary-600);}
-  /* 공유(수신자) 모드 — '작성 기록 Replay' 버튼 미제공 */
-  body[data-shared="1"] #btnOpenReplay{display:none !important;}
+  /* 공유(수신자) 모드 — 작성 과정 리플레이 섹션·목차 미제공 */
+  body[data-shared="1"] #sec-replay, body[data-shared="1"] a[href="#sec-replay"]{display:none !important;}
   /* 공유(수신자) 모드 — LNB 없는 풀스크린 (리포트 좌측 오프셋 제거) + 하단 액션바 전체 숨김 */
   body[data-shared="1"] #lnb{display:none !important;}
   body[data-shared="1"] #view-report{padding-left:0 !important;}
@@ -875,6 +885,10 @@
   html:has(body[data-view="write"]){overflow:hidden;height:100vh;}
   body[data-view="write"] #view-write{padding-left:240px;display:flex;flex-direction:column;height:100vh;overflow:hidden;padding-bottom:96px;}
   body[data-view="write"] #write-pageheader{flex-shrink:0;}
+  /* 전체폭 제목·문서유형 바 (에디터 그리드 위) */
+  body[data-view="write"] .write-titlebar{flex-shrink:0;padding:14px 40px 8px;}
+  body[data-view="write"] .write-titlebar .title-in{width:100%;border:none;outline:none;font-size:22px;font-weight:700;color:#0F172A;padding:0;background:transparent;}
+  body[data-view="write"] .write-typebar{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 40px 14px;margin-bottom:14px;border-bottom:1px solid var(--ck-secondary-200);}
   /* doc-panel 은 자기 안에서 스크롤 안 함 — muhaMount 안으로 위임 */
   body[data-view="write"] .doc-panel{overflow:hidden !important;min-height:0;}
   body[data-view="write"] .type-panel{min-height:0;}
@@ -1109,13 +1123,13 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 7.5l-9 9-5.5-5.5"/><path d="M9 3h6v4H9z"/></svg>
       <span>카피킬러 eXtension</span>
     </div>
-    <div class="lnb-item is-active" data-menu="write-extra" onclick="openMyDocs('main')">
+    <div class="lnb-item" data-menu="write-extra" style="display:none;" onclick="openMyDocs('main')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <span>문서 작성</span>
       <span class="lnb-chevron">›</span>
     </div>
     <div class="lnb-sub" data-menu="write-legacy" style="display:none;" onclick="newWrite()">초기 기획안</div>
-    <div class="lnb-item" data-menu="write-copy" onclick="openMyDocs('copy')">
+    <div class="lnb-item is-active" data-menu="write-copy" onclick="openMyDocs('copy')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       <span>문서 작성 (사본)</span>
       <span class="lnb-chevron">›</span>
@@ -1192,6 +1206,29 @@
     <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
   </header>
 
+  <!-- 전체폭: 제목 입력 -->
+  <div class="write-titlebar">
+    <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
+  </div>
+  <!-- 전체폭: 문서 유형 선택 -->
+  <div class="write-typebar">
+    <label class="doctype-label" for="docType">문서 유형</label>
+    <select class="doctype-select" id="docType" required aria-label="문서 유형">
+      <option value="" disabled selected>선택해주세요</option>
+      <option>과제물</option>
+      <option>자기소개서</option>
+      <option>학위논문</option>
+      <option>학술논문</option>
+      <option>연구/정책보고서</option>
+      <option>연구대회/공모자료</option>
+      <option>독후감</option>
+      <option>보도자료</option>
+      <option>블로그</option>
+      <option>생활기록부</option>
+      <option>기타</option>
+    </select>
+  </div>
+
   <div class="editor-grid">
     <!-- 좌측 패널 — 항상 채팅 모드 -->
     <div class="ed-panel type-panel">
@@ -1225,26 +1262,6 @@
 
     <!-- 우측: 에디터 -->
     <div class="ed-panel doc-panel">
-      <div class="title-row">
-        <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
-        <div class="doctype-field">
-          <label class="doctype-label" for="docType">문서 유형</label>
-          <select class="doctype-select" id="docType" required aria-label="문서 유형">
-            <option value="" disabled selected>선택해주세요</option>
-            <option>과제물</option>
-            <option>자기소개서</option>
-            <option>학위논문</option>
-            <option>학술논문</option>
-            <option>연구/정책보고서</option>
-            <option>연구대회/공모자료</option>
-            <option>독후감</option>
-            <option>보도자료</option>
-            <option>블로그</option>
-            <option>생활기록부</option>
-            <option>기타</option>
-          </select>
-        </div>
-      </div>
       <div class="stat-row">
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
         <div class="stat-right">
@@ -1324,9 +1341,8 @@
         <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="onBackToListClick()">목록으로 이동</button>
         <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>저장 후 작성 검증 결과 확인</button>
-        <!-- 사본(copy) 플로우 전용 -->
-        <button class="btn btn-ghost" id="btnCopySave" type="button" onclick="copyFlowSave()">저장</button>
-        <button class="btn btn-primary" id="btnCopyVerify" type="button" onclick="openCopyVerifyConfirm()">작성 검증 결과 보기</button>
+        <!-- 사본(copy) 플로우 전용 — 저장만 (작성 검증 결과는 목록에서 확인) -->
+        <button class="btn btn-primary" id="btnCopySave" type="button" onclick="copyFlowSave()">저장</button>
       </div>
     </div>
   </div>
@@ -1350,7 +1366,7 @@
     </button>
   </div>
   <div class="ra-right">
-    <div class="share-anchor">
+    <div class="share-anchor" style="display:none;">
       <button class="ra-btn ra-btn-ghost" type="button" onclick="toggleSharePopover(event)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         공유 링크 생성
@@ -1395,6 +1411,7 @@
     <div class="text-[11px] tracking-wider text-slate-400 font-semibold uppercase px-3 mb-2">목차</div>
     <a href="#sec-01" class="toc-item active block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">요약</a>
     <a href="#sec-02" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">자율성 지수</a>
+    <a href="#sec-replay" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">작성 과정 리플레이</a>
     <a href="#sec-metrics" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">종합 지표</a>
     <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 유입 분석</a>
     <a href="#sec-07" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">외부 유입 로그</a>
@@ -1500,7 +1517,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="text-xl font-bold text-slate-900" data-orig-label="작성 증명 지수" data-extra-label="작성 검증 결과">작성 검증 결과</h2>
-        <p class="text-sm text-slate-500 mt-1">작성 과정에서 관찰된 6가지 정황 증거를 종합하여 사람이 직접 작성했을 가능성을 %로 추정합니다.</p>
+        <p class="text-sm text-slate-500 mt-1" style="display:none;">작성 과정에서 관찰된 6가지 정황 증거를 종합하여 사람이 직접 작성했을 가능성을 %로 추정합니다.</p>
       </div>
       <button onclick="openCriteriaModal()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -1509,95 +1526,74 @@
     </div>
 
     <div class="grid lg:grid-cols-12 gap-6 items-center">
-      <!-- 반원 게이지 (트랙 + 색깔 진행 바 + 라벨, 바늘 제거, 숫자는 반원 안쪽에) -->
-      <div class="lg:col-span-4 flex flex-col items-center">
-        <div class="relative w-[240px] h-[140px]">
-          <svg viewBox="0 0 200 115" class="w-full h-full">
-            <defs>
-              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#991B1B"/>
-                <stop offset="25%" stop-color="#EF4444"/>
-                <stop offset="50%" stop-color="#EAB308"/>
-                <stop offset="75%" stop-color="#2CD1FF"/>
-                <stop offset="100%" stop-color="#10B981"/>
-              </linearGradient>
-            </defs>
-            <!-- 회색 트랙 -->
-            <path d="M 15 100 A 85 85 0 0 1 185 100" stroke="#E5E7EB" stroke-width="16" fill="none" stroke-linecap="round"/>
-            <!-- 색깔 진행 바 (score=74 → dashoffset = 267 * 0.26 ≈ 69) -->
-            <path id="gaugeFill" d="M 15 100 A 85 85 0 0 1 185 100" stroke="url(#gaugeGrad)" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="69" style="transition:stroke-dashoffset 600ms cubic-bezier(.34,1.56,.64,1);"/>
-            <text x="15" y="115" font-size="9" fill="#9CA3AF" text-anchor="middle">0</text>
-            <text x="185" y="115" font-size="9" fill="#9CA3AF" text-anchor="middle">100</text>
+      <!-- 판정 헤드라인(4단계, 가장 크게) + 안내 문구 + 좌:외부의존 / 우:직접작성 게이지 -->
+      <div class="lg:col-span-4 flex flex-col items-center text-center">
+        <div id="sec02VerdictName" data-verdict="neutral"><span>직접 작성 확인</span></div>
+        <p id="sec02VerdictDesc" class="text-[13px] text-slate-500 mt-2 leading-relaxed" style="max-width:290px;">직접 작성 패턴이 확인돼요. 신뢰할 수 있는 수준이에요.</p>
+        <div class="relative mt-4" style="width:230px;height:188px;">
+          <svg viewBox="0 0 200 160" style="position:absolute;top:0;left:0;width:230px;height:184px;">
+            <path id="gaugeTrack"  d="" stroke="#EEF0F3" stroke-width="15" fill="none" stroke-linecap="round"/>
+            <path id="gaugeExt"    d="" stroke="#EF4444" stroke-width="15" fill="none" stroke-linecap="round"/>
+            <path id="gaugeDirect" d="" stroke="#10B981" stroke-width="15" fill="none" stroke-linecap="round"/>
           </svg>
-          <!-- 숫자: 반원 내부 빈 공간(중하단)에 absolute 배치 -->
-          <div class="absolute inset-x-0 flex items-baseline justify-center" style="bottom:14px;">
-            <span class="text-5xl font-extrabold text-slate-900 leading-none" id="sec02Score">74</span>
-            <span class="text-lg font-semibold text-slate-400 ml-1 sec02-score-suffix">/ 100</span>
+          <div class="absolute text-center" style="top:104px;left:50%;transform:translate(-50%,-50%);width:150px;">
+            <div><span class="text-[42px] font-extrabold text-slate-900 leading-none" id="sec02Score">74</span></div>
+            <div class="text-[11.5px] text-slate-400 mt-1 font-medium">직접 작성 확률</div>
           </div>
         </div>
-        <!-- extra variant: 4-아이콘 (기계 / 반반 / 적당한 사람 / 완전 사람) -->
-        <div class="sec02-face-row" aria-hidden="true">
-          <span class="sec02-face" data-face="bot" title="확인 어려움">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="1.5"/><line x1="12" y1="3" x2="12" y2="7"/><circle cx="12" cy="3" r="0.8" fill="currentColor"/><rect x="7.5" y="11" width="2.6" height="2.6" fill="currentColor"/><rect x="13.9" y="11" width="2.6" height="2.6" fill="currentColor"/><line x1="8.5" y1="16.5" x2="15.5" y2="16.5"/></svg>
-          </span>
-          <span class="sec02-face" data-face="half" title="일부 확인">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 A9 9 0 0 1 12 21"/><path d="M12 3 A9 9 0 0 0 12 21" stroke-dasharray="1.5 1.5"/><line x1="12" y1="3" x2="12" y2="21"/><rect x="7.2" y="9.7" width="2.4" height="2.4" fill="currentColor"/><circle cx="15" cy="10.5" r="1.05" fill="currentColor"/><path d="M8.6 15 L11.6 15" /><path d="M12.4 15 Q14.2 16.4 15.6 15"/></svg>
-          </span>
-          <span class="sec02-face" data-face="neutral" title="직접 작성 확인">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10.5" r="0.95" fill="currentColor"/><circle cx="15" cy="10.5" r="0.95" fill="currentColor"/><path d="M9 15 Q12 16.2 15 15"/></svg>
-          </span>
-          <span class="sec02-face" data-face="human" title="직접 작성 인정">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10.5" r="0.95" fill="currentColor"/><circle cx="15" cy="10.5" r="0.95" fill="currentColor"/><path d="M7.5 14 Q12 18.5 16.5 14"/><path d="M4 10 Q6 9 7.5 10.5" /><path d="M20 10 Q18 9 16.5 10.5"/></svg>
-          </span>
+        <div class="flex items-center justify-center gap-4 mt-1 text-[12.5px] font-semibold text-slate-600">
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#EF4444;"></span>외부 의존 <b id="legExt" class="text-slate-900">26%</b></span>
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#10B981;"></span>직접 작성 <b id="legDirect" class="text-slate-900">74%</b></span>
         </div>
-        <!-- extra variant: 판정명 + 보조 설명 -->
-        <div class="sec02-verdict">
-          <div class="verdict-name" id="sec02VerdictName">직접 작성 확인</div>
-          <div class="verdict-desc" id="sec02VerdictDesc">직접 작성 패턴이 확인돼요. 신뢰할 수 있는 수준이에요.</div>
-        </div>
-        <div class="sec02-tier mt-2 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1" style="background:#D1FAE5;color:#047857;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>높음</span>
-        </div>
+        <div id="gaugeTip" style="display:none;position:fixed;z-index:9999;pointer-events:none;transform:translateX(-50%);max-width:280px;background:#1E293B;color:#fff;font-size:12px;line-height:1.5;padding:8px 11px;border-radius:8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.18);"></div>
+        <!-- (기존 4-아이콘·판정명 pill·등급 → 상단 헤드라인/게이지로 통합) -->
       </div>
 
       <!-- breakdown — 3그룹 구조 (텍스트 구성 / 행동 패턴 / 문서 성장) -->
       <div class="lg:col-span-8">
-        <!-- 그룹 1: 텍스트 구성 -->
+        <!-- 입력 증거 (표) -->
         <div class="bd-group">
           <div class="bd-group-head" data-orig-label="🖋 텍스트 구성" data-extra-label="🖋 입력 증거">🖋 입력 증거</div>
-          <div class="bd-grid">
-            <div>
-              <div class="bd-row"><span>직접 타이핑 기여</span><span><b class="bd-val">58.3%</b><span class="bd-w">(20%)</span></span></div>
-              <div class="bd-bar"><div style="width:58.3%;background:var(--ck-green-500);"></div></div>
-            </div>
-            <div>
-              <div class="bd-row"><span>AI 생성 후 수정</span><span><b class="bd-val">22.1%</b><span class="bd-w">(20%)</span></span></div>
-              <div class="bd-bar"><div style="width:22.1%;background:var(--ck-tertiary-500);"></div></div>
-            </div>
-            <div>
-              <div class="bd-row"><span>붙여넣기 후 수정</span><span><b class="bd-val">10.4%</b><span class="bd-w">(8%)</span></span></div>
-              <div class="bd-bar"><div style="width:10.4%;background:#EAB308;"></div></div>
-            </div>
+          <div class="rounded-xl border border-slate-200" style="overflow:hidden;">
+            <table class="w-full text-center">
+              <thead class="bg-slate-50">
+                <tr class="text-[12px] font-semibold text-slate-500">
+                  <th class="px-3 py-2 border-r border-slate-100 font-semibold">직접 타이핑 기여</th>
+                  <th class="px-3 py-2 border-r border-slate-100 font-semibold">AI 생성 후 수정</th>
+                  <th class="px-3 py-2 font-semibold">붙여넣기 후 수정</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-slate-100">
+                  <td class="px-3 py-2.5 border-r border-slate-100 text-[15px] font-bold text-slate-900"><span class="bd-val">58.3%</span></td>
+                  <td class="px-3 py-2.5 border-r border-slate-100 text-[15px] font-bold text-slate-900"><span class="bd-val">22.1%</span></td>
+                  <td class="px-3 py-2.5 text-[15px] font-bold text-slate-900"><span class="bd-val">10.4%</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- 그룹 2: 행동 패턴 -->
-        <div class="bd-group">
+        <!-- 사고 과정 증거 (표) -->
+        <div class="bd-group" style="margin-top:16px;">
           <div class="bd-group-head" data-orig-label="⌨ 행동 패턴" data-extra-label="⌨ 사고 과정 증거">⌨ 사고 과정 증거</div>
-          <div class="bd-grid">
-            <div>
-              <div class="bd-row"><span>수정 품질</span><span><b class="bd-val">68 / 100</b><span class="bd-w">(18%)</span></span></div>
-              <div class="bd-bar"><div style="width:68%;background:#EC4899;"></div></div>
-            </div>
-            <div>
-              <div class="bd-row"><span>비선형 이동 밀도</span><span><b class="bd-val">72 / 100</b><span class="bd-w">(13%)</span></span></div>
-              <div class="bd-bar"><div style="width:72%;background:#92400E;"></div></div>
-            </div>
-            <div>
-              <div class="bd-row"><span>사고정지</span><span><b class="bd-val">55 / 100</b><span class="bd-w">(14%)</span></span></div>
-              <div class="bd-bar"><div style="width:55%;background:var(--ck-yellow-500);"></div></div>
-            </div>
+          <div class="rounded-xl border border-slate-200" style="overflow:hidden;">
+            <table class="w-full text-center">
+              <thead class="bg-slate-50">
+                <tr class="text-[12px] font-semibold text-slate-500">
+                  <th class="px-3 py-2 border-r border-slate-100 font-semibold">수정 품질</th>
+                  <th class="px-3 py-2 border-r border-slate-100 font-semibold">비선형 이동 밀도</th>
+                  <th class="px-3 py-2 font-semibold">사고정지</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-slate-100">
+                  <td class="px-3 py-2.5 border-r border-slate-100 text-[15px] font-bold text-slate-900"><span class="bd-val">68 / 100</span></td>
+                  <td class="px-3 py-2.5 border-r border-slate-100 text-[15px] font-bold text-slate-900"><span class="bd-val">72 / 100</span></td>
+                  <td class="px-3 py-2.5 text-[15px] font-bold text-slate-900"><span class="bd-val">55 / 100</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1734,25 +1730,78 @@
   </div>
 </section>
 
+<!-- ===== SEC-REPLAY 작성 과정 리플레이 ===== -->
+<section id="sec-replay" class="scroll-mt pt-8">
+  <div class="card p-6">
+    <div class="mb-4">
+      <h2 class="text-xl font-bold text-slate-900">작성 과정 리플레이</h2>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">문서가 작성된 과정을 시간 순서대로 다시 재생합니다. 색상으로 입력 출처(직접 타이핑·AI 생성·붙여넣기 등)를 구분하며, 타임라인을 드래그해 특정 시점으로 이동할 수 있습니다.</p>
+    </div>
+    <!-- 색상 범례 -->
+    <div class="flex flex-wrap items-center gap-2 text-[12px] mb-3">
+      <span class="text-slate-400 mr-1">색상 가이드</span>
+      <span id="replayLegendDirect" class="px-2 py-0.5 rounded" style="background:var(--ck-green-100);color:var(--ck-green-800);">직접 타이핑</span>
+      <span class="px-2 py-0.5 origin-ai rounded">AI 생성</span>
+      <span class="px-2 py-0.5 origin-ai-edited rounded">AI 생성+수정</span>
+      <span class="px-2 py-0.5 origin-paste rounded">붙여넣기</span>
+      <span class="px-2 py-0.5 origin-paste-edited rounded">붙여넣기+수정</span>
+      <span id="replayLegendQuote" class="px-2 py-0.5 origin-quote-paste rounded" style="display:none;">인용</span>
+    </div>
+    <!-- 재생 캔버스 -->
+    <div id="replayBox" class="rounded-xl border border-slate-200 bg-white px-5 py-4 overflow-y-auto text-[15px] leading-[1.85] text-slate-900" style="min-height:220px;max-height:360px;white-space:pre-wrap;"></div>
+    <!-- 현재 상태 메시지 -->
+    <div class="mt-2 text-[12.5px] text-slate-600">
+      <span id="replayMsg">재생 버튼을 눌러 작성 흐름을 확인하세요</span>
+    </div>
+    <!-- 재생 컨트롤 -->
+    <div class="mt-3 flex items-center gap-3">
+      <button onclick="resetReplay()" title="처음으로" class="w-9 h-9 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center flex-shrink-0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </button>
+      <button id="btnReplay" onclick="toggleReplay()" title="재생/일시정지" class="w-9 h-9 rounded-lg text-white flex items-center justify-center flex-shrink-0" style="background:var(--ck-primary-500);">
+        <svg id="btnReplayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      </button>
+      <div class="replay-track-area">
+        <div class="replay-track-row replay-track-external">
+          <span class="replay-track-label">외부 유입</span>
+          <div class="replay-track-bar" id="replayMarkersTrack">
+            <div id="replayMarkers"></div>
+            <div class="replay-cursor" id="replayCursor">
+              <div class="replay-cursor-arrow"></div>
+              <div class="replay-cursor-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="replay-track-row replay-track-timeline">
+          <span class="replay-track-label">타임라인</span>
+          <input id="replaySeek" type="range" min="0" max="0" value="0" oninput="seekReplayTo(Number(this.value))"/>
+        </div>
+      </div>
+      <span id="replayClock" class="font-mono text-[12px] text-slate-700 min-w-[44px] text-right flex-shrink-0">00:00</span>
+      <div class="flex items-center gap-0.5 ml-2 bg-slate-100 rounded-lg p-0.5 flex-shrink-0">
+        <button class="speed-btn is-active" data-speed="1" onclick="setReplaySpeed(1)">1×</button>
+        <button class="speed-btn" data-speed="2.5" onclick="setReplaySpeed(2.5)">2.5×</button>
+        <button class="speed-btn" data-speed="5" onclick="setReplaySpeed(5)">5×</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== SEC-METRICS 종합 지표 ===== -->
 <section id="sec-metrics" class="scroll-mt pt-8">
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">세부 활동 분석</h2>
-      <p class="text-sm text-slate-500 mt-1">작성 소요·순 타이핑 시간, 수정·삭제 글자수, 키스트로크, 외부 유입, 저장 이력 등 작성 과정을 정량 지표로 상세히 보여줍니다.</p>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">작성 과정을 <b class="text-slate-700">작성 시간·리듬</b>, <b class="text-slate-700">입력·편집 분량</b>, <b class="text-slate-700">문서 이력</b> 3가지로 나눠 정량 지표로 보여줍니다.</p>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200" style="overflow:hidden;">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50">
-          <tr class="text-slate-600 text-left">
-            <th class="px-4 py-2.5 font-semibold text-[12px]" style="width:22%;">지표</th>
-            <th class="px-4 py-2.5 font-semibold text-[12px]">설명</th>
-            <th class="px-4 py-2.5 font-semibold text-[12px]" style="width:22%;">측정값</th>
-          </tr>
-        </thead>
+    <!-- ① 작성 시간·리듬 -->
+    <div class="bd-group-head">⏱ 작성 시간·리듬</div>
+    <div class="bg-white rounded-xl border border-slate-200 mb-5" style="overflow:hidden;">
+      <table class="w-full text-sm" style="table-layout:fixed;">
+        <colgroup><col style="width:23%;"><col><col style="width:26%;"></colgroup>
         <tbody class="text-slate-700">
-          <tr class="border-t border-slate-100">
+          <tr>
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">작성 소요 시간</td>
             <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">첫 입력부터 마지막 입력까지 걸린 시간</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_duration">—</span></td>
@@ -1761,41 +1810,6 @@
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">순 타이핑 시간</td>
             <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">15초 이상 멈춤(비활성)을 제외한 실제 작성 몰입 시간</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_netTyping">—</span></td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">최장 무중단 타이핑</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">멈추지 않고 가장 길게 이어서 직접 타이핑한 글자 수와 시간</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_runChars">—</span>자 · <span id="m_runDur">—</span>초</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">평균 타이핑 속도</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">1분간 직접 입력한 물리 타수(자모 단위)의 평균</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_speed">—</span> 타/분</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">수정 글자수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이미 써 놓은 곳(프론티어 앞)으로 되돌아가 삽입·교체한 글자수</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_edits">—</span> 자</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">삭제 글자수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">백스페이스·Delete·덮어쓰기로 지워진 글자의 총합</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_deletes">—</span> 자</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">원문 보존율</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">AI 생성·붙여넣기 텍스트가 최초 유입 후 그대로 남아 있는 비율</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_retention">—</span> %</td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">외부유입 총 비율</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서 중 AI 생성·붙여넣기 등 외부에서 유입된 텍스트의 비율</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_inflow">—</span></td>
-          </tr>
-          <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 키스트로크 수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">작성 중 누른 전체 키 입력 횟수(편집·이동 키 포함)</td>
-            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_keystrokes">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">비활성 시간</td>
@@ -1808,6 +1822,66 @@
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_pause">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">최장 무중단 타이핑</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">멈추지 않고 가장 길게 이어서 직접 타이핑한 글자 수와 시간</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_runChars">—</span>자 · <span id="m_runDur">—</span>초</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">평균 타이핑 속도</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">1분간 직접 입력한 물리 타수(자모 단위)의 평균</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_speed">—</span> 타/분</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ② 입력·편집 분량 -->
+    <div class="bd-group-head">✍ 입력·편집 분량</div>
+    <div class="bg-white rounded-xl border border-slate-200 mb-5" style="overflow:hidden;">
+      <table class="w-full text-sm" style="table-layout:fixed;">
+        <colgroup><col style="width:23%;"><col><col style="width:26%;"></colgroup>
+        <tbody class="text-slate-700">
+          <tr>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서에 입력된 전체 글자수</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_totalChars">—</span> 자</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 키스트로크 수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">작성 중 누른 전체 키 입력 횟수(편집·이동 키 포함)</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_keystrokes">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">수정 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이미 써 놓은 곳(프론티어 앞)으로 되돌아가 삽입·교체한 글자수</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_edits">—</span> 자</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">삭제 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">백스페이스·Delete·덮어쓰기로 지워진 글자의 총합</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_deletes">—</span> 자</td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">외부유입 총 비율</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서 중 AI 생성·붙여넣기 등 외부에서 유입된 텍스트의 비율</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_inflow">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">원문 보존율</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">AI 생성·붙여넣기 텍스트가 최초 유입 후 그대로 남아 있는 비율</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_retention">—</span> %</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ③ 문서 이력 -->
+    <div class="bd-group-head">🗂 문서 이력</div>
+    <div class="bg-white rounded-xl border border-slate-200" style="overflow:hidden;">
+      <table class="w-full text-sm" style="table-layout:fixed;">
+        <colgroup><col style="width:23%;"><col><col style="width:26%;"></colgroup>
+        <tbody class="text-slate-700">
+          <tr>
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">문서 최초 작성 시각</td>
             <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이 문서에 처음 입력이 시작된 시각</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_firstAuthor">—</span></td>
@@ -1818,9 +1892,14 @@
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_lastSave">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">누적 저장 횟수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">저장한 총 횟수와 저장 시점별 글자수 변화(BEFORE→AFTER)</td>
-            <td class="px-4 py-2.5 text-[13px]"><span id="m_saveCount">—</span> <span class="text-slate-400 text-[11.5px]" id="m_saveHist"></span></td>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 저장 횟수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">문서를 저장한 총 횟수</td>
+            <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_saveCount">—</span></td>
+          </tr>
+          <tr class="border-t border-slate-100">
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800 align-top">누적 저장 히스토리</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug align-top">저장 회차별 시각과 글자수</td>
+            <td class="px-4 py-2.5 text-[12.5px] leading-relaxed text-slate-700" id="m_saveHistList">—</td>
           </tr>
         </tbody>
       </table>
@@ -1832,8 +1911,8 @@
 <section id="sec-04" class="scroll-mt pt-8">
   <div class="card p-6">
     <div class="mb-4">
-      <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석</h2>
-      <p class="text-sm text-slate-500 mt-1">최종 문서의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
+      <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석 <span id="inflowTotalChars" class="text-[13px] font-semibold text-slate-400 ml-1"></span></h2>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">최종 문서의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
     </div>
 
     <!-- 텍스트 구성 분포 그래프 (필터 5종과 동일 범례) -->
@@ -1860,7 +1939,7 @@
     <!-- 회색 구분선 -->
     <hr class="my-5 border-slate-200" />
 
-    <!-- 필터 + Replay 버튼 -->
+    <!-- 필터 -->
     <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
       <div class="flex items-center gap-1.5 text-xs">
         <span class="text-slate-400 mr-1">필터</span>
@@ -1872,10 +1951,6 @@
         <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-yellow-500);--cat-dark:var(--ck-yellow-800);--cat-light:var(--ck-yellow-100);">붙여넣기+수정</button>
         <button onclick="toggleOrigin(this,'quote-paste')" class="origin-filter" data-cat="quote-paste" data-quote-label style="--cat:#EC4899;--cat-dark:#BE185D;--cat-light:#FCE7F3;">인용 붙여넣기</button>
       </div>
-      <button id="btnOpenReplay" onclick="openReplay()" class="h-8 px-3 rounded-lg text-xs font-semibold text-white flex items-center gap-1.5 hover:brightness-110" style="background:var(--ck-primary-500);">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        작성 기록 Replay
-      </button>
     </div>
 
     <div class="grid lg:grid-cols-12 gap-5">
@@ -1967,7 +2042,7 @@
     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
       <div>
         <h2 class="text-xl font-bold text-slate-900">외부 유입 로그</h2>
-        <p class="text-sm text-slate-500 mt-1">붙여넣기·AI 생성으로 유입된 블록을 시간순으로 기록한 로그입니다. 삽입 시각·분량·위치와 유입 전후 비교까지 블록별 상세 정보를 확인할 수 있습니다.</p>
+        <p class="text-sm text-slate-500 mt-1" style="display:none;">붙여넣기·AI 생성으로 유입된 블록을 시간순으로 기록한 로그입니다. 삽입 시각·분량·위치와 유입 전후 비교까지 블록별 상세 정보를 확인할 수 있습니다.</p>
       </div>
       <div class="flex items-center gap-2 text-xs">
         <span id="extChipPaste" class="px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-semibold">붙여넣기 0건</span>
@@ -2697,67 +2772,7 @@
 </div>
 
 <!-- ============ 모달: QR ============ -->
-<!-- ============ 모달: 작성 과정 Replay ============ -->
-<div id="replayModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/50" onclick="closeReplayModal()"></div>
-  <div class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col" style="max-height:90vh;">
-    <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-      <div>
-        <div class="text-xs text-slate-500 uppercase tracking-wider">REPLAY</div>
-        <h3 class="text-lg font-bold text-slate-900">작성 과정 다시보기</h3>
-      </div>
-      <button onclick="closeReplayModal()" class="text-slate-400 hover:text-slate-700 text-xl leading-none">✕</button>
-    </div>
-    <!-- 범례 -->
-    <div class="px-6 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2 text-[12px]">
-      <span class="text-slate-400 mr-1">색상 가이드</span>
-      <span id="replayLegendDirect" class="px-2 py-0.5 rounded" style="background:var(--ck-green-100);color:var(--ck-green-800);">직접 타이핑</span>
-      <span class="px-2 py-0.5 origin-ai rounded">AI 생성</span>
-      <span class="px-2 py-0.5 origin-ai-edited rounded">AI 생성+수정</span>
-      <span class="px-2 py-0.5 origin-paste rounded">붙여넣기</span>
-      <span class="px-2 py-0.5 origin-paste-edited rounded">붙여넣기+수정</span>
-      <span id="replayLegendQuote" class="px-2 py-0.5 origin-quote-paste rounded" style="display:none;">인용</span>
-    </div>
-    <!-- 캔버스 -->
-    <div id="replayBox" class="flex-1 px-6 py-4 overflow-y-auto text-[15px] leading-[1.85] text-slate-900" style="min-height:300px;max-height:50vh;white-space:pre-wrap;"></div>
-    <!-- 메시지 -->
-    <div class="px-6 py-2 border-t border-slate-100 text-[12.5px] text-slate-600 bg-slate-50/40">
-      <span id="replayMsg">재생 버튼을 눌러 작성 흐름을 확인하세요</span>
-    </div>
-    <!-- 컨트롤 -->
-    <div class="px-6 py-3.5 border-t border-slate-200 flex items-center gap-3">
-      <button onclick="resetReplay()" title="처음으로" class="w-9 h-9 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-      </button>
-      <button id="btnReplay" onclick="toggleReplay()" title="재생/일시정지" class="w-9 h-9 rounded-lg text-white flex items-center justify-center" style="background:var(--ck-primary-500);">
-        <svg id="btnReplayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-      </button>
-      <div class="replay-track-area">
-        <div class="replay-track-row replay-track-external">
-          <span class="replay-track-label">외부 유입</span>
-          <div class="replay-track-bar" id="replayMarkersTrack">
-            <div id="replayMarkers"></div>
-            <div class="replay-cursor" id="replayCursor">
-              <div class="replay-cursor-arrow"></div>
-              <div class="replay-cursor-line"></div>
-            </div>
-          </div>
-        </div>
-        <div class="replay-track-row replay-track-timeline">
-          <span class="replay-track-label">타임라인</span>
-          <input id="replaySeek" type="range" min="0" max="0" value="0" oninput="seekReplayTo(Number(this.value))"/>
-        </div>
-      </div>
-      <span id="replayClock" class="font-mono text-[12px] text-slate-700 min-w-[44px] text-right">00:00</span>
-      <div class="flex items-center gap-0.5 ml-2 bg-slate-100 rounded-lg p-0.5">
-        <button class="speed-btn is-active" data-speed="1" onclick="setReplaySpeed(1)">1×</button>
-        <button class="speed-btn" data-speed="2.5" onclick="setReplaySpeed(2.5)">2.5×</button>
-        <button class="speed-btn" data-speed="5" onclick="setReplaySpeed(5)">5×</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- 작성 과정 Replay 모달 → 결과 페이지 인라인 섹션(#sec-replay)으로 이동됨 -->
 
 <div id="qrModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeQRModal()"></div>
@@ -3156,35 +3171,48 @@ function applyWeights(){
   closeCriteriaModal();
   showToast('가중치가 적용되었습니다');
 }
+// 게이지 호(arc) 경로 — deg: 0=상단(12시)·시계방향 증가. 점들을 이어 폴리라인 path 생성(arc flag 회피).
+function _gaugeArc(cx,cy,r,dStart,dEnd,stepDeg){
+  const n=Math.max(1, Math.ceil(Math.abs(dEnd-dStart)/Math.abs(stepDeg)));
+  const pts=[];
+  for(let k=0;k<=n;k++){
+    const d=dStart+(dEnd-dStart)*(k/n), a=d*Math.PI/180;
+    pts.push((cx+r*Math.sin(a)).toFixed(2)+' '+(cy-r*Math.cos(a)).toFixed(2));
+  }
+  return 'M '+pts.join(' L ');
+}
 function renderScore(score){
+  score = Math.max(0, Math.min(100, Math.round(score)));
   const scoreEl=document.getElementById('sec02Score'); if(scoreEl) scoreEl.textContent=score;
-  const gaugeFill=document.getElementById('gaugeFill');
-  if(gaugeFill){
-    const C = 267;
-    gaugeFill.setAttribute('stroke-dashoffset', String(C * (1 - score/100)));
-  }
-  // extra: 4-단계 판정 (0-25 확인 어려움 / 26-50 일부 확인 / 51-75 직접 작성 확인 / 76-100 직접 작성 인정)
-  let faceKey, verdictName, verdictDesc;
-  if(score >= 76){
-    faceKey = 'human';
-    verdictName = '직접 작성 인정';
-    verdictDesc = '직접 작성 흔적이 뚜렷해요. 높은 신뢰도로 인정됩니다.';
-  } else if(score >= 51){
-    faceKey = 'neutral';
-    verdictName = '직접 작성 확인';
-    verdictDesc = '직접 작성 패턴이 확인돼요. 신뢰할 수 있는 수준이에요.';
-  } else if(score >= 26){
-    faceKey = 'half';
-    verdictName = '일부 확인';
-    verdictDesc = '직접 작성 흔적이 일부 있어요. 수정·퇴고 과정이 더 필요해요.';
-  } else {
-    faceKey = 'bot';
-    verdictName = '확인 어려움';
-    verdictDesc = '직접 작성 흔적이 거의 없어요. 외부 유입 비중이 높거나 기계적인 작성 패턴이 관찰돼요.';
-  }
-  document.querySelectorAll('#sec-02 .sec02-face').forEach(el => {
-    el.classList.toggle('is-active', el.dataset.face === faceKey);
+  // 게이지 — 좌:외부 의존(빨강,100-점수%) / 우:직접 작성(초록,점수%). 하단 90° 갭(270° arc = 225°~495°).
+  const CX=100, CY=94, R=74;
+  const track=document.getElementById('gaugeTrack');
+  if(track) track.setAttribute('d', _gaugeArc(CX,CY,R,225,495,4));
+  const greenSweep = 270*score/100, redSweep = 270 - greenSweep, meet = 495 - greenSweep;
+  const g = (greenSweep>18 && redSweep>18) ? 8 : 0;   // 두 색 경계 공백(양쪽 8° = 총 16°, 참고 이미지처럼 명확히)
+  const gEl=document.getElementById('gaugeDirect'), rEl=document.getElementById('gaugeExt');
+  if(gEl) gEl.setAttribute('d', greenSweep>0.6 ? _gaugeArc(CX,CY,R,495, meet+g, 4) : '');   // 직접작성: 우측 끝→중앙
+  if(rEl) rEl.setAttribute('d', redSweep>0.6 ? _gaugeArc(CX,CY,R,225, meet-g, 4) : '');      // 외부의존: 좌측 끝→중앙
+  // 게이지 색 영역 호버 툴팁 — 점수 반영 안내 문구
+  if(gEl) gEl.dataset.tip = '작성자가 스스로 생각하며 작성했을 가능성이 ' + score + '%입니다.';
+  if(rEl) rEl.dataset.tip = '스스로 작성하기 보다 외부 콘텐츠에 의존하여 작성했을 가능성이 ' + (100 - score) + '%입니다.';
+  [gEl, rEl].forEach(el => {
+    if(el && !el.dataset.tipBound){
+      el.dataset.tipBound = '1';
+      const _place = (e)=>{ const t=document.getElementById('gaugeTip'); if(!t) return; t.style.left = e.clientX + 'px'; t.style.top = (e.clientY + 16) + 'px'; };
+      el.addEventListener('mouseenter', function(e){ const t = document.getElementById('gaugeTip'); if(t){ t.textContent = this.dataset.tip || ''; t.style.display = 'block'; _place(e); } });
+      el.addEventListener('mousemove', _place);
+      el.addEventListener('mouseleave', function(){ const t = document.getElementById('gaugeTip'); if(t) t.style.display = 'none'; });
+    }
   });
+  const legD=document.getElementById('legDirect'); if(legD) legD.textContent = score+'%';
+  const legE=document.getElementById('legExt'); if(legE) legE.textContent = (100-score)+'%';
+  // 4-단계 판정 (0-25 확인 어려움 / 26-50 일부 확인 / 51-75 직접 작성 확인 / 76-100 직접 작성 인정)
+  let faceKey, verdictName, verdictDesc, vIcon;
+  if(score >= 76){ faceKey='human'; verdictName='직접 작성 인정'; verdictDesc='직접 작성 흔적이 뚜렷해요. 높은 신뢰도로 인정됩니다.'; vIcon='<circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.3 2.3L15.5 9.5"/>'; }
+  else if(score >= 51){ faceKey='neutral'; verdictName='직접 작성 확인'; verdictDesc='직접 작성 패턴이 확인돼요. 신뢰할 수 있는 수준이에요.'; vIcon='<path d="M20 6 9 17l-5-5"/>'; }
+  else if(score >= 26){ faceKey='half'; verdictName='일부 확인'; verdictDesc='직접 작성 흔적이 일부 있어요. 수정·퇴고 과정이 더 필요해요.'; vIcon='<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12.01" y2="8"/>'; }
+  else { faceKey='bot'; verdictName='확인 어려움'; verdictDesc='직접 작성 흔적이 거의 없어요. 외부 유입 비중이 높거나 기계적인 작성 패턴이 관찰돼요.'; vIcon='<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'; }
   const vn = document.getElementById('sec02VerdictName');
   const vd = document.getElementById('sec02VerdictDesc');
   if(vn){ vn.textContent = verdictName; vn.setAttribute('data-verdict', faceKey); }
@@ -3631,7 +3659,7 @@ function seekReplayTo(idx){
 /* RP-008 속도 전환 */
 function setReplaySpeed(s){
   replaySpeed = Number(s) || 1;
-  document.querySelectorAll('#replayModal .speed-btn').forEach(b=>{
+  document.querySelectorAll('#sec-replay .speed-btn').forEach(b=>{
     b.classList.toggle('is-active', Number(b.dataset.speed)===replaySpeed);
   });
   if(replayPlaying){ pauseReplay(); playReplay(); }
@@ -3645,7 +3673,7 @@ function prepReplay(){
   replaySpeed = 1;
   const seek = document.getElementById('replaySeek');
   if(seek){ seek.max = String(replayFrames.length); seek.value = '0'; }
-  document.querySelectorAll('#replayModal .speed-btn').forEach(b=>{
+  document.querySelectorAll('#sec-replay .speed-btn').forEach(b=>{
     b.classList.toggle('is-active', Number(b.dataset.speed)===1);
   });
   setReplayIcon('play');
@@ -3706,13 +3734,14 @@ function bindReplayCursor(){
 }
 
 /* RP-001/RP-002 모달 open/close */
+// 리플레이는 결과 페이지 인라인 섹션(#sec-replay)으로 이동 — 모달 open/close 는 잔여 호출(ESC 등) 안전 처리용
 function openReplayModal(){
-  document.getElementById('replayModal').classList.remove('hidden');
+  const m=document.getElementById('replayModal'); if(m) m.classList.remove('hidden');
   prepReplay();
 }
 function closeReplayModal(){
   pauseReplay();
-  document.getElementById('replayModal').classList.add('hidden');
+  const m=document.getElementById('replayModal'); if(m) m.classList.add('hidden');
 }
 // ESC 처리는 기존 keydown 핸들러에서 이미 다른 모달들 닫고 있음 — 함께 처리
 
@@ -3862,7 +3891,7 @@ bindCompoTooltip();
 (function reorderReportSections(){
   const main=document.querySelector('#view-report main');
   if(!main) return;
-  const mainOrder = ['sec-01','sec-02','sec-metrics','sec-04','sec-07','sec-11'];
+  const mainOrder = ['sec-01','sec-02','sec-replay','sec-metrics','sec-04','sec-07','sec-11'];
   const futureOrder = ['sec-03','sec-06','sec-08','sec-09','sec-15','sec-16'];
   // 메인 섹션을 정해진 순서로 재배치
   mainOrder.forEach(id=>{ const s=document.getElementById(id); if(s) main.appendChild(s); });
@@ -4902,7 +4931,7 @@ function openMyDocs(flow){
 
 /* 플로우 구분 — 'main'(문서 작성 원본) | 'copy'(문서 작성 사본, 격리된 문서함·정책 분기 실험용).
    UI/스펙은 동일하게 쓰되, 문서함 저장소를 분리하고 정책은 activeFlow 로 분기한다. */
-let activeFlow = 'main';
+let activeFlow = 'copy';
 function _boxStoreKey(){ return activeFlow === 'copy' ? 'ksv_box_docs_copy' : 'ksv_box_docs'; }
 function boxLoadDocs(){
   try{ return JSON.parse(localStorage.getItem(_boxStoreKey()) || '[]'); }catch(e){ return []; }
@@ -5262,9 +5291,10 @@ function renderBoxList(){
     </div>`;
   }).join('');
 }
-/* 문서에 작성 검증 결과가 있는가 — 사본은 검증(잠금)된 문서만, 원본은 항상 결과 있음(저장=검증 진입) */
+/* 문서에 작성 검증 결과를 확인할 수 있는가 — 정책 변경: 사본도 저장된 문서면 언제든
+   목록에서 온디맨드 검증(boxScanDoc)으로 결과 확인 가능. 별도 잠금 없음. */
 function _docHasResult(d){
-  return activeFlow !== 'copy' || !!(d && d.verifiedLocked === true);
+  return !!d;
 }
 /* 원문 미리보기(읽기 전용) — 사본 플로우 '문서 열기'. 서식 HTML 우선, 없으면 텍스트 폴백 */
 function boxViewDoc(id){
@@ -5283,18 +5313,13 @@ function boxViewDoc(id){
       bodyEl.textContent = (d.model || []).map(m => m.ch).join('');  // 폴백: 순수 텍스트
     }
   }
-  // 검증 완료(잠금) 문서는 수정 불가
+  // 정책 변경: 작성 검증 결과 확인 후에도 문서 수정 허용 → '문서 수정' 항상 활성
   const editBtn = document.getElementById('docViewEditBtn');
   const editWrap = document.getElementById('docViewEditWrap');
   if(editBtn){
-    editBtn.removeAttribute('title');   // 네이티브 툴팁 대신 커스텀(data-tip) 사용
-    if(_docHasResult(d)){
-      editBtn.setAttribute('disabled','');
-      if(editWrap) editWrap.setAttribute('data-tip', '이미 작성 검증 검사를 완료하여 문서를 수정할 수 없습니다.');
-    } else {
-      editBtn.removeAttribute('disabled');
-      if(editWrap) editWrap.removeAttribute('data-tip');
-    }
+    editBtn.removeAttribute('title');
+    editBtn.removeAttribute('disabled');
+    if(editWrap) editWrap.removeAttribute('data-tip');
   }
   // 작성 검증 결과 확인 — 결과 있을 때만
   const resBtn = document.getElementById('docViewResultBtn');
@@ -5568,9 +5593,9 @@ function copyFlowSave(){
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('copy save fail', e); }
   saveCount++;
   showToast('저장되었습니다');
-  // 저장 후 내 문서 목록으로 이동 (현재 사본 플로우 유지)
-  document.body.dataset.view = 'box';
-  if(typeof renderBoxList === 'function') renderBoxList();
+  // 저장 후 해당 문서 미리보기(문서 열기) 화면으로 이동
+  if(currentDocId && typeof boxViewDoc === 'function') boxViewDoc(currentDocId);
+  else { document.body.dataset.view = 'box'; if(typeof renderBoxList === 'function') renderBoxList(); }
   window.scrollTo(0,0);
 }
 // [작성 검증 결과 보기] — 확인 모달 → 검증 시 문서 잠금 + 리포트 진입
@@ -6934,7 +6959,15 @@ async function buildReportFromSession(){
   const _sc = _rec.saveCount || saveCount || 0;
   setText('m_saveCount', _sc ? (_sc + '회') : '—');
   const _hist = Array.isArray(_rec.saveHistory) ? _rec.saveHistory : [];
-  setText('m_saveHist', _hist.length ? ('글자수 ' + _hist.map(h=>Number(h.chars||0).toLocaleString()).join(' → ') + '자') : '');
+  const _histEl = document.getElementById('m_saveHistList');
+  if(_histEl) _histEl.innerHTML = _hist.length
+    ? _hist.map((h,i)=> (i+1)+'회 ' + _fmtSaved(h.ts) + ' (' + Number(h.chars||0).toLocaleString() + '자)').join('<br>')
+    : '기록 없음';
+  // 총 글자수(최종 문서 입력 글자수) + 텍스트 유입 분석 헤더 표기
+  setText('m_totalChars', (totalChars||0).toLocaleString());
+  setText('inflowTotalChars', '(총 ' + (totalChars||0).toLocaleString() + '자)');
+  // 작성 과정 리플레이(인라인 섹션) — 결과 페이지 진입 시 프레임 빌드 + 초기 렌더(재생 대기 상태)
+  try { if(typeof prepReplay === 'function' && model && model.length) prepReplay(); } catch(e){ console.warn('replay init fail', e); }
   // breakdown bars — 실제 HTML 구조(.bd-val / .bd-bar > div)에 맞춘 선택자.
   // 구버전 선택자(.font-mono / .h-1.5)는 현재 마크업과 불일치해 하드코딩 목업이
   // 그대로 노출되던 문제 수정. sec-02 안 순서: 직접타이핑/AI수정/붙여넣기수정/
@@ -6950,7 +6983,6 @@ async function buildReportFromSession(){
     {v:idleScore+' / 100', w:idleScore, title:'3~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회'},
   ];
   bdData.forEach((d,i)=>{
-    if(bdBars[i]) bdBars[i].style.width=d.w+'%';
     if(bdValues[i]){ bdValues[i].textContent=d.v; if(d.title) bdValues[i].title=d.title; }
   });
 
