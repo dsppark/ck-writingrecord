@@ -99,7 +99,7 @@
   }
   *{font-family:'Pretendard','Arial',sans-serif;}
   .font-mono{font-family:'JetBrains Mono',monospace;}
-  body{background:var(--ck-secondary-100);color:var(--color-text-primary);}
+  body{background:var(--ck-secondary-100);color:var(--color-text-primary);font-size:14px;}
   .card{background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);}
   .card-surface{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-card);}
 
@@ -285,11 +285,14 @@
   /* 내부 */
   .docview-page{max-width:1280px;width:100%;margin:0 auto;padding:32px 40px;flex:1;display:flex;flex-direction:column;min-height:0;}
   .docview-title{font-size:18px;font-weight:700;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0 0 18px 4px;flex-shrink:0;}
-  .docview-body{background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;padding:24px 28px;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;}
+  .docview-body{background:#fff;border:1px solid #C8C8C8;border-radius:8px;padding:24px 28px;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:1.85;color:var(--ck-gray-900);white-space:pre-wrap;word-break:break-word;}
   /* 액션 바 (LNB 우측 전체 너비 fixed) */
   .docview-actions{position:fixed;left:275px;right:0;bottom:0;padding:16px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   .docview-actions .docview-back{margin-right:auto;}
-  .dv-btn{padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
+  .dv-btn{padding:10px 18px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
+  /* 참고(copykiller) 매칭: 목록으로 이동=네이비 아웃라인, 문서 수정=네이비 채움 */
+  .docview-actions .docview-back{border-color:#314158;color:#314158;}
+  .docview-actions #docViewEditBtn{background:#314158;color:#fff;border-color:#314158;}
   .dv-btn:hover{background:var(--ck-secondary-50);}
   /* 비활성 '문서 수정' 안내 — 즉시 뜨는 커스텀 툴팁(네이티브 title 대체) */
   .dv-tip-wrap{position:relative;display:inline-flex;}
@@ -593,13 +596,14 @@
   .verdict-name[data-verdict="human"]{background:#D1FAE5;color:#047857;}
   .verdict-desc{margin-top:10px;font-size:13.5px;font-weight:500;color:var(--ck-gray-700);line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto;}
   /* 작성 검증 결과 — 4단계 판정 헤드라인(배경 없음, 초록 텍스트) */
-  #sec-02 #sec02VerdictName{display:inline-flex;align-items:center;gap:6px;font-size:22px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;background:transparent;color:#059669;}
+  #sec-02 #sec02VerdictName{display:inline-flex;align-items:center;gap:6px;font-size:22px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;background:transparent;color:#00C2FF;}
   #sec-02 #sec02VerdictName svg{width:20px;height:20px;flex-shrink:0;}
   /* 게이지 색 영역 호버 강조 */
   #sec-02 #gaugeExt, #sec-02 #gaugeDirect{cursor:pointer;transition:stroke-width .15s ease, filter .15s ease;}
   #sec-02 #gaugeExt:hover, #sec-02 #gaugeDirect:hover{stroke-width:19;filter:brightness(1.07) saturate(1.05);}
   /* 주요 콘텐츠 5개 섹션 제목 폰트 축소 (기존 text-xl 20px → 17px) */
-  #sec-02 h2, #sec-replay h2, #sec-metrics h2, #sec-04 h2, #sec-07 h2{font-size:17px;}
+  #sec-02 h2, #sec-replay h2, #sec-compo h2, #sec-metrics h2, #sec-04 h2, #sec-07 h2{font-size:17px;}
+  #sec-04{display:none !important;}   /* 텍스트 유입 분석 섹션 숨김(그래프는 sec-compo로 이동) */
   /* 세부 활동 분석 시간값(작성 소요·순 타이핑·비활성)의 시간·분·초 단위 축소(13px 숫자 대비) */
   #m_duration span, #m_netTyping span, #m_inactive span{font-size:11.5px;}
   /* extra: SEC-02 하단 해석 박스 hide (칩+안내로 대체) */
@@ -661,7 +665,7 @@
   body[data-view="report"]{padding-bottom:84px;}
   .report-actions .ra-left{margin-right:auto;display:flex;gap:8px;}
   .report-actions .ra-right{display:flex;gap:8px;margin-left:auto;}
-  .ra-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);transition:background .12s;}
+  .ra-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);transition:background .12s;}
   .ra-btn:hover{background:var(--ck-secondary-50);}
   .ra-btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);}
   .ra-btn-primary:hover{background:var(--ck-primary-600);}
@@ -728,7 +732,7 @@
   .sgate-input:focus{border-color:var(--ck-primary-500);}
   .sgate-input::placeholder{letter-spacing:6px;color:var(--ck-secondary-300);font-size:16px;}
   .sgate-err{font-size:12px;color:#EF4444;margin-top:10px;}
-  .sgate-btn{width:100%;height:48px;margin-top:18px;border:none;border-radius:12px;background:var(--ck-primary-500);color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
+  .sgate-btn{width:100%;height:48px;margin-top:18px;border:none;border-radius:12px;background:var(--ck-primary-500);color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
   .sgate-btn:hover{background:var(--ck-primary-600);}
   /* 공유(수신자) 모드 — 작성 과정 리플레이 섹션·목차 미제공 */
   body[data-shared="1"] #sec-replay, body[data-shared="1"] a[href="#sec-replay"]{display:none !important;}
@@ -791,10 +795,18 @@
   /* 내 문서함 페이지 내부 */
   .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
   .box-pageheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
-  .box-pageheader h1{font-size:24px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
-  .box-newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:10px 18px;font-size:13.5px;font-weight:700;border:0;cursor:pointer;}
+  .box-pageheader h1{font-size:18px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
+  .box-newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:700;border:0;cursor:pointer;}
   .box-newbtn:hover{background:var(--ck-primary-600);}
   /* 필터 바 */
+  /* 내 문서함 상단 안내 배너 */
+  .box-notice{display:flex;align-items:flex-start;gap:11px;background:transparent;border:1px solid #00C2FF;border-radius:10px;padding:16px 20px;margin-bottom:18px;}
+  .box-notice-ico{flex-shrink:0;color:#00C2FF;margin-top:1px;}
+  .box-notice-text{flex:1;min-width:0;}
+  .box-notice-title{font-size:14px;font-weight:700;color:#00C2FF;line-height:1.6;}
+  .box-notice-sub{font-size:13px;color:#3E4448;line-height:1.6;margin-top:6px;}
+  .box-notice-close{flex-shrink:0;background:none;border:none;color:#3E4448;font-size:16px;line-height:1;cursor:pointer;padding:2px 4px;}
+  .box-notice-close:hover{opacity:0.7;}
   .box-filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:6px 0;}
   .box-filterbar .box-checkall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ck-gray-700);font-weight:600;margin-right:auto;}
   .box-filterbar select,
@@ -802,12 +814,12 @@
   .box-filterbar input[type="date"]{font-size:13px;padding:7px 10px;border:1px solid var(--ck-gray-300);border-radius:6px;color:var(--ck-gray-700);background:#fff;font-family:inherit;}
   .box-filterbar select{min-width:80px;}
   .box-filterbar input[type="text"]{min-width:200px;}
-  .box-filterbar .box-search{font-size:13px;font-weight:700;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:6px;padding:7px 14px;cursor:pointer;}
+  .box-filterbar .box-search{font-size:14px;font-weight:600;color:#00C2FF;background:#fff;border:1px solid #00C2FF;border-radius:8px;padding:7px 16px;cursor:pointer;}
   .box-filterbar .box-search:hover{background:var(--ck-primary-50);}
   .box-filterbar .box-range{display:inline-flex;align-items:center;gap:4px;}
   /* 문서 리스트 */
   .box-list{display:flex;flex-direction:column;gap:8px;}
-  .box-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;}
+  .box-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#F4F5F6;border:1px solid #EDEFF1;border-radius:8px;}
   .box-row .box-rowchk{flex-shrink:0;}
   .box-row .box-rowmain{flex:1;min-width:0;}
   .box-row .box-rowtitle{font-size:14px;font-weight:700;color:var(--ck-gray-900);margin-bottom:6px;cursor:pointer;display:inline-block;transition:color .12s;}
@@ -815,8 +827,8 @@
   .box-row .box-rowmeta{font-size:12px;color:var(--ck-gray-500);}
   .box-row .box-rowmeta b{font-weight:500;color:var(--ck-gray-600);}
   .box-row .box-rowactions{display:flex;gap:8px;flex-shrink:0;}
-  .box-actionbtn{font-size:12px;font-weight:700;border-radius:6px;padding:8px 14px;cursor:pointer;border:0;}
-  .box-actionbtn.ghost{background:var(--ck-primary-50);color:var(--ck-primary-700);}
+  .box-actionbtn{font-size:16px;font-weight:600;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid transparent;}
+  .box-actionbtn.ghost{background:#fff;color:#00C2FF;border-color:#00C2FF;}
   .box-actionbtn.ghost:hover{background:var(--ck-primary-100);}
   .box-actionbtn.solid{background:var(--ck-primary-500);color:#fff;}
   .box-actionbtn.solid:hover{background:var(--ck-primary-600);}
@@ -830,7 +842,7 @@
   .box-empty{padding:64px 20px;text-align:center;color:var(--ck-gray-500);font-size:14px;background:#fff;border:1px dashed var(--ck-secondary-200);border-radius:10px;}
   /* 삭제 버튼 (우측 끝) */
   .box-deleterow{display:flex;justify-content:flex-end;margin-top:16px;}
-  .box-delete{background:var(--ck-accent-600,#FF006B);color:#fff;font-size:13px;font-weight:700;border:0;border-radius:6px;padding:8px 16px;cursor:pointer;}
+  .box-delete{background:#FF006B;color:#fff;font-size:14px;font-weight:600;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;}
   .box-delete:hover{filter:brightness(0.92);}
   /* 페이지네이션 */
   .box-pagination{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:36px;font-size:13px;color:var(--ck-gray-600);}
@@ -844,7 +856,7 @@
   body[data-view="write"] #view-write{padding-top:0;padding-bottom:84px;}
   /* 페이지 헤더 (제목 + 데모 버튼) */
   #write-pageheader{display:flex;align-items:center;justify-content:space-between;padding:28px 40px 18px;background:#fff;}
-  #write-pageheader .write-pagetitle{font-size:22px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
+  #write-pageheader .write-pagetitle{font-size:18px;font-weight:800;color:var(--ck-gray-900);letter-spacing:-0.01em;margin:0;}
   #write-pageheader .write-demobtn{font-size:12px;font-weight:600;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:8px;padding:7px 12px;cursor:pointer;}
   #write-pageheader .write-demobtn:hover{background:var(--ck-primary-50);}
   /* editor-grid: 흰 배경 + height 자동 */
@@ -1007,26 +1019,44 @@
   .chat-foot{padding:8px 16px 14px;font-size:11px;color:#94A3B8;line-height:1.5;}
 
   /* 좌측: AI 초안 생성 폼 */
-  .draftgen{flex:1;display:flex;flex-direction:column;height:100%;overflow-y:auto;}
-  .dg-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .draftgen{flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden;min-height:0;}
+  .dg-typerow{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-shrink:0;}
+  .dg-typelabel{font-size:12.5px;font-weight:600;color:var(--ck-gray-500);flex-shrink:0;}
+  .dg-typeselect{flex:1;height:34px;padding:0 10px;border:1px solid var(--ck-gray-300);border-radius:7px;font-size:13px;font-family:inherit;color:var(--ck-gray-800);background:#fff;cursor:pointer;outline:none;}
+  /* 문서 유형 선택 패널 */
+  .typesel{display:flex;flex-direction:column;height:100%;overflow-y:auto;}
+  .typesel-head{font-size:15px;font-weight:700;color:var(--ck-gray-900);margin-bottom:10px;}
+  .typesel-desc{font-size:13px;font-weight:400;color:var(--ck-gray-800);margin-bottom:22px;}
+  .typesel-note{font-size:11px;color:var(--ck-gray-400);text-align:right;margin:4px 0 14px;}
+  .typesel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .typesel-btn{padding:13px 8px;border:1px solid var(--ck-gray-300);border-radius:8px;background:#fff;font-size:13.5px;font-weight:700;color:#1E293B;cursor:pointer;transition:border-color .15s,background .15s,color .15s;}
+  .typesel-btn:hover{border-color:var(--ck-primary-400);background:var(--ck-primary-50);color:var(--ck-primary-700);}
+  .typesel-btn.is-selected{border-color:var(--ck-primary-500);background:var(--ck-primary-50);color:var(--ck-primary-700);box-shadow:0 0 0 1px var(--ck-primary-500) inset;}
+  /* AI 어시스턴트 — 뒤로가기·선택 유형 칩 */
+  .dg-back{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;font-size:12.5px;font-weight:600;color:var(--ck-gray-500);background:none;border:none;cursor:pointer;padding:0;margin-bottom:12px;}
+  .dg-back:hover{color:var(--ck-gray-900);}
+  .dg-typechip{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:700;color:var(--ck-primary-700);background:var(--ck-primary-50);border:1px solid var(--ck-primary-200);border-radius:999px;padding:4px 12px;margin-bottom:14px;}
+  /* 우측 제목 입력 행 */
+  .doc-panel-title{padding:14px 18px 4px;flex-shrink:0;}
+  .dg-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;}
   .dg-ico{width:30px;height:30px;border-radius:8px;background:#DEF4FB;color:#0b647e;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .dg-title{font-size:15px;font-weight:700;color:#0F172A;line-height:1.3;}
-  .dg-desc{font-size:12.5px;color:#64748B;line-height:1.6;margin:0 0 14px;}
+  .dg-desc{font-size:12.5px;color:#64748B;line-height:1.6;margin:0 0 14px;flex-shrink:0;}
   .dg-label{font-size:11.5px;font-weight:600;color:#64748B;margin-bottom:6px;}
   .dg-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
   .dg-preset{padding:5px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:999px;font-size:12.5px;color:#334155;cursor:pointer;transition:all .15s;font-family:inherit;}
   .dg-preset:hover{border-color:#00C2FF;background:#EFFAFF;color:#0078AB;}
-  .dg-prompt{width:100%;resize:none;padding:11px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;line-height:1.55;outline:none;min-height:66px;}
+  .dg-prompt{width:100%;resize:none;padding:11px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;line-height:1.55;outline:none;flex:1;min-height:80px;overflow-y:auto;}
   .dg-prompt:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,0.12);}
   .dg-select{width:100%;height:40px;padding:0 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:inherit;color:#334155;background:#fff;outline:none;cursor:pointer;}
   .dg-select:focus{border-color:#00C2FF;}
-  .dg-generate{width:100%;margin-top:14px;height:44px;border:none;border-radius:10px;background:var(--ck-primary-500);color:#06303c;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s;}
+  .dg-generate{width:100%;margin-top:14px;height:44px;border:none;border-radius:10px;background:var(--ck-primary-500);color:#06303c;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s;flex-shrink:0;}
   .dg-generate:hover{opacity:.9;}
   .dg-generate:disabled{background:#CBD5E1;color:#fff;cursor:not-allowed;}
   .dg-note{margin-top:11px;display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:#94A3B8;line-height:1.5;}
   .dg-note svg{flex-shrink:0;margin-top:2px;}
   .dg-note b{color:#7C52F1;font-weight:700;}
-  .dg-result{margin-top:14px;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;background:#F8FAFC;}
+  .dg-result{margin-top:14px;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;background:#F8FAFC;flex-shrink:0;}
   .dg-result-msg{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#0f9d58;margin-bottom:5px;}
   .dg-result-sub{font-size:11.5px;color:#64748B;line-height:1.5;}
   .dg-result-msg svg{color:#0f9d58;flex-shrink:0;}
@@ -1081,7 +1111,7 @@
   .foot-count{padding:8px 18px;font-size:11.5px;color:#64748B;border-top:1px solid #F1F5F9;background:#FAFBFC;}
   .foot-count b{color:var(--ck-primary-700);font-family:'JetBrains Mono',monospace;}
   .doc-actions{display:flex;gap:8px;padding:12px 18px;border-top:1px solid #F1F5F9;background:#fff;}
-  .btn{padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;}
+  .btn{padding:9px 16px;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;}
   .btn-ghost{background:#fff;color:#334155;}
   .btn-ghost:hover{background:#F8FAFC;}
   .btn-primary{background:var(--ck-primary-500);color:#fff;border-color:var(--ck-primary-500);margin-left:auto;}
@@ -1202,66 +1232,88 @@
 <!-- ============ EDITOR VIEW (FS-001 ~ FS-033) ============ -->
 <section id="view-write">
   <header id="write-pageheader">
-    <h1 class="write-pagetitle">문서 작성</h1>
+    <h1 class="write-pagetitle">새 문서 작성</h1>
     <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
   </header>
 
-  <!-- 전체폭: 제목 입력 -->
-  <div class="write-titlebar">
-    <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
-  </div>
-  <!-- 전체폭: 문서 유형 선택 -->
-  <div class="write-typebar">
-    <label class="doctype-label" for="docType">문서 유형</label>
-    <select class="doctype-select" id="docType" required aria-label="문서 유형">
-      <option value="" disabled selected>선택해주세요</option>
-      <option>과제물</option>
-      <option>자기소개서</option>
-      <option>학위논문</option>
-      <option>학술논문</option>
-      <option>연구/정책보고서</option>
-      <option>연구대회/공모자료</option>
-      <option>독후감</option>
-      <option>보도자료</option>
-      <option>블로그</option>
-      <option>생활기록부</option>
-      <option>기타</option>
-    </select>
-  </div>
+  <!-- 문서 유형 값 저장용(숨김) — 좌측 '문서 유형 선택' 버튼이 값을 설정 -->
+  <select id="docType" required aria-label="문서 유형" style="display:none;">
+    <option value="" disabled selected>선택해주세요</option>
+    <option>과제물</option>
+    <option>자기소개서</option>
+    <option>학위논문</option>
+    <option>학술논문</option>
+    <option>연구/정책보고서</option>
+    <option>연구대회/공모자료</option>
+    <option>독후감</option>
+    <option>보도자료</option>
+    <option>블로그</option>
+    <option>생활기록부</option>
+    <option>기타</option>
+  </select>
 
   <div class="editor-grid">
-    <!-- 좌측 패널 — 항상 채팅 모드 -->
+    <!-- 좌측 패널 — 문서 유형 선택 → 선택 시 AI 초안 어시스턴트 -->
     <div class="ed-panel type-panel">
-      <div id="draftGenPanel" class="draftgen">
+      <!-- State 1: 문서 유형 선택 -->
+      <div id="typeSelectPanel" class="typesel">
+        <div class="typesel-head">문서 유형 선택</div>
+        <p class="typesel-desc">작성할 문서의 유형을 선택해주세요.</p>
+        <div class="typesel-grid">
+          <button type="button" class="typesel-btn" data-type="과제물" onclick="selectDocType('과제물')">과제물</button>
+          <button type="button" class="typesel-btn" data-type="자기소개서" onclick="selectDocType('자기소개서')">자기소개서</button>
+          <button type="button" class="typesel-btn" data-type="학위논문" onclick="selectDocType('학위논문')">학위논문</button>
+          <button type="button" class="typesel-btn" data-type="학술논문" onclick="selectDocType('학술논문')">학술논문</button>
+          <button type="button" class="typesel-btn" data-type="연구/정책보고서" onclick="selectDocType('연구/정책보고서')">연구/정책보고서</button>
+          <button type="button" class="typesel-btn" data-type="연구대회/공모자료" onclick="selectDocType('연구대회/공모자료')">연구대회/공모자료</button>
+          <button type="button" class="typesel-btn" data-type="독후감" onclick="selectDocType('독후감')">독후감</button>
+          <button type="button" class="typesel-btn" data-type="보도자료" onclick="selectDocType('보도자료')">보도자료</button>
+          <button type="button" class="typesel-btn" data-type="블로그" onclick="selectDocType('블로그')">블로그</button>
+          <button type="button" class="typesel-btn" data-type="생활기록부" onclick="selectDocType('생활기록부')">생활기록부</button>
+          <button type="button" class="typesel-btn" data-type="기타" onclick="selectDocType('기타')">기타</button>
+        </div>
+      </div>
+      <!-- State 2: AI 초안 생성 어시스턴트 -->
+      <div id="draftGenPanel" class="draftgen" style="display:none;">
+        <div class="dg-typerow">
+          <span class="dg-typelabel">문서 유형</span>
+          <select id="dgTypeSelect" class="dg-typeselect" onchange="selectDocType(this.value)">
+            <option>과제물</option>
+            <option>자기소개서</option>
+            <option>학위논문</option>
+            <option>학술논문</option>
+            <option>연구/정책보고서</option>
+            <option>연구대회/공모자료</option>
+            <option>독후감</option>
+            <option>보도자료</option>
+            <option>블로그</option>
+            <option>생활기록부</option>
+            <option>기타</option>
+          </select>
+        </div>
         <div class="dg-head">
           <span class="dg-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg></span>
           <span class="dg-title">카피킬러 AI 초안 생성 어시스턴트</span>
         </div>
         <p class="dg-desc">주제를 입력하면 초안을 만들어 우측 에디터에 넣어드려요.<br>생성한 초안을 직접 다듬어 내 글로 완성하세요.</p>
 
-        <div class="dg-label">예시 주제</div>
-        <div class="dg-presets">
-          <button class="dg-preset" type="button" data-prompt="프론트엔드 개발 직무 자기소개서 초안을 500자 이내로 작성해줘.">자기소개서</button>
-          <button class="dg-preset" type="button" data-prompt="헤르만 헤세의 데미안에 대한 독후감 초안을 300자 이내로 작성해줘.">독후감</button>
-          <button class="dg-preset" type="button" data-prompt="인공지능과 기초과학의 미래에 대한 에세이 초안을 500자 이내로 작성해줘.">에세이</button>
-        </div>
-
-        <textarea id="dgPrompt" class="dg-prompt" rows="3" maxlength="3000" placeholder="어떤 글의 초안이 필요하세요?  예) 프론트엔드 개발 직무 자기소개서 초안"></textarea>
-
-        <button id="dgGenerate" class="dg-generate" type="button" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
-          <span id="dgGenLabel">초안 생성</span>
-        </button>
+        <textarea id="dgPrompt" class="dg-prompt" maxlength="3000" placeholder="어떤 글의 초안이 필요하세요?  예) 프론트엔드 개발 직무 자기소개서 초안"></textarea>
 
         <div id="dgResult" class="dg-result" style="display:none;">
           <div class="dg-result-msg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 초안을 에디터에 추가했어요</div>
           <div class="dg-result-sub">다른 주제로 새로 만들거나, 같은 조건으로 다시 생성할 수 있어요.</div>
         </div>
+
+        <button id="dgGenerate" class="dg-generate" type="button" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
+          <span id="dgGenLabel">초안 생성</span>
+        </button>
       </div>
     </div>
 
-    <!-- 우측: 에디터 -->
+    <!-- 우측: 제목 + 에디터 -->
     <div class="ed-panel doc-panel">
+      <div class="doc-panel-title"><input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." /></div>
       <div class="stat-row">
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
         <div class="stat-right">
@@ -1412,8 +1464,8 @@
     <a href="#sec-01" class="toc-item active block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">요약</a>
     <a href="#sec-02" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">자율성 지수</a>
     <a href="#sec-replay" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">작성 과정 리플레이</a>
+    <a href="#sec-compo" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 유입 분석</a>
     <a href="#sec-metrics" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">종합 지표</a>
-    <a href="#sec-04" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">텍스트 유입 분석</a>
     <a href="#sec-07" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">외부 유입 로그</a>
     <a href="#sec-11" class="toc-item block text-[13px] py-2 px-3 text-slate-600 hover:bg-slate-50" data-target-tab="main">원본 보존율</a>
 
@@ -1533,17 +1585,17 @@
         <div class="relative mt-4" style="width:230px;height:188px;">
           <svg viewBox="0 0 200 160" style="position:absolute;top:0;left:0;width:230px;height:184px;">
             <path id="gaugeTrack"  d="" stroke="#EEF0F3" stroke-width="15" fill="none" stroke-linecap="round"/>
-            <path id="gaugeExt"    d="" stroke="#EF4444" stroke-width="15" fill="none" stroke-linecap="round"/>
-            <path id="gaugeDirect" d="" stroke="#10B981" stroke-width="15" fill="none" stroke-linecap="round"/>
+            <path id="gaugeExt"    d="" stroke="#F90076" stroke-width="15" fill="none" stroke-linecap="round"/>
+            <path id="gaugeDirect" d="" stroke="#00C2FF" stroke-width="15" fill="none" stroke-linecap="round"/>
           </svg>
           <div class="absolute text-center" style="top:104px;left:50%;transform:translate(-50%,-50%);width:150px;">
             <div><span class="text-[42px] font-extrabold text-slate-900 leading-none" id="sec02Score">74</span></div>
-            <div class="text-[11.5px] text-slate-400 mt-1 font-medium">직접 작성 확률</div>
+            <div class="text-[11.5px] text-slate-400 mt-1 font-medium" id="sec02ProbLabel">직접 작성 확률</div>
           </div>
         </div>
         <div class="flex items-center justify-center gap-4 mt-1 text-[12.5px] font-semibold text-slate-600">
-          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#EF4444;"></span>외부 의존 <b id="legExt" class="text-slate-900">26%</b></span>
-          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#10B981;"></span>직접 작성 <b id="legDirect" class="text-slate-900">74%</b></span>
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#F90076;"></span>외부 의존 <b id="legExt" class="text-slate-900">26%</b></span>
+          <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#00C2FF;"></span>직접 작성 <b id="legDirect" class="text-slate-900">74%</b></span>
         </div>
         <div id="gaugeTip" style="display:none;position:fixed;z-index:9999;pointer-events:none;transform:translateX(-50%);max-width:280px;background:#1E293B;color:#fff;font-size:12px;line-height:1.5;padding:8px 11px;border-radius:8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.18);"></div>
         <!-- (기존 4-아이콘·판정명 pill·등급 → 상단 헤드라인/게이지로 통합) -->
@@ -1907,14 +1959,12 @@
   </div>
 </section>
 
-<!-- ===== SEC-04 텍스트 유입 분석 ===== -->
-<section id="sec-04" class="scroll-mt pt-8">
+<!-- ===== SEC-COMPO 텍스트 유입 분석 그래프 (작성 과정 리플레이 아래) ===== -->
+<section id="sec-compo" class="scroll-mt pt-8">
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석 <span id="inflowTotalChars" class="text-[13px] font-semibold text-slate-400 ml-1"></span></h2>
-      <p class="text-sm text-slate-500 mt-1" style="display:none;">최종 문서의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
     </div>
-
     <!-- 텍스트 구성 분포 그래프 (필터 5종과 동일 범례) -->
     <div class="relative mb-3">
       <div id="compoTooltip"></div>
@@ -1935,6 +1985,18 @@
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EAB308;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5" data-quote-item><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500" data-quote-label>인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
     </div>
+  </div>
+</section>
+
+<!-- ===== SEC-04 텍스트 유입 분석 ===== -->
+<section id="sec-04" class="scroll-mt pt-8">
+  <div class="card p-6">
+    <div class="mb-4">
+      <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석</h2>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">최종 문서의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
+    </div>
+
+    <!-- 텍스트 구성 분포 그래프 → sec-compo(작성 과정 리플레이 아래)로 이동 -->
 
     <!-- 회색 구분선 -->
     <hr class="my-5 border-slate-200" />
@@ -2512,6 +2574,15 @@
       <h1>내 문서</h1>
       <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 문서 작성</button>
     </header>
+
+    <div class="box-notice" id="boxNoticeBanner">
+      <span class="box-notice-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+      <div class="box-notice-text">
+        <p class="box-notice-title">카피킬러 문서 작성은 작성 과정을 기록하여 본인이 직접 작성한 문서임을 검증하는 서비스입니다.</p>
+        <p class="box-notice-sub">입력 과정에서 수집된 다양한 데이터를 기반으로 문서에 대한 본인 작성 증거를 완성해보세요.</p>
+      </div>
+      <button class="box-notice-close" type="button" onclick="document.getElementById('boxNoticeBanner').style.display='none';" aria-label="닫기">✕</button>
+    </div>
 
     <div class="box-filterbar">
       <label class="box-checkall"><input type="checkbox" id="boxCheckAll" /> 전체 선택</label>
@@ -3183,13 +3254,15 @@ function _gaugeArc(cx,cy,r,dStart,dEnd,stepDeg){
 }
 function renderScore(score){
   score = Math.max(0, Math.min(100, Math.round(score)));
-  const scoreEl=document.getElementById('sec02Score'); if(scoreEl) scoreEl.textContent=score;
+  const _isDirect = score >= 50;   // 50%까지 직접 작성, 49% 이하는 외부 의존으로 중앙 표기
+  const scoreEl=document.getElementById('sec02Score'); if(scoreEl) scoreEl.textContent = _isDirect ? score : (100 - score);
+  const _probEl=document.getElementById('sec02ProbLabel'); if(_probEl) _probEl.textContent = _isDirect ? '직접 작성 확률' : '외부 의존 확률';
   // 게이지 — 좌:외부 의존(빨강,100-점수%) / 우:직접 작성(초록,점수%). 하단 90° 갭(270° arc = 225°~495°).
   const CX=100, CY=94, R=74;
   const track=document.getElementById('gaugeTrack');
   if(track) track.setAttribute('d', _gaugeArc(CX,CY,R,225,495,4));
   const greenSweep = 270*score/100, redSweep = 270 - greenSweep, meet = 495 - greenSweep;
-  const g = (greenSweep>18 && redSweep>18) ? 8 : 0;   // 두 색 경계 공백(양쪽 8° = 총 16°, 참고 이미지처럼 명확히)
+  const g = Math.max(0, Math.min(8, Math.min(greenSweep, redSweep) - 4));   // 두 색 경계 공백 — 한쪽이 작아도 여백 유지(작은 세그먼트는 자동 축소)
   const gEl=document.getElementById('gaugeDirect'), rEl=document.getElementById('gaugeExt');
   if(gEl) gEl.setAttribute('d', greenSweep>0.6 ? _gaugeArc(CX,CY,R,495, meet+g, 4) : '');   // 직접작성: 우측 끝→중앙
   if(rEl) rEl.setAttribute('d', redSweep>0.6 ? _gaugeArc(CX,CY,R,225, meet-g, 4) : '');      // 외부의존: 좌측 끝→중앙
@@ -3891,7 +3964,7 @@ bindCompoTooltip();
 (function reorderReportSections(){
   const main=document.querySelector('#view-report main');
   if(!main) return;
-  const mainOrder = ['sec-01','sec-02','sec-replay','sec-metrics','sec-04','sec-07','sec-11'];
+  const mainOrder = ['sec-01','sec-02','sec-replay','sec-compo','sec-metrics','sec-07','sec-11'];
   const futureOrder = ['sec-03','sec-06','sec-08','sec-09','sec-15','sec-16'];
   // 메인 섹션을 정해진 순서로 재배치
   mainOrder.forEach(id=>{ const s=document.getElementById(id); if(s) main.appendChild(s); });
@@ -4131,6 +4204,30 @@ function _setDocTypeUI(type){
     if(typeof updateStats === 'function') updateStats();   // 검증 진입 버튼 활성 재평가
   });
 })();
+
+/* ---------- 좌측 패널 상태 — 문서 유형 선택 ↔ AI 초안 어시스턴트 ---------- */
+function showTypeSelect(){
+  const ts=document.getElementById('typeSelectPanel'), dg=document.getElementById('draftGenPanel');
+  if(ts) ts.style.display=''; if(dg) dg.style.display='none';
+}
+function showAssistant(){
+  const ts=document.getElementById('typeSelectPanel'), dg=document.getElementById('draftGenPanel');
+  if(ts) ts.style.display='none'; if(dg) dg.style.display='';
+}
+function selectDocType(type){
+  const sel=document.getElementById('docType');
+  if(sel){ sel.value=type; sel.dispatchEvent(new Event('change')); }   // → selectedType + 버튼 활성 재평가
+  const ds=document.getElementById('dgTypeSelect'); if(ds) ds.value=type;   // 어시스턴트 상단 드롭다운 동기화
+  document.querySelectorAll('#typeSelectPanel .typesel-btn').forEach(b=>b.classList.toggle('is-selected', b.dataset.type===type));
+  showAssistant();
+}
+// 현재 selectedType 에 맞춰 좌측 패널 상태 동기화 (새 문서=선택화면 / 유형 있으면 어시스턴트)
+function _syncLeftPanelForType(){
+  const type = selectedType;
+  document.querySelectorAll('#typeSelectPanel .typesel-btn').forEach(b=>b.classList.toggle('is-selected', b.dataset.type===type));
+  const ds=document.getElementById('dgTypeSelect'); if(ds && type) ds.value=type;
+  if(type){ showAssistant(); } else showTypeSelect();
+}
 
 /* ---------- LNB 접기/열기 토글 ---------- */
 (function bindLnbCollapse(){
@@ -5213,11 +5310,12 @@ function newWrite(variant){
   const t = document.getElementById('docTitle'); if(t) t.value = '';
   if(typeof _setDocTypeUI === 'function') _setDocTypeUI('');        // 문서 유형 셀렉트 초기화
   if(typeof _resetDraftGenUI === 'function') _resetDraftGenUI();   // 초안 생성 폼 초기화
+  if(typeof _syncLeftPanelForType === 'function') _syncLeftPanelForType();   // 새 문서 → 문서 유형 선택 화면
   if(typeof renderEditor === 'function') renderEditor();
   // variant 분기 — 상위 '문서 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
   document.body.dataset.writeVariant = variant || '';
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
-  if(ph) ph.textContent = (variant === 'extra') ? '문서 작성' : '문서 작성 · 초기 기획안';
+  if(ph) ph.textContent = (variant === 'extra') ? '새 문서 작성' : '문서 작성 · 초기 기획안';
   // btnComplete 텍스트 — extra 는 저장 겸 리포트 진입 문구
   const bc = document.getElementById('btnComplete');
   if(bc) bc.textContent = (variant === 'extra') ? '저장 후 작성 검증 결과 확인' : '작성 증명 리포트 확인';
@@ -5389,6 +5487,7 @@ function boxOpenDoc(id){
   if(!d) return;
   sessionFrozen = false;
   _loadDocIntoSession(d);                 // model/events/stats/title/writeVariant 복원
+  if(typeof _syncLeftPanelForType === 'function') _syncLeftPanelForType();   // 유형 있으면 어시스턴트, 없으면 선택화면
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
   document.body.dataset.flow = activeFlow;   // 사본 플로우 하단 버튼 분기 유지
