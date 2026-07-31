@@ -699,25 +699,31 @@
   .verdict-grid2{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.15fr);gap:30px;align-items:center;}
   @media (max-width:900px){.verdict-grid2{grid-template-columns:1fr;gap:26px;}}
   .verdict-gauge-col{text-align:center;}
-  .verdict-gauge-wrap{position:relative;max-width:280px;margin:0 auto;}
-  .verdict-gauge{width:100%;height:auto;display:block;}
-  .vg-needle{stroke-width:4;stroke-linecap:round;transition:all .5s cubic-bezier(.4,0,.2,1);}
-  .vg-ends{display:flex;justify-content:space-between;padding:0 4px;margin-top:-4px;}
-  .vg-lab-left{color:#FF006B;font-size:12px;font-weight:700;}
-  .vg-lab-right{color:#11BE8A;font-size:12px;font-weight:700;}
-  #sec-02 .verdict-name2{font-size:22px;font-weight:800;margin-top:14px;color:#FF006B;display:block;}
-  .verdict-desc2{font-size:13px;line-height:1.65;color:#64748B;margin-top:8px;max-width:290px;margin-left:auto;margin-right:auto;}
-  .ev-group + .ev-group{margin-top:22px;}
-  .ev-group-head2{font-size:15px;font-weight:700;color:#0F172A;margin-bottom:13px;}
-  .ev-group-sub2{font-size:12px;font-weight:500;color:#64748B;margin-left:7px;}
-  .ev-group-sub2 b{color:#334155;font-weight:700;}
-  .ev-row{display:grid;grid-template-columns:148px 1fr 62px;align-items:center;gap:12px;margin-bottom:13px;}
-  .ev-row:last-child{margin-bottom:0;}
-  .ev-row-label{font-size:13px;color:#475569;white-space:nowrap;}
-  .ev-bar{position:relative;height:6px;border-radius:999px;background:#E6E8EA;}
-  .ev-bar-fill{position:relative;height:100%;border-radius:999px;transition:width .6s ease;}
-  .ev-bar-fill::after{content:'';position:absolute;right:-3px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;background:inherit;box-shadow:0 0 0 2px #fff;}
-  .ev-row-val2{font-size:13px;font-weight:700;color:#0F172A;text-align:right;}
+  /* 판정명(상단) → 3단계 스테퍼(양끝 FAIL/PASS) → 설명 문구(하단) — 첨부 이미지 구성 */
+  #sec-02 .verdict-name2{font-size:26px;font-weight:800;margin:0 0 24px;color:#FF006B;display:block;}
+  .verdict-stepper{max-width:300px;margin:0 auto;padding:0 6px;}
+  .vst-track{position:relative;display:flex;justify-content:space-between;}
+  .vst-line{position:absolute;top:7.5px;left:16.67%;right:16.67%;height:3px;border-radius:2px;background:#E5E7EB;}
+  .vst-fill{position:absolute;top:7.5px;left:16.67%;height:3px;width:0;border-radius:2px;background:#FF006B;transition:width .5s cubic-bezier(.4,0,.2,1), background .3s;}
+  .vst-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:11px;width:33.33%;}
+  .vst-dot{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #D1D5DB;box-sizing:border-box;transition:background .3s,border-color .3s,box-shadow .3s;}
+  .vst-label{font-size:12px;line-height:1.2;font-weight:800;letter-spacing:0.04em;text-align:center;}
+  .vst-end-fail{color:#94A3B8;}
+  .vst-end-pass{color:#94A3B8;}
+  .verdict-desc2{font-size:13px;line-height:1.65;color:#64748B;margin-top:26px;max-width:300px;margin-left:auto;margin-right:auto;}
+  .ev-group + .ev-group{margin-top:20px;}
+  .ev-group-head2{font-size:15px;font-weight:700;color:#0F172A;margin-bottom:12px;}
+  /* 증거 지표 — 카드형(흰 배경 + 연회색 테두리) */
+  .ev-cards{display:grid;gap:10px;}
+  .ev-cards-2{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ev-cards-3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .ev-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:13px 14px;}
+  .ev-card-top{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+  .ev-card-label{font-size:12px;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ev-card-ic{flex-shrink:0;display:inline-flex;align-items:center;color:#94A3B8;}
+  .ev-card-ic svg{width:15px;height:15px;}
+  .ev-card-val{margin-top:12px;font-size:22px;font-weight:800;color:#0F172A;line-height:1;}
+  .ev-card-unit{font-size:12px;font-weight:600;color:#94A3B8;margin-left:3px;}
 
   /* ============ 결과지(view-report) 하단 액션바 ============ */
   .report-actions{position:fixed;left:0;right:0;bottom:0;padding:14px 32px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:none;align-items:center;gap:8px;}
@@ -893,6 +899,10 @@
   .box-row .box-rowtitle:hover{color:var(--ck-primary-600);text-decoration:underline;text-underline-offset:3px;}
   .box-row .box-rowmeta{font-size:14px;color:var(--ck-gray-500);}
   .box-row .box-rowmeta b{font-weight:500;color:var(--ck-gray-600);}
+  .box-row .box-rowverdict{flex-shrink:0;width:150px;text-align:center;}
+  .box-rowverdict-title{font-size:13px;color:var(--ck-gray-500);margin-bottom:6px;}
+  .box-rowverdict-label{font-size:17px;font-weight:800;line-height:1.2;}
+  .box-rowverdict-none{font-size:15px;font-weight:700;color:var(--ck-gray-400);line-height:1.2;}
   .box-row .box-rowactions{display:flex;gap:8px;flex-shrink:0;}
   .box-actionbtn{font-size:14px;font-weight:600;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid transparent;text-align:center;box-sizing:border-box;}
   .box-actionbtn.ghost{background:#fff;color:#00C2FF;border-color:#00C2FF;}
@@ -1663,20 +1673,18 @@
     <h2 class="vc-title text-xl font-bold" data-orig-label="작성 증명 지수" data-extra-label="작성 검증 결과">작성 검증 결과</h2>
 
     <div class="verdict-grid2">
-      <!-- 좌: 반원 게이지 + 판정 -->
+      <!-- 좌: 판정명(상단) + 3단계 스테퍼(FAIL/PASS) + 설명(하단) -->
       <div class="verdict-gauge-col">
-        <div class="verdict-gauge-wrap">
-          <svg class="verdict-gauge" viewBox="0 0 240 142" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20,130 A100,100 0 0 1 66.27,45.66" fill="none" stroke="#FF006B" stroke-width="19" stroke-linecap="butt"/>
-            <path d="M73.83,41.30 A100,100 0 0 1 166.18,41.30" fill="none" stroke="#F97316" stroke-width="19" stroke-linecap="butt"/>
-            <path d="M173.73,45.66 A100,100 0 0 1 220,130" fill="none" stroke="#11BE8A" stroke-width="19" stroke-linecap="butt"/>
-            <line id="vGaugeNeedle" class="vg-needle" x1="120" y1="130" x2="66" y2="72" stroke="#FF006B"/>
-            <circle id="vGaugeHub" cx="120" cy="130" r="8" fill="#FF006B"/>
-            <circle cx="120" cy="130" r="3.2" fill="#fff"/>
-          </svg>
-          <div class="vg-ends"><span class="vg-lab-left">증거 부족</span><span class="vg-lab-right">검증 완료</span></div>
-        </div>
         <span id="sec02VerdictName" class="verdict-name2" data-verdict="s1" style="color:#FF006B;">작성 증거 부족</span>
+        <div class="verdict-stepper">
+          <div class="vst-track">
+            <div class="vst-line"></div>
+            <div class="vst-fill" id="vstFill"></div>
+            <div class="vst-node"><span class="vst-dot"></span><span class="vst-label vst-end-fail">FAIL</span></div>
+            <div class="vst-node"><span class="vst-dot"></span></div>
+            <div class="vst-node"><span class="vst-dot"></span><span class="vst-label vst-end-pass">PASS</span></div>
+          </div>
+        </div>
         <p id="sec02VerdictDesc" class="verdict-desc2">외부에서 가져온 글의 비중이 높아요. 자신만의 표현으로 수정해보면 어떨까요?</p>
       </div>
 
@@ -1684,33 +1692,32 @@
       <div class="verdict-ev-col">
         <div class="ev-group">
           <div class="ev-group-head2">입력 증거</div>
-          <div class="ev-row">
-            <span class="ev-row-label">직접 타이핑 기여</span>
-            <div class="ev-bar"><div class="ev-bar-fill" id="ev_typing_bar" style="width:0%;background:#11BE8A;"></div></div>
-            <span class="ev-row-val2" id="ev_typing_val">—</span>
-          </div>
-          <div class="ev-row">
-            <span class="ev-row-label">외부 유입 후 수정</span>
-            <div class="ev-bar"><div class="ev-bar-fill" id="ev_extedit_bar" style="width:0%;background:#7C52F1;"></div></div>
-            <span class="ev-row-val2" id="ev_extedit_val">—</span>
+          <div class="ev-cards ev-cards-2">
+            <div class="ev-card">
+              <div class="ev-card-top"><span class="ev-card-label">직접 타이핑 기여</span><span class="ev-card-ic" id="ev_typing_dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></span></div>
+              <div class="ev-card-val"><b id="ev_typing_val">—</b><span class="ev-card-unit">/ 100</span></div>
+            </div>
+            <div class="ev-card">
+              <div class="ev-card-top"><span class="ev-card-label">외부 유입 후 수정</span><span class="ev-card-ic" id="ev_extedit_dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg></span></div>
+              <div class="ev-card-val"><b id="ev_extedit_val">—</b><span class="ev-card-unit">/ 100</span></div>
+            </div>
           </div>
         </div>
         <div class="ev-group">
           <div class="ev-group-head2">사고 과정 증거</div>
-          <div class="ev-row">
-            <span class="ev-row-label">수정 품질</span>
-            <div class="ev-bar"><div class="ev-bar-fill" id="ev_rewrite_bar" style="width:0%;background:#6B7078;"></div></div>
-            <span class="ev-row-val2" id="ev_rewrite_val">—</span>
-          </div>
-          <div class="ev-row">
-            <span class="ev-row-label">비선형 이동 밀도</span>
-            <div class="ev-bar"><div class="ev-bar-fill" id="ev_nav_bar" style="width:0%;background:#6B7078;"></div></div>
-            <span class="ev-row-val2" id="ev_nav_val">—</span>
-          </div>
-          <div class="ev-row">
-            <span class="ev-row-label">사고정지</span>
-            <div class="ev-bar"><div class="ev-bar-fill" id="ev_idle_bar" style="width:0%;background:#6B7078;"></div></div>
-            <span class="ev-row-val2" id="ev_idle_val">—</span>
+          <div class="ev-cards ev-cards-3">
+            <div class="ev-card">
+              <div class="ev-card-top"><span class="ev-card-label">수정 품질</span><span class="ev-card-ic" id="ev_rewrite_dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg></span></div>
+              <div class="ev-card-val"><b id="ev_rewrite_val">—</b><span class="ev-card-unit">/ 100</span></div>
+            </div>
+            <div class="ev-card">
+              <div class="ev-card-top"><span class="ev-card-label">비선형 이동 밀도</span><span class="ev-card-ic" id="ev_nav_dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></span></div>
+              <div class="ev-card-val"><b id="ev_nav_val">—</b><span class="ev-card-unit">/ 100</span></div>
+            </div>
+            <div class="ev-card">
+              <div class="ev-card-top"><span class="ev-card-label">사고정지</span><span class="ev-card-ic" id="ev_idle_dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span></div>
+              <div class="ev-card-val"><b id="ev_idle_val">—</b><span class="ev-card-unit">/ 100</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1986,13 +1993,13 @@
       </div>
     </div>
 
-    <!-- ③ 글 이력 (전체폭) -->
+    <!-- ③ 활동 이력 (전체폭) -->
     <div class="metric-panel mt-5">
       <div class="metric-panel-head">
         <span class="metric-panel-ic" style="background:#FFF7ED;color:#EA580C;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
         </span>
-        <span class="metric-panel-title text-[15px]">글 이력</span>
+        <span class="metric-panel-title text-[15px]">활동 이력</span>
       </div>
       <table class="w-full text-sm" style="table-layout:fixed;">
         <colgroup><col style="width:26%;"><col></colgroup>
@@ -2008,15 +2015,15 @@
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_firstAuthor">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">마지막 저장 시각</td>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">마지막 검증 시각</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_lastSave">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 저장 횟수</td>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">누적 검증 횟수</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_saveCount">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800 align-top">누적 저장 히스토리</td>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800 align-top">검증 회차별 히스토리</td>
             <td class="px-4 py-2.5 text-[12.5px] leading-relaxed text-slate-700" id="m_saveHistList">—</td>
           </tr>
         </tbody>
@@ -3173,13 +3180,14 @@ async function issueCert(){
     hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }catch(e){}
 
-  // 작성 검증 결과 breakdown — 상단 다크 카드 증거 바 값(ID) 매핑
+  // 작성 검증 결과 breakdown — 상단 증거 카드 숫자(ID) 매핑(+/100)
+  const _bdNum = sel => { const t = txt(sel, ''); return t ? t + ' / 100' : '-'; };
   const bdMap = {
-    '직접 타이핑 기여':       txt('#ev_typing_val'),
-    '외부 유입 후 수정 기여': txt('#ev_extedit_val'),
-    '수정 품질':             txt('#ev_rewrite_val'),
-    '비선형 이동 밀도':       txt('#ev_nav_val'),
-    '사고정지':              txt('#ev_idle_val'),
+    '직접 타이핑 기여':       _bdNum('#ev_typing_val'),
+    '외부 유입 후 수정 기여': _bdNum('#ev_extedit_val'),
+    '수정 품질':             _bdNum('#ev_rewrite_val'),
+    '비선형 이동 밀도':       _bdNum('#ev_nav_val'),
+    '사고정지':              _bdNum('#ev_idle_val'),
   };
 
   // 외부 유입 로그 — 결과지 테이블에서 전후 비교(마지막 열) 제외한 행 데이터 수집
@@ -3347,30 +3355,25 @@ function renderScore(score){
   //  0~30 부족(빨강) / 31~60 보통(주황) / 61~100 완료(초록)
   //  (점수는 입력 증거·사고 과정 증거의 기여 정도로 산출)
   const STAGES = [
-    {key:'s1', name:'작성 증거 부족', color:'#FF006B', desc:'외부에서 가져온 글의 비중이 다소 높습니다. 자신만의 표현으로 글을 수정해보면 어떨까요?'},
-    {key:'s2', name:'작성 증거 보통', color:'#F97316', desc:'직접 작성한 글과 외부를 참고한 글이 적절히 섞여 있네요. 글을 전체적으로 훑어보며 다시 한 번 글과 생각을 정리해보세요.'},
-    {key:'s3', name:'작성 검증 완료', color:'#11BE8A', desc:'작성 검증 결과, 본인만의 생각과 문체로 글을 완성한 흔적이 충분해요.'},
+    {key:'s1', name:'작성 증거 부족', color:'#FF006B', desc:'외부에서 가져온 글의 비중이 높아요. 자신만의 표현으로 글을 수정해보면 어떨까요?'},
+    {key:'s2', name:'추가 검토 필요', color:'#F97316', desc:'직접 작성한 글과 외부를 참고한 글이 섞여 있어요. 글을 다시 살펴보며 본인의 생각을 더 담아보세요.'},
+    {key:'s3', name:'작성 증거 충분', color:'#11BE8A', desc:'작성 검증 결과, 본인만의 생각과 문체로 글을 완성한 흔적이 충분해요.'},
   ];
-  const stageIdx = [0,31,61].reduce((acc,th,i)=> score>=th ? i : acc, 0);   // 0..2
+  const stageIdx = [0,31,71].reduce((acc,th,i)=> score>=th ? i : acc, 0);   // 0~30 부족 / 31~70 추가검토 / 71~100 충분
   const stage = STAGES[stageIdx];
   const faceKey = stage.key, verdictName = stage.name, verdictDesc = stage.desc;
-  // 구간 바 렌더 — 0..활성 구간 누적 채움(활성 구간 색), 포인터는 활성 구간 중앙 위
-  // 반원 게이지 바늘 — score 0→좌(180°, 증거부족) / 100→우(0°, 검증완료), 색은 구간 색
-  const needle = document.getElementById('vGaugeNeedle');
-  if(needle){
-    // 그래프는 3단계 동일 비율(각 1/3). 점수를 소속 구간 내 비율로 매핑해 바늘이 항상 해당 색 구간을 가리킴.
-    const _bounds = [[0,30],[31,60],[61,100]];
-    const [lo,hi] = _bounds[stageIdx];
-    const segFrac = hi>lo ? Math.max(0, Math.min(1, (score-lo)/(hi-lo))) : 0.5;
-    const fracArc = (stageIdx + segFrac) / 3;          // 0(좌)~1(우)
-    const th = Math.PI * (180 - fracArc * 180) / 180;
-    const L = 78, cx = 120, cy = 130;
-    needle.setAttribute('x2', (cx + L * Math.cos(th)).toFixed(1));
-    needle.setAttribute('y2', (cy - L * Math.sin(th)).toFixed(1));
-    needle.setAttribute('stroke', stage.color);
-    const hub = document.getElementById('vGaugeHub');
-    if(hub) hub.setAttribute('fill', stage.color);
-  }
+  // 3단계 스테퍼 — 현재 구간 노드 강조(채움+링) + 좌(부족/FAIL)→우(충분/PASS) 진행 채움
+  const _nodes = document.querySelectorAll('#sec-02 .vst-node');
+  _nodes.forEach((node, i) => {
+    const dot = node.querySelector('.vst-dot');
+    node.classList.toggle('is-active', i === stageIdx);
+    if(dot){
+      if(i <= stageIdx){ dot.style.background = stage.color; dot.style.borderColor = stage.color; dot.style.boxShadow = (i === stageIdx) ? ('0 0 0 5px ' + stage.color + '33') : 'none'; }
+      else { dot.style.background = '#fff'; dot.style.borderColor = '#D1D5DB'; dot.style.boxShadow = 'none'; }
+    }
+  });
+  const _vstFill = document.getElementById('vstFill');
+  if(_vstFill){ _vstFill.style.width = 'calc(66.66% * ' + (stageIdx/2) + ')'; _vstFill.style.background = stage.color; }
   const vn = document.getElementById('sec02VerdictName');
   const vd = document.getElementById('sec02VerdictDesc');
   if(vn){ vn.textContent = verdictName; vn.setAttribute('data-verdict', faceKey); vn.style.color = stage.color; }
@@ -5507,6 +5510,13 @@ function _fmtSaved(ts){
   const p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+/* 점수 → 판정(작성 검증 결과 3단계). renderScore/목록 공용. 0~30 부족 / 31~70 추가검토 / 71~100 충분 */
+function _scoreVerdict(score){
+  const s = Math.max(0, Math.min(100, Math.round(Number(score)||0)));
+  if(s <= 30) return {idx:0, name:'작성 증거 부족', color:'#FF006B'};
+  if(s <= 70) return {idx:1, name:'추가 검토 필요', color:'#F97316'};
+  return {idx:2, name:'작성 증거 충분', color:'#11BE8A'};
+}
 function renderBoxList(){
   const list = document.getElementById('boxList');
   if(!list) return;
@@ -5522,7 +5532,13 @@ function renderBoxList(){
     const hasResult = _docHasResult(d);
     const verifyBtn = hasResult
       ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">검증 결과</button>`
-      : `<span class="box-tip-wrap" data-tip="글을 완성한 뒤 작성 화면에서 '작성 검증'을 진행하면 결과를 확인할 수 있어요."><button class="box-actionbtn solid" disabled>검증 전</button></span>`;
+      : `<span class="box-tip-wrap" data-tip="글을 완성한 뒤 작성 화면에서 '작성 검증'을 진행하면 결과를 확인할 수 있어요."><button class="box-actionbtn solid" disabled>검증 결과</button></span>`;
+    // 검증 결과(판정 라벨) — 점수가 있는(검증 이력) 글만 단계별 색상 라벨, 아니면 '검증 전'
+    const _hasScore = (typeof d.score === 'number');
+    const _v = _hasScore ? _scoreVerdict(d.score) : null;
+    const verdictCell = _hasScore
+      ? `<div class="box-rowverdict"><div class="box-rowverdict-title">검증 결과</div><div class="box-rowverdict-label" style="color:${_v.color};">${_v.name}</div></div>`
+      : `<div class="box-rowverdict"><div class="box-rowverdict-title">검증 결과</div><div class="box-rowverdict-none">검증 전</div></div>`;
     return `
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
@@ -5530,6 +5546,7 @@ function renderBoxList(){
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
         <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
+      ${verdictCell}
       <div class="box-rowactions">
         <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">수정</button>
         ${verifyBtn}
@@ -5927,7 +5944,14 @@ function writeFlowVerify(){
   try {
     const docs = boxLoadDocs();
     const idx = docs.findIndex(d => d.id === currentDocId);
-    if(idx >= 0){ docs[idx].resultViewed = true; docs[idx].verifyCount = (docs[idx].verifyCount||0)+1; boxSaveDocs(docs); }
+    if(idx >= 0){
+      docs[idx].resultViewed = true;
+      docs[idx].verifyCount = (docs[idx].verifyCount||0)+1;
+      const _vch = model.filter(m=>m.ch!=='\n').length;
+      docs[idx].verifyHistory = [...(Array.isArray(docs[idx].verifyHistory)?docs[idx].verifyHistory:[]), {ts: Date.now(), chars: _vch}];
+      docs[idx].lastVerifiedAt = Date.now();
+      boxSaveDocs(docs);
+    }
   } catch(e){ console.warn('resultViewed flag fail', e); }
   sessionFrozen = true;
   document.body.dataset.shared = '';
@@ -5953,7 +5977,14 @@ function confirmCopyVerify(){
   try {
     const docs = boxLoadDocs();
     const idx = docs.findIndex(d => d.id === currentDocId);
-    if(idx >= 0){ docs[idx].verifiedLocked = true; docs[idx].verifyCount = (docs[idx].verifyCount||0)+1; boxSaveDocs(docs); }
+    if(idx >= 0){
+      docs[idx].verifiedLocked = true;
+      docs[idx].verifyCount = (docs[idx].verifyCount||0)+1;
+      const _vch = model.filter(m=>m.ch!=='\n').length;
+      docs[idx].verifyHistory = [...(Array.isArray(docs[idx].verifyHistory)?docs[idx].verifyHistory:[]), {ts: Date.now(), chars: _vch}];
+      docs[idx].lastVerifiedAt = Date.now();
+      boxSaveDocs(docs);
+    }
   } catch(e){ console.warn('lock flag fail', e); }
   saveCount++;
   sessionFrozen = true;
@@ -7316,6 +7347,14 @@ async function buildReportFromSession(){
   lastScoreInputs = {pctTyping, rewriteScore, depthScore, navScore, idleScore};
   const score = computeScoreFromInputs(lastScoreInputs, weights);
   renderScore(score);
+  // 목록 '검증 결과' 판정 표시용 — 현재 글에 점수 영속화
+  try {
+    if(currentDocId){
+      const _sdocs = boxLoadDocs();
+      const _si = _sdocs.findIndex(d => d.id === currentDocId);
+      if(_si >= 0){ _sdocs[_si].score = Math.round(score); boxSaveDocs(_sdocs); }
+    }
+  } catch(e){ console.warn('score persist fail', e); }
 
   // ---- 종합 지표 (6개) ----
   // 1. 평균 타이핑 속도 (타/분) = 순수 입력 타수 / 타이핑 구간 시간(키 입력 버스트 2초 합)
@@ -7390,13 +7429,14 @@ async function buildReportFromSession(){
   const _rec = (typeof boxLoadDocs === 'function' && currentDocId) ? (boxLoadDocs().find(d=>d.id===currentDocId) || {}) : {};
   const _firstTs = stats.firstTs || _rec.createdAt || 0;
   setText('m_firstAuthor', _firstTs ? _fmtSaved(_firstTs) : '—');
-  setText('m_lastSave', _rec.savedAt ? _fmtSaved(_rec.savedAt) : '미저장');
-  const _sc = _rec.saveCount || saveCount || 0;
-  setText('m_saveCount', _sc ? (_sc + '회') : '—');
-  const _hist = Array.isArray(_rec.saveHistory) ? _rec.saveHistory : [];
+  // 활동 이력 — 검증 기반(실시간 저장이므로 저장 이력 대신 검증 회차 이력)
+  const _vhist = Array.isArray(_rec.verifyHistory) ? _rec.verifyHistory : [];
+  setText('m_lastSave', _rec.lastVerifiedAt ? _fmtSaved(_rec.lastVerifiedAt) : (_vhist.length ? _fmtSaved(_vhist[_vhist.length-1].ts) : '미검증'));
+  const _vc = _rec.verifyCount || _vhist.length || 0;
+  setText('m_saveCount', _vc ? (_vc + '회') : '—');
   const _histEl = document.getElementById('m_saveHistList');
-  if(_histEl) _histEl.innerHTML = _hist.length
-    ? _hist.map((h,i)=> (i+1)+'회 ' + _fmtSaved(h.ts) + ' (' + Number(h.chars||0).toLocaleString() + '자)').join('<br>')
+  if(_histEl) _histEl.innerHTML = _vhist.length
+    ? _vhist.map((h,i)=> (i+1)+'회차 · ' + _fmtSaved(h.ts) + ' · ' + Number(h.chars||0).toLocaleString() + '자').join('<br>')
     : '기록 없음';
   // 총 글자수(최종 글 입력 글자수) + 텍스트 유입 분석 헤더 표기
   setText('m_totalChars', (totalChars||0).toLocaleString());
@@ -7411,19 +7451,20 @@ async function buildReportFromSession(){
   // 외부 유입 후 수정 기여 = (AI+붙여넣기 유입 텍스트) 중 사용자가 직접 수정한 글자 비율
   const _extTotal = c.ai+c.aiEdited+c.aiInternal + c.paste+c.pasteEdited+c.pasteInternal;
   const _extEditPct = (c.aiInternal + c.pasteInternal) / Math.max(1, _extTotal) * 100;
-  const _setEv = (valId, barId, valText, w, color, title) => {
+  // 카드형 — 숫자 + 우상단 도트 색상
+  const _setCard = (valId, dotId, num, color, title) => {
     const v = document.getElementById(valId);
-    if(v){ v.textContent = valText; if(title) v.title = title; }
-    const b = document.getElementById(barId);
-    if(b){ b.style.width = Math.max(0, Math.min(100, w)) + '%'; if(color) b.style.background = color; }
+    if(v){ v.textContent = String(num); if(title){ const card=v.closest('.ev-card'); if(card) card.title = title; } }
+    const d = document.getElementById(dotId);
+    if(d && color) d.style.color = color;
   };
   // 사고 과정 증거 히트 컬러 — 0=회색(빈값) / 1~60=주황 / 61~100=초록
   const _heat = v => v <= 0 ? '#6B7078' : (v >= 61 ? '#11BE8A' : '#F59E0B');
-  _setEv('ev_typing_val', 'ev_typing_bar', Math.round(pctTyping)+' / 100', pctTyping, '#11BE8A');
-  _setEv('ev_extedit_val', 'ev_extedit_bar', Math.round(_extEditPct)+' / 100', _extEditPct, '#7C52F1');
-  _setEv('ev_rewrite_val', 'ev_rewrite_bar', depthScore+' / 100', depthScore, _heat(depthScore));
-  _setEv('ev_nav_val', 'ev_nav_bar', navScore+' / 100', navScore, _heat(navScore), '100자당 '+navDensity.toFixed(1)+'회');
-  _setEv('ev_idle_val', 'ev_idle_bar', idleScore+' / 100', idleScore, _heat(idleScore), '3~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회');
+  _setCard('ev_typing_val', 'ev_typing_dot', Math.round(pctTyping), '#11BE8A');
+  _setCard('ev_extedit_val', 'ev_extedit_dot', Math.round(_extEditPct), '#7C52F1');
+  _setCard('ev_rewrite_val', 'ev_rewrite_dot', depthScore, _heat(depthScore));
+  _setCard('ev_nav_val', 'ev_nav_dot', navScore, _heat(navScore), '100자당 '+navDensity.toFixed(1)+'회');
+  _setCard('ev_idle_val', 'ev_idle_dot', idleScore, _heat(idleScore), '3~15초 멈춤 '+pauseCount+'회 · 100자당 '+pauseDensity.toFixed(1)+'회');
 
   // ---- C-04 origin map (1안): 블록 단위 1세그먼트 + 내부에 색깔 paint span 중첩 ----
   const orgDoc=document.getElementById('originDoc');
