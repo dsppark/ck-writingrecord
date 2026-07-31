@@ -1018,19 +1018,21 @@
   .doc-panel-typerow .dpt-label{font-size:14px;font-weight:700;color:var(--ck-gray-800);}
   .doc-panel-typerow .dpt-select{height:38px;padding:0 34px 0 12px;border:1px solid var(--ck-secondary-200);border-radius:10px;font-size:14px;font-family:inherit;color:#334155;background:#fff;cursor:pointer;min-width:180px;outline:none;}
   .doc-panel-typerow .dpt-select:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,.12);}
-  /* 카피킬러 AI 어시스턴트 — 하단 플로팅 버튼 (문서 작성 화면 전용) */
-  .ai-fab{display:none;position:fixed;right:40px;bottom:84px;z-index:70;align-items:center;gap:8px;background:#0F172A;color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.28);}
-  .ai-fab:hover{background:#1E293B;}
-  .ai-fab svg{color:#00C2FF;flex-shrink:0;}
-  body[data-view="write"] .ai-fab{display:inline-flex;}
-  /* AI 어시스턴트 모달 — 프롬프트 컴포저(Ask AI 스타일) */
-  .ai-modal-ico{width:30px;height:30px;border-radius:8px;background:#DEF4FF;color:#0078AB;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .ai-composer{display:flex;align-items:center;gap:8px;border:1px solid var(--ck-secondary-200);border-radius:14px;padding:8px 8px 8px 14px;transition:border-color .15s, box-shadow .15s;}
-  .ai-composer:focus-within{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,.12);}
-  .ai-composer-ico{flex-shrink:0;color:#00C2FF;display:inline-flex;align-items:center;}
-  .ai-composer-input{flex:1;border:0;outline:none;resize:none;font-family:inherit;font-size:16px;line-height:1.5;max-height:140px;color:#0F172A;background:transparent;}
-  .ai-composer-send{flex-shrink:0;width:38px;height:38px;border:0;border-radius:10px;background:#00C2FF;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
-  .ai-composer-send:hover{background:#0097D4;}
+  /* 카피킬러 AI 어시스턴트 — 콘텐츠 영역(LNB 오른쪽) 중앙 하단 입력 (그래머리 Ask AI 형태) */
+  .ai-bar{display:none;position:fixed;left:240px;right:0;bottom:88px;z-index:70;flex-direction:column;align-items:center;padding:0 40px;pointer-events:none;}
+  body[data-view="write"] .ai-bar{display:flex;}
+  body[data-view="write"].lnb-collapsed .ai-bar{left:56px;}
+  .ai-bar-box{pointer-events:auto;width:520px;max-width:100%;display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.16);padding:12px 12px 12px 14px;transition:box-shadow .15s, border-color .15s;}
+  .ai-bar-box:focus-within{border-color:#00C2FF;box-shadow:0 12px 32px rgba(0,194,255,.20);}
+  .ai-bar-title{font-size:12px;font-weight:700;color:var(--ck-gray-500);letter-spacing:-0.01em;}
+  .ai-bar-row{display:flex;align-items:flex-start;gap:9px;}
+  .ai-bar-ico{flex-shrink:0;color:#11BE8A;display:inline-flex;align-items:center;margin-top:2px;}
+  .ai-bar-input{flex:1;border:0;outline:none;resize:none;font-family:inherit;font-size:15px;line-height:1.55;color:#0F172A;background:transparent;height:24px;overflow-y:auto;}
+  .ai-bar-send{display:none;flex-shrink:0;align-self:flex-end;width:34px;height:34px;border:0;border-radius:9px;background:#00C2FF;color:#fff;align-items:center;justify-content:center;cursor:pointer;}
+  .ai-bar-send:hover{background:#0097D4;}
+  /* 포커스(커서 위치) 시 — 세로 확장 + 전송 버튼 노출 (textarea height 직접 transition은 스냅 버그라 미적용) */
+  .ai-bar.is-focused .ai-bar-input{height:92px;}
+  .ai-bar.is-focused .ai-bar-send{display:inline-flex;}
   .ed-panel{background:#fff;border:1px solid var(--color-border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
 
   /* 좌측: 유형 선택 */
@@ -2904,26 +2906,15 @@
 </div>
 
 <!-- 작성 이탈 확인 — 작성 중 내용이 있을 때 '목록으로 이동' 시 저장 유도 -->
-<!-- 카피킬러 AI 어시스턴트 — 하단 플로팅 버튼 (문서 작성 화면 전용) -->
-<button id="aiAssistFab" class="ai-fab" type="button" onclick="openAiAssist()">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
-  <span>카피킬러 AI 어시스턴트 사용하기</span>
-</button>
-
-<!-- 카피킬러 AI 어시스턴트 모달 (프롬프트 입력·전송) -->
-<div id="aiAssistModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/40" onclick="closeAiAssist()"></div>
-  <div class="relative w-full max-w-lg bg-white rounded-2xl p-6 shadow-2xl">
-    <div class="flex items-center gap-2">
-      <span class="ai-modal-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg></span>
-      <h3 class="text-[18px] font-bold text-slate-900">카피킬러 AI 어시스턴트</h3>
-    </div>
-    <p class="text-[13px] text-slate-500 mt-1 mb-4">작성할 글의 주제·요청을 입력하면 초안을 만들어 에디터에 넣어드려요.</p>
-    <div class="ai-composer">
-      <span class="ai-composer-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg></span>
-      <textarea id="aiAssistPrompt" class="ai-composer-input" rows="1" maxlength="3000" placeholder="Ask AI  ·  예) 프론트엔드 개발 직무 자기소개서 초안"></textarea>
-      <button id="aiAssistSend" class="ai-composer-send" type="button" onclick="aiAssistGenerate()" aria-label="전송">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+<!-- 카피킬러 AI 어시스턴트 — 화면 중앙 하단 입력 (포커스 시 세로 확장 + 전송, 블러 시 원복) -->
+<div id="aiAssistBar" class="ai-bar">
+  <div class="ai-bar-box">
+    <div class="ai-bar-title">카피킬러 AI 어시스턴트</div>
+    <div class="ai-bar-row">
+      <span class="ai-bar-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9.5L4 22V5a2 2 0 0 1 2-2z"/></svg></span>
+      <textarea id="aiAssistPrompt" class="ai-bar-input" rows="1" maxlength="3000" placeholder="프로덕트 매니저 자기소개서 초안 500자 내로 작성해줘."></textarea>
+      <button id="aiAssistSend" class="ai-bar-send" type="button" onmousedown="event.preventDefault()" onclick="aiAssistGenerate()" aria-label="전송">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
       </button>
     </div>
   </div>
@@ -4263,15 +4254,7 @@ function _syncLeftPanelForType(){
   if(sel) sel.value = selectedType || '';
 }
 
-/* ---------- 카피킬러 AI 어시스턴트 모달 (하단 플로팅 버튼 → 프롬프트 입력·전송) ---------- */
-function _aiAssistAutoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(140, el.scrollHeight)+'px'; }
-function openAiAssist(){
-  const m=document.getElementById('aiAssistModal'); if(!m) return;
-  m.classList.remove('hidden');
-  const p=document.getElementById('aiAssistPrompt');
-  if(p){ p.value=''; _aiAssistAutoGrow(p); setTimeout(()=>{ try{ p.focus(); }catch(e){} }, 60); }
-}
-function closeAiAssist(){ document.getElementById('aiAssistModal')?.classList.add('hidden'); }
+/* ---------- 카피킬러 AI 어시스턴트 — 중앙 하단 입력(포커스 시 확장 + 전송, 블러 시 원복) ---------- */
 function aiAssistGenerate(){
   const el=document.getElementById('aiAssistPrompt');
   const prompt=(el?.value||'').trim();
@@ -4282,13 +4265,17 @@ function aiAssistGenerate(){
     if(typeof appendToEditor==='function') appendToEditor(draft, 'ai', prompt);
     if(typeof showToast==='function') showToast('AI 초안을 에디터에 추가했어요');
   }catch(e){ console.warn('ai assist gen fail', e); if(typeof showToast==='function') showToast('초안 생성에 실패했어요'); }
-  closeAiAssist();
+  if(el){ el.value=''; el.blur(); }   // 전송 후 원복(축소)
 }
-document.addEventListener('input', e=>{ if(e.target && e.target.id==='aiAssistPrompt') _aiAssistAutoGrow(e.target); });
-document.addEventListener('keydown', e=>{
-  if(e.target && e.target.id==='aiAssistPrompt' && e.key==='Enter' && !e.shiftKey){ e.preventDefault(); aiAssistGenerate(); }
-  if(e.key==='Escape') closeAiAssist();
-});
+(function bindAiAssistBar(){
+  const bar=document.getElementById('aiAssistBar');
+  const input=document.getElementById('aiAssistPrompt');
+  if(!bar || !input) return;
+  input.addEventListener('focus', ()=> bar.classList.add('is-focused'));   // 커서 위치 → 세로 확장 + 전송
+  input.addEventListener('blur',  ()=> bar.classList.remove('is-focused')); // 커서 이탈 → 원래 크기
+  // Enter=전송(Shift+Enter=줄바꿈)
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); aiAssistGenerate(); } });
+})();
 
 /* ---------- LNB 접기/열기 토글 ---------- */
 (function bindLnbCollapse(){
