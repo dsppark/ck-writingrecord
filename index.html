@@ -152,11 +152,11 @@
   .flash{animation:flash 0.6s ease-out;}
   @keyframes flash{0%{background:#D8E5FD;}100%{background:transparent;}}
   /* origin highlights — typing: 그린 / ai:보라 / ai-edited:파랑(AI 영역 수정) / paste:빨강 / paste-edited:노랑(붙여넣기 수정) / quote-paste:분홍(인용 붙여넣기) */
-  .origin-typing{background:var(--ck-primary-100);}      /* 직접 타이핑 — 연파랑 */
+  .origin-typing{background:#E1F8EE;}                     /* 직접 타이핑 — 연초록 */
   .origin-paste{background:#FFE0EC;}                      /* 붙여넣기 — 연핑크 */
   .origin-paste-edited{background:var(--ck-yellow-100);}
   .origin-ai{background:#DAD3FF;}
-  .origin-ai-edited{background:#E1F8EE;}                  /* AI 생성+수정 — 연초록 */
+  .origin-ai-edited{background:var(--ck-primary-100);}   /* AI Draft 생성+수정 — 연파랑 */
   .origin-quote-paste{background:#FCE7F3;}
   .origin-quote-paste-edited{background:#FCE7F3;}
   .origin-quote-paste-internal{background:#FCE7F3;}
@@ -859,7 +859,7 @@
   .box-actionbtn.scan{background:#314158;color:#fff;border-color:#314158;}
   .box-actionbtn.scan:hover{background:#26303F;}
   /* 작성 검증 검사하기 / 결과 확인하기 — 두 버튼 폭 동일 (문서 열기는 자연폭 유지) */
-  .box-actionbtn.solid, .box-actionbtn.scan{min-width:162px;}
+  /* 버튼 폭은 텍스트+여백에 맞춤(고정폭 해제) */
   /* 더보기(⋮) 메뉴 — 문서 복사 / 문서 삭제 */
   .box-more{position:relative;flex-shrink:0;display:inline-flex;}
   .box-more-btn{width:34px;height:34px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ck-gray-600);font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
@@ -869,7 +869,8 @@
   .box-more-menu button{display:block;width:100%;text-align:left;padding:9px 12px;font-size:14px;font-weight:500;color:#3E4448;background:transparent;border:0;border-radius:7px;cursor:pointer;white-space:nowrap;}
   .box-more-menu button:hover{background:var(--ck-gray-50);}
   .box-more-menu button.danger{color:#FF006B;}
-  .box-actionbtn:disabled{background:var(--ck-secondary-100)!important;color:var(--ck-gray-400)!important;cursor:not-allowed;}
+  /* 비활성 — 목록 카드(연회색) 배경과 구분되도록 흰 배경 + 점선 테두리 + 흐린 텍스트 */
+  .box-actionbtn:disabled{background:#fff!important;color:var(--ck-gray-400)!important;border:1px dashed var(--ck-gray-300)!important;cursor:not-allowed;}
   .dv-btn:disabled{background:var(--ck-secondary-100)!important;color:var(--ck-gray-400)!important;border-color:var(--ck-secondary-200)!important;cursor:not-allowed;}
   /* 목록 비활성 버튼 안내 — 즉시 뜨는 커스텀 툴팁(문서 수정 툴팁과 동일 스타일, 우측 앵커) */
   .box-tip-wrap{position:relative;display:inline-flex;}
@@ -1014,10 +1015,10 @@
   .editor-grid{display:grid;grid-template-columns:1fr;gap:20px;height:calc(100vh - 56px - 48px);max-width:1280px;margin:0 auto;padding:24px;}
   @media (max-width:1024px){.editor-grid{height:auto;}}
   /* 에디터 상단 문서 유형 드롭다운 */
-  .doc-panel-typerow{display:flex;align-items:center;gap:10px;padding:14px 18px 0;flex-shrink:0;}
-  .doc-panel-typerow .dpt-label{font-size:14px;font-weight:700;color:var(--ck-gray-800);}
-  .doc-panel-typerow .dpt-select{height:38px;padding:0 34px 0 12px;border:1px solid var(--ck-secondary-200);border-radius:10px;font-size:14px;font-family:inherit;color:#334155;background:#fff;cursor:pointer;min-width:180px;outline:none;}
-  .doc-panel-typerow .dpt-select:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,.12);}
+  /* 제목 행: 문서 유형 드롭다운(좌) + 제목 입력(우) */
+  .doc-panel-title .dpt-select{flex-shrink:0;height:36px;padding:0 30px 0 12px;border:1px solid var(--ck-secondary-200);border-radius:9px;font-size:14px;font-weight:600;font-family:inherit;color:#334155;background:#fff;cursor:pointer;min-width:150px;outline:none;}
+  .doc-panel-title .dpt-select:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,.12);}
+  .doc-panel-title .title-in{flex:1;min-width:0;width:auto;}
   /* 카피킬러 AI 어시스턴트 — 콘텐츠 영역(LNB 오른쪽) 중앙 하단 입력 (그래머리 Ask AI 형태) */
   .ai-bar{display:none;position:fixed;left:240px;right:0;bottom:88px;z-index:70;flex-direction:column;align-items:center;padding:0 40px;pointer-events:none;}
   body[data-view="write"] .ai-bar{display:flex;}
@@ -1033,6 +1034,12 @@
   /* 포커스(커서 위치) 시 — 세로 확장 + 전송 버튼 노출 (textarea height 직접 transition은 스냅 버그라 미적용) */
   .ai-bar.is-focused .ai-bar-input{height:92px;}
   .ai-bar.is-focused .ai-bar-send{display:inline-flex;}
+  /* 최초 사용 후: 입력 바 숨김 + 좌측 하단 플로팅 버튼 표시 */
+  .ai-draft-fab{display:none;position:fixed;right:40px;bottom:88px;z-index:70;align-items:center;gap:8px;background:#0F172A;color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.28);}
+  .ai-draft-fab:hover{background:#1E293B;}
+  .ai-draft-fab svg{color:#11BE8A;flex-shrink:0;}
+  body[data-view="write"].ai-collapsed .ai-bar{display:none;}
+  body[data-view="write"].ai-collapsed .ai-draft-fab{display:inline-flex;}
   .ed-panel{background:#fff;border:1px solid var(--color-border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
 
   /* 좌측: 유형 선택 */
@@ -1094,7 +1101,7 @@
   .dg-back:hover{color:var(--ck-gray-900);}
   .dg-typechip{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:700;color:var(--ck-primary-700);background:var(--ck-primary-50);border:1px solid var(--ck-primary-200);border-radius:999px;padding:4px 12px;margin-bottom:14px;}
   /* 우측 제목 입력 행 */
-  .doc-panel-title{padding:14px 18px 4px;flex-shrink:0;}
+  .doc-panel-title{display:flex;align-items:center;gap:12px;padding:14px 18px 4px;flex-shrink:0;}
   .dg-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;}
   .dg-ico{width:30px;height:30px;border-radius:8px;background:#DEF4FB;color:#0b647e;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .dg-title{font-size:18px;font-weight:700;color:#0F172A;line-height:1.3;}
@@ -1324,12 +1331,11 @@
   </header>
 
   <div class="editor-grid">
-    <!-- 에디터 (전체폭) — 문서 유형 드롭다운 + 제목 + 에디터 -->
+    <!-- 에디터 (전체폭) — 제목 행(문서 유형 드롭다운 좌측 + 제목) + 에디터 -->
     <div class="ed-panel doc-panel">
-      <div class="doc-panel-typerow">
-        <span class="dpt-label">문서 유형</span>
+      <div class="doc-panel-title">
         <select id="docType" required aria-label="문서 유형" class="dpt-select">
-          <option value="" disabled selected>선택해주세요</option>
+          <option value="" disabled selected>문서 유형 선택</option>
           <option>과제물</option>
           <option>자기소개서</option>
           <option>학위논문</option>
@@ -1342,8 +1348,8 @@
           <option>생활기록부</option>
           <option>기타</option>
         </select>
+        <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
       </div>
-      <div class="doc-panel-title"><input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." /></div>
       <div class="stat-row">
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
         <div class="stat-right">
@@ -1609,17 +1615,15 @@
       <div class="lg:col-span-5 flex flex-col items-center text-center">
         <div id="sec02VerdictName" data-verdict="s3"><span>검토 권장</span></div>
         <p id="sec02VerdictDesc" class="text-[13px] text-slate-500 mt-2 leading-relaxed" style="min-height:42px;max-width:300px;">작성 과정 증거를 종합해 5단계 중 하나로 판정합니다.</p>
-        <!-- 5단계 구간 판정 바 (%는 노출하지 않음) -->
+        <!-- 3단계 구간 판정 바 (%는 노출하지 않음) -->
         <div id="verdictScale" class="mt-6" style="width:100%;max-width:320px;">
           <div class="vscale-pointerrow"><span class="vscale-pointer" id="vscalePointer"></span></div>
           <div class="vscale-bar">
             <span class="vseg" data-stage="0"></span>
             <span class="vseg" data-stage="1"></span>
             <span class="vseg" data-stage="2"></span>
-            <span class="vseg" data-stage="3"></span>
-            <span class="vseg" data-stage="4"></span>
           </div>
-          <div class="vscale-ends"><span>작성 증거 부족</span><span>작성 증거 확실</span></div>
+          <div class="vscale-ends"><span>FAIL</span><span>PASS</span></div>
         </div>
       </div>
 
@@ -1633,7 +1637,7 @@
               <thead>
                 <tr class="text-[12px] font-semibold text-slate-500">
                   <th class="px-3 py-2 border-r border-slate-100 font-semibold bg-slate-50" style="border-top-left-radius:12px;">직접 타이핑 기여</th>
-                  <th class="px-3 py-2 font-semibold bg-slate-50" style="border-top-right-radius:12px;"><span class="inline-flex items-center gap-1">외부 유입 후 수정 기여<span class="info-tooltip" data-pos="below" data-align="right" data-tip="카피킬러 AI 어시스턴트로 생성했거나 붙여넣기로 유입된 텍스트의 수정 기여 정도를 의미합니다.">i</span></span></th>
+                  <th class="px-3 py-2 font-semibold bg-slate-50" style="border-top-right-radius:12px;"><span class="inline-flex items-center gap-1">외부 유입 후 수정 기여<span class="info-tooltip" data-pos="below" data-align="right" data-tip="카피킬러 AI Draft 생성으로 만들었거나 붙여넣기로 유입된 텍스트의 수정 기여 정도를 의미합니다.">i</span></span></th>
                 </tr>
               </thead>
               <tbody>
@@ -1807,14 +1811,14 @@
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">작성 과정 리플레이</h2>
-      <p class="text-sm text-slate-500 mt-1" style="display:none;">문서가 작성된 과정을 시간 순서대로 다시 재생합니다. 색상으로 입력 출처(직접 타이핑·AI 어시스턴트 생성·붙여넣기 등)를 구분하며, 타임라인을 드래그해 특정 시점으로 이동할 수 있습니다.</p>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">문서가 작성된 과정을 시간 순서대로 다시 재생합니다. 색상으로 입력 출처(직접 타이핑·AI Draft 생성·붙여넣기 등)를 구분하며, 타임라인을 드래그해 특정 시점으로 이동할 수 있습니다.</p>
     </div>
     <!-- 색상 범례 -->
     <div class="flex flex-wrap items-center gap-2 text-[12px] mb-3">
       <span class="text-slate-400 mr-1">색상 가이드</span>
-      <span id="replayLegendDirect" class="px-2 py-0.5 rounded" style="background:var(--ck-primary-100);color:var(--ck-primary-800);">직접 타이핑</span>
-      <span class="px-2 py-0.5 origin-ai rounded">AI 어시스턴트 생성</span>
-      <span class="px-2 py-0.5 origin-ai-edited rounded">AI 어시스턴트 생성+수정</span>
+      <span id="replayLegendDirect" class="px-2 py-0.5 rounded" style="background:#E1F8EE;color:#0E9F63;">직접 타이핑</span>
+      <span class="px-2 py-0.5 origin-ai rounded">AI Draft 생성</span>
+      <span class="px-2 py-0.5 origin-ai-edited rounded">AI Draft 생성+수정</span>
       <span class="px-2 py-0.5 origin-paste rounded">붙여넣기</span>
       <span class="px-2 py-0.5 origin-paste-edited rounded">붙여넣기+수정</span>
       <span id="replayLegendQuote" class="px-2 py-0.5 origin-quote-paste rounded" style="display:none;">인용</span>
@@ -1989,18 +1993,18 @@
     <div class="relative mb-3">
       <div id="compoTooltip"></div>
       <div id="compoBar" class="flex rounded-lg overflow-hidden text-white text-[12px] font-semibold" style="height:36px;">
-        <div class="composeg flex items-center justify-center" data-key="typing"       data-label="직접 타이핑"   data-n="0"   data-pct="0"   data-color="#00C2FF" style="background:#00C2FF;width:0%"></div>
-        <div class="composeg flex items-center justify-center" data-key="ai"           data-label="AI 어시스턴트 생성"    data-n="110" data-pct="100" data-color="#7C52F1" style="background:#7C52F1;width:100%">100%</div>
-        <div class="composeg flex items-center justify-center" data-key="ai-edited"    data-label="AI 어시스턴트 생성+수정" data-n="0"   data-pct="0"   data-color="#11BE8A" style="background:#11BE8A;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="typing"       data-label="직접 타이핑"   data-n="0"   data-pct="0"   data-color="#11BE8A" style="background:#11BE8A;width:0%"></div>
+        <div class="composeg flex items-center justify-center" data-key="ai"           data-label="AI Draft 생성"    data-n="110" data-pct="100" data-color="#7C52F1" style="background:#7C52F1;width:100%">100%</div>
+        <div class="composeg flex items-center justify-center" data-key="ai-edited"    data-label="AI Draft 생성+수정" data-n="0"   data-pct="0"   data-color="#00C2FF" style="background:#00C2FF;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="paste"        data-label="붙여넣기"      data-n="0"   data-pct="0"   data-color="#FF006B" style="background:#FF006B;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="paste-edited" data-label="붙여넣기+수정" data-n="0"   data-pct="0"   data-color="#FEF3C7" style="background:#FEF3C7;width:0%"></div>
         <div class="composeg flex items-center justify-center" data-key="quote-paste"  data-label="인용 붙여넣기" data-n="0"   data-pct="0"   data-color="#EC4899" style="background:#EC4899;width:0%"></div>
       </div>
     </div>
     <div id="compoLegend" class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] justify-end">
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#00C2FF;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0.0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C52F1;"></span><span class="text-slate-500">AI 어시스턴트 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">0자</span><span class="text-slate-400" data-bind="ai-pct">(0.0%)</span></div>
-      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#11BE8A;"></span><span class="text-slate-500">AI 어시스턴트 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0.0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#11BE8A;"></span><span class="text-slate-500">직접 타이핑</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="typing-n">0자</span><span class="text-slate-400" data-bind="typing-pct">(0.0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#7C52F1;"></span><span class="text-slate-500">AI Draft 생성</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-n">0자</span><span class="text-slate-400" data-bind="ai-pct">(0.0%)</span></div>
+      <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#00C2FF;"></span><span class="text-slate-500">AI Draft 생성+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="ai-edited-n">0자</span><span class="text-slate-400" data-bind="ai-edited-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#FF006B;"></span><span class="text-slate-500">붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-n">0자</span><span class="text-slate-400" data-bind="paste-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:#EAB308;"></span><span class="text-slate-500">붙여넣기+수정</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="paste-edited-n">0자</span><span class="text-slate-400" data-bind="paste-edited-pct">(0.0%)</span></div>
       <div class="flex items-center gap-1.5" data-quote-item><span class="w-2 h-2 rounded-full" style="background:#EC4899;"></span><span class="text-slate-500" data-quote-label>인용 붙여넣기</span><span class="font-semibold text-slate-700 ml-0.5" data-bind="quote-paste-n">0자</span><span class="text-slate-400" data-bind="quote-paste-pct">(0.0%)</span></div>
@@ -2026,9 +2030,9 @@
       <div class="flex items-center gap-1.5 text-xs">
         <span class="text-slate-400 mr-1">필터</span>
         <button onclick="toggleOrigin(this,'all')" class="origin-filter is-active" data-cat="all" style="--cat:var(--ck-gray-900);--cat-dark:var(--ck-gray-900);--cat-light:var(--ck-gray-100);">전체</button>
-        <button onclick="toggleOrigin(this,'direct')" class="origin-filter" data-cat="direct" style="--cat:#00C2FF;--cat-dark:var(--ck-primary-700);--cat-light:var(--ck-primary-100);">직접 타이핑</button>
-        <button onclick="toggleOrigin(this,'ai')" class="origin-filter" data-cat="ai" style="--cat:var(--ck-brand-gk-500);--cat-dark:var(--ck-brand-gk-700);--cat-light:var(--ck-brand-gk-100);">AI 어시스턴트 생성</button>
-        <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:#11BE8A;--cat-dark:#0E9F63;--cat-light:#E1F8EE;">AI 어시스턴트 생성+수정</button>
+        <button onclick="toggleOrigin(this,'direct')" class="origin-filter" data-cat="direct" style="--cat:#11BE8A;--cat-dark:#0E9F63;--cat-light:#E1F8EE;">직접 타이핑</button>
+        <button onclick="toggleOrigin(this,'ai')" class="origin-filter" data-cat="ai" style="--cat:var(--ck-brand-gk-500);--cat-dark:var(--ck-brand-gk-700);--cat-light:var(--ck-brand-gk-100);">AI Draft 생성</button>
+        <button onclick="toggleOrigin(this,'ai-internal')" class="origin-filter" data-cat="ai-internal" style="--cat:#00C2FF;--cat-dark:var(--ck-primary-700);--cat-light:var(--ck-primary-100);">AI Draft 생성+수정</button>
         <button onclick="toggleOrigin(this,'paste')" class="origin-filter" data-cat="paste" style="--cat:#FF006B;--cat-dark:#C10054;--cat-light:#FFE0EC;">붙여넣기</button>
         <button onclick="toggleOrigin(this,'paste-internal')" class="origin-filter" data-cat="paste-internal" style="--cat:var(--ck-yellow-500);--cat-dark:var(--ck-yellow-800);--cat-light:var(--ck-yellow-100);">붙여넣기+수정</button>
         <button onclick="toggleOrigin(this,'quote-paste')" class="origin-filter" data-cat="quote-paste" data-quote-label style="--cat:#EC4899;--cat-dark:#BE185D;--cat-light:#FCE7F3;">인용 붙여넣기</button>
@@ -2124,10 +2128,10 @@
     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
       <div>
         <h2 class="text-xl font-bold text-slate-900">외부 유입 로그</h2>
-        <p class="text-sm text-slate-500 mt-1" style="display:none;">붙여넣기·AI 어시스턴트 생성으로 유입된 블록을 시간순으로 기록한 로그입니다. 삽입 시각·분량·위치와 유입 전후 비교까지 블록별 상세 정보를 확인할 수 있습니다.</p>
+        <p class="text-sm text-slate-500 mt-1" style="display:none;">붙여넣기·AI Draft 생성으로 유입된 블록을 시간순으로 기록한 로그입니다. 삽입 시각·분량·위치와 유입 전후 비교까지 블록별 상세 정보를 확인할 수 있습니다.</p>
       </div>
       <div class="flex items-center gap-2 text-xs">
-        <span id="extChipAi" class="px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 font-semibold">AI 어시스턴트 생성 0건</span>
+        <span id="extChipAi" class="px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 font-semibold">AI Draft 생성 0건</span>
         <span id="extChipPaste" class="px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-semibold">붙여넣기 0건</span>
       </div>
     </div>
@@ -2727,8 +2731,8 @@
         <thead><tr><th>카테고리</th><th style="text-align:right;width:25%;">글자수</th><th style="text-align:right;width:20%;">비중</th></tr></thead>
         <tbody>
           <tr><td>직접 타이핑</td><td class="num" data-print="dist-typing-n">-</td><td class="num" data-print="dist-typing-pct">-</td></tr>
-          <tr><td>AI 어시스턴트 생성</td><td class="num" data-print="dist-ai-n">-</td><td class="num" data-print="dist-ai-pct">-</td></tr>
-          <tr><td>AI 어시스턴트 생성+수정</td><td class="num" data-print="dist-aiedit-n">-</td><td class="num" data-print="dist-aiedit-pct">-</td></tr>
+          <tr><td>AI Draft 생성</td><td class="num" data-print="dist-ai-n">-</td><td class="num" data-print="dist-ai-pct">-</td></tr>
+          <tr><td>AI Draft 생성+수정</td><td class="num" data-print="dist-aiedit-n">-</td><td class="num" data-print="dist-aiedit-pct">-</td></tr>
           <tr><td>붙여넣기</td><td class="num" data-print="dist-paste-n">-</td><td class="num" data-print="dist-paste-pct">-</td></tr>
           <tr><td>붙여넣기+수정</td><td class="num" data-print="dist-pasteedit-n">-</td><td class="num" data-print="dist-pasteedit-pct">-</td></tr>
         </tbody>
@@ -2906,10 +2910,14 @@
 </div>
 
 <!-- 작성 이탈 확인 — 작성 중 내용이 있을 때 '목록으로 이동' 시 저장 유도 -->
-<!-- 카피킬러 AI 어시스턴트 — 화면 중앙 하단 입력 (포커스 시 세로 확장 + 전송, 블러 시 원복) -->
+<!-- 카피킬러 AI Draft 생성 — 최초 사용 전: 중앙 하단 입력 바 / 사용 후: 좌측 하단 플로팅 버튼 -->
+<button id="aiDraftFab" class="ai-draft-fab" type="button" onclick="_aiExpand()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
+  <span>카피킬러 AI Draft 생성</span>
+</button>
 <div id="aiAssistBar" class="ai-bar">
   <div class="ai-bar-box">
-    <div class="ai-bar-title">카피킬러 AI 어시스턴트</div>
+    <div class="ai-bar-title">카피킬러 AI Draft 생성</div>
     <div class="ai-bar-row">
       <span class="ai-bar-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9.5L4 22V5a2 2 0 0 1 2-2z"/></svg></span>
       <textarea id="aiAssistPrompt" class="ai-bar-input" rows="1" maxlength="3000" placeholder="프로덕트 매니저 자기소개서 초안 500자 내로 작성해줘."></textarea>
@@ -3297,16 +3305,15 @@ function _gaugeArc(cx,cy,r,dStart,dEnd,stepDeg){
 }
 function renderScore(score){
   score = Math.max(0, Math.min(100, Math.round(score)));
-  // 5단계 구간 판정 — %는 노출하지 않고 구간 라벨 1개로만 표기.
-  //  0~39 부족 / 40~59 불충분 / 60~74 검토 권장 / 75~89 충분 / 90~100 확실
+  // 3단계 구간 판정 — %는 노출하지 않고 구간 라벨 1개로만 표기.
+  //  0~30 부족(빨강) / 31~60 보통(주황) / 61~100 완료(초록)
+  //  (점수는 입력 증거·사고 과정 증거의 기여 정도로 산출)
   const STAGES = [
-    {key:'s1', name:'작성 증거 부족',   color:'#FF006B', desc:'직접 작성 흔적이 거의 없습니다. 외부 유입 비중이 높거나 기계적인 작성 패턴이 관찰됩니다.'},
-    {key:'s2', name:'작성 증거 불충분', color:'#F97316', desc:'직접 작성 흔적이 부족합니다. 능동적인 수정·퇴고 과정이 더 필요합니다.'},
-    {key:'s3', name:'검토 권장',        color:'#FACC15', desc:'자체 작성과 외부 유입이 함께 나타납니다. 세부 지표를 함께 검토해 주세요.'},
-    {key:'s4', name:'작성 증거 충분',   color:'#11BE8A', desc:'직접 작성 패턴이 뚜렷하게 관찰됩니다. 신뢰할 수 있는 수준입니다.'},
-    {key:'s5', name:'작성 증거 확실',   color:'#00C2FF', desc:'직접 작성 흔적이 매우 뚜렷합니다. 높은 신뢰도로 본인 작성이 인정됩니다.'},
+    {key:'s1', name:'작성 증거 부족', color:'#FF006B', desc:'외부에서 가져온 글의 비중이 다소 높습니다. 자신만의 표현으로 글을 수정해보면 어떨까요?'},
+    {key:'s2', name:'작성 증거 보통', color:'#F97316', desc:'직접 작성한 글과 외부를 참고한 글이 적절히 섞여 있네요. 글을 전체적으로 훑어보며 다시 한 번 글과 생각을 정리해보세요.'},
+    {key:'s3', name:'작성 검증 완료', color:'#11BE8A', desc:'작성 검증 결과, 본인만의 생각과 문체로 글을 완성한 흔적이 충분해요.'},
   ];
-  const stageIdx = [0,40,60,75,90].reduce((acc,th,i)=> score>=th ? i : acc, 0);   // 0..4
+  const stageIdx = [0,31,61].reduce((acc,th,i)=> score>=th ? i : acc, 0);   // 0..2
   const stage = STAGES[stageIdx];
   const faceKey = stage.key, verdictName = stage.name, verdictDesc = stage.desc;
   // 구간 바 렌더 — 0..활성 구간 누적 채움(활성 구간 색), 포인터는 활성 구간 중앙 위
@@ -3320,7 +3327,7 @@ function renderScore(score){
       seg.style.background = on ? stage.color : '#E6E8EA';
     });
     const ptr = document.getElementById('vscalePointer');
-    if(ptr){ ptr.style.left = ((stageIdx + 0.5) / 5 * 100).toFixed(2) + '%'; ptr.style.borderTopColor = stage.color; }
+    if(ptr){ ptr.style.left = ((stageIdx + 0.5) / 3 * 100).toFixed(2) + '%'; ptr.style.borderTopColor = stage.color; }
   }
   const vn = document.getElementById('sec02VerdictName');
   const vd = document.getElementById('sec02VerdictDesc');
@@ -3415,9 +3422,9 @@ document.querySelectorAll('.origin-seg').forEach(seg=>{
 const SEG_TYPE_LABELS = {
   'typing':'직접 타이핑',
   'direct':'직접 타이핑',
-  'ai':'AI 어시스턴트 생성',
-  'ai-edited':'AI 어시스턴트 생성',  // markEditedAround로 변환된 원본 — 사용자가 직접 손댄 게 아니므로 AI 어시스턴트 생성
-  'ai-internal':'AI 어시스턴트 생성+수정',    // 사용자가 영역 내 친 글자
+  'ai':'AI Draft 생성',
+  'ai-edited':'AI Draft 생성',  // markEditedAround로 변환된 원본 — 사용자가 직접 손댄 게 아니므로 AI Draft 생성
+  'ai-internal':'AI Draft 생성+수정',    // 사용자가 영역 내 친 글자
   'paste':'붙여넣기',
   'paste-edited':'붙여넣기',
   'paste-internal':'붙여넣기+수정',
@@ -3624,7 +3631,7 @@ function buildInternalBlockMap(){
 function replayMessageFor(src, len){
   switch(src){
     case 'typing':         return '직접 타이핑 입력 중…';
-    case 'ai':             return `AI 어시스턴트 생성 초안 ${len}자 일괄 삽입`;
+    case 'ai':             return `AI Draft 생성 초안 ${len}자 일괄 삽입`;
     case 'ai-edited':      return 'AI 영역 수정 중…';
     case 'ai-internal':    return 'AI 영역 내 직접 입력';
     case 'paste':          return `외부 콘텐츠 ${len}자 단순 붙여넣기`;
@@ -3799,7 +3806,7 @@ function renderReplayMarkers(){
   wrap.innerHTML = replayFrames.map((f, i) => {
     if(f.src !== 'paste' && f.src !== 'ai' && f.src !== 'quote-paste') return '';
     const pct = (i / total) * 100;
-    const label = f.src === 'paste' ? '붙여넣기' : f.src === 'ai' ? 'AI 어시스턴트 생성' : '인용';
+    const label = f.src === 'paste' ? '붙여넣기' : f.src === 'ai' ? 'AI Draft 생성' : '인용';
     const len = (f.chars || []).length;
     return `<div class="replay-marker-dot" data-src="${f.src}" data-idx="${i}" style="left:${pct}%;">
       <div class="replay-marker-tip">${label} ${len}자</div>
@@ -3930,7 +3937,7 @@ function toggleExtExpansion(rowTr, expTr, evt){
     else if(d.type==='add') rightHtml+=`<span class="diff-add">${t}</span>`;
   });
 
-  const leftTitle = isAi ? 'AI 어시스턴트 생성 직후 (원본)' : '붙여넣기 직후 (원본)';
+  const leftTitle = isAi ? 'AI Draft 생성 직후 (원본)' : '붙여넣기 직후 (원본)';
 
   // AI 이벤트라면 카피킬러 AI 어시스턴트에게 요청한 프롬프트를 상단에 노출
   const promptText = isAi ? (evt.meta?.prompt || '') : '';
@@ -3939,7 +3946,7 @@ function toggleExtExpansion(rowTr, expTr, evt){
       <div class="rounded-lg border p-3" style="background:var(--ck-brand-gk-50);border-color:var(--ck-brand-gk-200);">
         <div class="flex items-center gap-1.5 mb-1.5">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ck-brand-gk-700);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span class="text-[11.5px] font-bold" style="color:var(--ck-brand-gk-700);">카피킬러 AI 어시스턴트 요청 프롬프트</span>
+          <span class="text-[11.5px] font-bold" style="color:var(--ck-brand-gk-700);">카피킬러 AI Draft 생성 요청 프롬프트</span>
         </div>
         <div class="text-[13px] text-slate-800 leading-relaxed" style="white-space:pre-wrap;">${_escHtml(promptText)}</div>
       </div>
@@ -4255,17 +4262,36 @@ function _syncLeftPanelForType(){
 }
 
 /* ---------- 카피킬러 AI 어시스턴트 — 중앙 하단 입력(포커스 시 확장 + 전송, 블러 시 원복) ---------- */
+let _aiUsed = false;   // 이번 작성 세션에서 AI Draft 생성을 1회 이상 사용했는지
+function _aiExpand(){   // (좌측 하단 플로팅 버튼 클릭) → 중앙 하단 입력 바 다시 표시
+  document.body.classList.remove('ai-collapsed');
+  const input=document.getElementById('aiAssistPrompt');
+  if(input) setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 50);
+}
+function _aiCollapse(){ // 입력 바 숨김 → 좌측 하단 플로팅 버튼 (최초 사용 후에만 유효)
+  const input=document.getElementById('aiAssistPrompt'); if(input){ try{ input.blur(); }catch(e){} }
+  document.body.classList.add('ai-collapsed');
+}
+function _aiResetDraft(){  // 에디터 진입 시 초기화 — 중앙 하단 입력 바 상태로
+  _aiUsed=false;
+  document.body.classList.remove('ai-collapsed');
+  const input=document.getElementById('aiAssistPrompt'); if(input) input.value='';
+}
 function aiAssistGenerate(){
   const el=document.getElementById('aiAssistPrompt');
   const prompt=(el?.value||'').trim();
   if(prompt.length < 1){ if(el) el.focus(); if(typeof showToast==='function') showToast('요청할 내용을 입력해주세요'); return; }
   const kind = /자기소개서|자소서/.test(prompt) ? 'cover' : /에세이|essay/i.test(prompt) ? 'essay' : 'free';
+  let ok=false;
   try{
     const draft=_genAiDraft(kind, _parseMaxChars(prompt));
     if(typeof appendToEditor==='function') appendToEditor(draft, 'ai', prompt);
-    if(typeof showToast==='function') showToast('AI 초안을 에디터에 추가했어요');
-  }catch(e){ console.warn('ai assist gen fail', e); if(typeof showToast==='function') showToast('초안 생성에 실패했어요'); }
-  if(el){ el.value=''; el.blur(); }   // 전송 후 원복(축소)
+    if(typeof showToast==='function') showToast('AI Draft를 에디터에 추가했어요');
+    ok=true;
+  }catch(e){ console.warn('ai draft gen fail', e); if(typeof showToast==='function') showToast('생성에 실패했어요'); }
+  if(el) el.value='';
+  if(ok){ _aiUsed=true; _aiCollapse(); }   // 최초 사용(에디터에 삽입) → 좌측 하단 플로팅 버튼으로 전환
+  else if(el) el.blur();
 }
 (function bindAiAssistBar(){
   const bar=document.getElementById('aiAssistBar');
@@ -4275,6 +4301,14 @@ function aiAssistGenerate(){
   input.addEventListener('blur',  ()=> bar.classList.remove('is-focused')); // 커서 이탈 → 원래 크기
   // Enter=전송(Shift+Enter=줄바꿈)
   input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); aiAssistGenerate(); } });
+  // 1회 사용 후 바가 열려 있을 때 바깥 클릭 → 좌측 하단 버튼으로 접기
+  document.addEventListener('click', e=>{
+    if(!_aiUsed) return;
+    if(document.body.dataset.view!=='write') return;
+    if(document.body.classList.contains('ai-collapsed')) return;
+    if(e.target.closest('#aiAssistBar') || e.target.closest('#aiDraftFab')) return;
+    _aiCollapse();
+  });
 })();
 
 /* ---------- LNB 접기/열기 토글 ---------- */
@@ -4621,7 +4655,7 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    // AI 어시스턴트 생성 텍스트를 muha 에디터 문서 끝에 삽입.
+    // AI Draft 생성 텍스트를 muha 에디터 문서 끝에 삽입.
     // controller.insertText(auditSource:'ai') → 에디터 audit 에 inputSource:'ai' 로 기록.
     // 삽입 글자수를 _aiCharCount 에 누적 → 'AI생성' 카운터에 표시.
     const controller = window.__muhaController;
@@ -5360,6 +5394,7 @@ function newWrite(variant){
   sessionFrozen = false;
   document.body.dataset.shared = '';   // 공유 모드 해제 (일반 작성/리포트에선 리플레이 노출)
   selectedType = null;
+  if(typeof _aiResetDraft === 'function') _aiResetDraft();          // AI Draft 상태 초기화(중앙 하단 입력 바)
   const t = document.getElementById('docTitle'); if(t) t.value = '';
   if(typeof _setDocTypeUI === 'function') _setDocTypeUI('');        // 문서 유형 셀렉트 초기화
   if(typeof _resetDraftGenUI === 'function') _resetDraftGenUI();   // 초안 생성 폼 초기화
@@ -5424,8 +5459,11 @@ function renderBoxList(){
   list.innerHTML = docs.map(d => {
     // 문서 수정 → 바로 에디터(boxOpenDoc). 미리보기 화면 제거됨.
     const openCall = `boxOpenDoc('${d.id}')`;
-    // 이력과 무관하게 항상 '작성 검증 결과 확인하기' 노출 (단일 버튼)
-    const verifyBtn = `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">작성 검증 결과 확인하기</button>`;
+    // 검증 결과를 1회 이상 확인(resultViewed)한 경우에만 '검증 결과 보기' 활성화
+    const hasResult = _docHasResult(d);
+    const verifyBtn = hasResult
+      ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">검증 결과 보기</button>`
+      : `<span class="box-tip-wrap" data-tip="검증 결과를 1회 이상 확인하면 목록에서 바로 열람할 수 있어요."><button class="box-actionbtn solid" disabled>검증 결과 보기</button></span>`;
     return `
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
@@ -5434,7 +5472,7 @@ function renderBoxList(){
         <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>문서 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">문서 열기</button>
+        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">문서 수정</button>
         ${verifyBtn}
         <div class="box-more">
           <button class="box-more-btn" type="button" onclick="boxToggleMore(event,'${d.id}')" aria-label="더보기">⋮</button>
@@ -5546,6 +5584,7 @@ function boxOpenDoc(id){
   sessionFrozen = false;
   _loadDocIntoSession(d);                 // model/events/stats/title/writeVariant 복원
   if(typeof _syncLeftPanelForType === 'function') _syncLeftPanelForType();   // 유형 있으면 어시스턴트, 없으면 선택화면
+  if(typeof _aiResetDraft === 'function') _aiResetDraft();                   // AI Draft 상태 초기화(중앙 하단 입력 바)
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
   document.body.dataset.flow = activeFlow;   // 사본 플로우 하단 버튼 분기 유지
@@ -6972,9 +7011,9 @@ async function buildReportFromSession(){
   const n_quote    = c.quotePaste + c.quotePasteEdited + c.quotePasteInternal;
   const total      = Math.max(1, n_typing + n_ai + n_aiRev + n_paste + n_pasteRev + n_quote);
   const segData = [
-    {key:'typing',       label:'직접 타이핑',    n:n_typing,   color:'#00C2FF'},
-    {key:'ai',           label:'AI 어시스턴트 생성',    n:n_ai,       color:'#7C52F1'},
-    {key:'ai-edited',    label:'AI 어시스턴트 생성+수정', n:n_aiRev,    color:'#11BE8A'},
+    {key:'typing',       label:'직접 타이핑',    n:n_typing,   color:'#11BE8A'},
+    {key:'ai',           label:'AI Draft 생성',    n:n_ai,       color:'#7C52F1'},
+    {key:'ai-edited',    label:'AI Draft 생성+수정', n:n_aiRev,    color:'#00C2FF'},
     {key:'paste',        label:'붙여넣기',       n:n_paste,    color:'#FF006B'},
     {key:'paste-edited', label:'붙여넣기+수정', n:n_pasteRev, color:'#FEF3C7'},
     {key:'quote-paste',  label:(document.body.dataset.writeVariant==='extra'?'인용':'인용 붙여넣기'), n:n_quote, color:'#EC4899'},
@@ -7347,7 +7386,7 @@ async function buildReportFromSession(){
   const extRatio   = totalChars>0 ? (((c.paste+c.pasteEdited+c.pasteInternal+c.ai+c.aiEdited+c.aiInternal)/totalChars)*100).toFixed(1) : '0.0';
   // 상단 chip 갱신
   const cP=document.getElementById('extChipPaste');   if(cP) cP.textContent=`붙여넣기 ${pasteCount}건`;
-  const cA=document.getElementById('extChipAi');      if(cA) cA.textContent=`AI 어시스턴트 생성 ${aiCount}건`;
+  const cA=document.getElementById('extChipAi');      if(cA) cA.textContent=`AI Draft 생성 ${aiCount}건`;
   const pasteRows=document.getElementById('pasteRows');
   if(pasteRows){
     pasteRows.innerHTML='';
@@ -7368,7 +7407,7 @@ async function buildReportFromSession(){
         const survColor = _survR <= 20 ? '#00C2FF' : _survR <= 50 ? '#F97316' : '#FF006B';
         const isAi = p.type==='ai';
         const typeChip = isAi
-          ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:#EDE9FE;color:#6D28D9;">AI 어시스턴트 생성</span>'
+          ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:#EDE9FE;color:#6D28D9;">AI Draft 생성</span>'
           : '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:#FEE2E2;color:#B91C1C;">붙여넣기</span>';
         const tr=document.createElement('tr');
         tr.className='border-t border-slate-100 hover:bg-slate-50/60 cursor-pointer ext-row';
