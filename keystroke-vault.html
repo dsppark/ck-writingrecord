@@ -261,7 +261,7 @@
   body[data-view="report"] #view-write{display:none;}
   body[data-view="report"] #header-write{display:none;}
   body[data-view="write"] #header-report{display:none;}
-  /* view-box (내 문서함) */
+  /* view-box (내 글함) */
   #view-box{display:none;}
   body[data-view="box"] #view-box{display:block;}
   body[data-view="box"] #view-write,
@@ -273,7 +273,7 @@
   body[data-view="box"]{background:#fff;}
   body[data-view="box"] #view-box{padding-left:275px;padding-top:0;padding-bottom:60px;min-height:100vh;}
 
-  /* view-doc (문서 보기 — 단순 열람) */
+  /* view-doc (글 보기 — 단순 열람) */
   #view-doc{display:none;}
   body[data-view="doc"] #view-doc{display:block;}
   body[data-view="doc"] #view-write,
@@ -292,11 +292,11 @@
   .docview-actions{position:fixed;left:275px;right:0;bottom:0;padding:16px 40px;background:#fff;border-top:1px solid var(--ck-secondary-200);z-index:50;display:flex;align-items:center;gap:8px;}
   .docview-actions .docview-back{margin-right:auto;}
   .dv-btn{padding:10px 18px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;border:1px solid var(--ck-gray-300);background:#fff;color:var(--ck-gray-700);}
-  /* 참고(copykiller) 매칭: 목록으로 이동=네이비 아웃라인, 문서 수정=네이비 채움 */
+  /* 참고(copykiller) 매칭: 목록으로 이동=네이비 아웃라인, 글 수정=네이비 채움 */
   .docview-actions .docview-back{border-color:#314158;color:#314158;}
   .docview-actions #docViewEditBtn{background:#314158;color:#fff;border-color:#314158;}
   .dv-btn:hover{background:var(--ck-secondary-50);}
-  /* 비활성 '문서 수정' 안내 — 즉시 뜨는 커스텀 툴팁(네이티브 title 대체) */
+  /* 비활성 '글 수정' 안내 — 즉시 뜨는 커스텀 툴팁(네이티브 title 대체) */
   .dv-tip-wrap{position:relative;display:inline-flex;}
   .dv-tip-wrap[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--ck-gray-900);color:#fff;font-size:12.5px;font-weight:600;line-height:1.4;padding:9px 13px;border-radius:9px;white-space:nowrap;z-index:200;box-shadow:0 6px 18px rgba(15,23,42,.22);pointer-events:none;}
   .dv-tip-wrap[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--ck-gray-900);z-index:200;pointer-events:none;}
@@ -430,7 +430,7 @@
   .insp-tab:hover{background:#F1F5F9;}
   .insp-tab.is-active{background:#fff;color:var(--ck-gray-900);border-bottom:2px solid var(--ck-primary-500);}
   .insp-tab .chk{color:var(--ck-primary-500);font-weight:700;}
-  /* 탭 라인 우측 — 문서 AI작성률 (실제 서비스 스타일) */
+  /* 탭 라인 우측 — 글 AI작성률 (실제 서비스 스타일) */
   .insp-tabs{align-items:stretch;}
   .insp-tab-ratio{margin-left:auto;display:flex;align-items:center;gap:7px;padding:14px 20px;
     font-size:13.5px;font-weight:700;color:var(--ck-gray-800);background:#fff;border-left:1px solid var(--ck-secondary-200);}
@@ -522,7 +522,7 @@
   .susp-feat-item .feature-tag{display:inline-block;margin-bottom:6px;}
   .susp-feat-desc{margin:0;font-size:12px;line-height:1.65;color:var(--ck-gray-600);}
 
-  /* 우측 AI 의심 카드 패널 하단 — 문서 작성 이동 안내 + CTA. 눈에 띄는 강조 카드 */
+  /* 우측 AI 의심 카드 패널 하단 — 글 작성 이동 안내 + CTA. 눈에 띄는 강조 카드 */
   /* 사이드바 = flex column: 카드 영역 스크롤 + footer(CTA·안내) 하단 고정 */
   .insp-sidebar-scroll{flex:1;min-height:0;overflow-y:auto;}
   .insp-sidebar-footer{flex-shrink:0;padding-top:14px;margin-top:6px;border-top:1px solid var(--ck-secondary-100);}
@@ -576,7 +576,7 @@
   body[data-write-variant="extra"] [data-quote-item]{display:none !important;}
   body[data-write-variant="extra"] .origin-filter[data-cat="quote-paste"]{display:none !important;}
   body[data-write-variant="extra"] #replayLegendQuote{display:none !important;}
-  /* extra variant — 문서 성장 증거 그룹 · 산정 기준 growth 슬라이더 hide */
+  /* extra variant — 글 성장 증거 그룹 · 산정 기준 growth 슬라이더 hide */
   body[data-write-variant="extra"] .bd-group[data-group="growth"]{display:none !important;}
   body[data-write-variant="extra"] .w-row[data-key="growth"]{display:none !important;}
   /* extra SEC-02 게이지 — GPTZero 스타일 (단색 진행바 + 4-아이콘 + 판정 라벨) */
@@ -808,10 +808,10 @@
     .print-page-footer{display:block;position:fixed;left:0;right:0;bottom:0;text-align:center;font-size:8px;line-height:1.5;color:var(--ck-gray-400);padding:6px 14mm;border-top:1px solid var(--ck-gray-200);background:#fff;}
     @page{size:A4;margin:14mm 14mm 26mm;}
   }
-  /* 내 문서함 페이지 내부 */
+  /* 내 글함 페이지 내부 */
   .box-page{max-width:1280px;margin:0 auto;padding:32px 40px;}
   .box-pageheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
-  /* '문서 작성' 진입 플로우 공통 페이지 제목 (내 문서 목록·새 문서 작성·문서 열기 동일) */
+  /* '글 작성' 진입 플로우 공통 페이지 제목 (내 글 목록·새 글 작성·글 열기 동일) */
   .box-pageheader h1,
   #write-pageheader .write-pagetitle,
   .docview-title{font-size:32px;font-weight:700;color:var(--ck-gray-900);letter-spacing:-0.01em;line-height:1.35;}
@@ -819,7 +819,7 @@
   .box-newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:700;border:0;cursor:pointer;}
   .box-newbtn:hover{background:var(--ck-primary-600);}
   /* 필터 바 */
-  /* 내 문서함 상단 안내 배너 */
+  /* 내 글함 상단 안내 배너 */
   .box-notice{display:flex;align-items:flex-start;gap:11px;background:transparent;border:1px solid #00C2FF;border-radius:10px;padding:16px 20px;margin-bottom:18px;}
   .box-notice-ico{flex-shrink:0;color:#00C2FF;margin-top:1px;}
   .box-notice-text{flex:1;min-width:0;}
@@ -837,7 +837,7 @@
   .box-filterbar .box-search{font-size:14px;font-weight:600;color:#00C2FF;background:#fff;border:1px solid #00C2FF;border-radius:8px;padding:7px 16px;cursor:pointer;}
   .box-filterbar .box-search:hover{background:var(--ck-primary-50);}
   .box-filterbar .box-range{display:inline-flex;align-items:center;gap:4px;}
-  /* 문서 리스트 */
+  /* 글 리스트 */
   .box-list{display:flex;flex-direction:column;gap:8px;}
   .box-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#F4F5F6;border:1px solid #EDEFF1;border-radius:8px;}
   .box-row .box-rowchk{flex-shrink:0;}
@@ -855,12 +855,12 @@
   .box-actionbtn.ghost:hover{background:var(--ck-primary-100);}
   .box-actionbtn.solid{background:var(--ck-primary-500);color:#fff;}
   .box-actionbtn.solid:hover{background:var(--ck-primary-600);}
-  /* 작성 검증 검사하기 — 아직 결과 없는 문서(검사 전). '결과 확인하기'(시안 솔리드)와 구분: 네이비 솔리드 */
+  /* 작성 검증 검사하기 — 아직 결과 없는 글(검사 전). '결과 확인하기'(시안 솔리드)와 구분: 네이비 솔리드 */
   .box-actionbtn.scan{background:#314158;color:#fff;border-color:#314158;}
   .box-actionbtn.scan:hover{background:#26303F;}
-  /* 작성 검증 검사하기 / 결과 확인하기 — 두 버튼 폭 동일 (문서 열기는 자연폭 유지) */
+  /* 작성 검증 검사하기 / 결과 확인하기 — 두 버튼 폭 동일 (글 열기는 자연폭 유지) */
   /* 버튼 폭은 텍스트+여백에 맞춤(고정폭 해제) */
-  /* 더보기(⋮) 메뉴 — 문서 복사 / 문서 삭제 */
+  /* 더보기(⋮) 메뉴 — 글 복사 / 글 삭제 */
   .box-more{position:relative;flex-shrink:0;display:inline-flex;}
   .box-more-btn{width:34px;height:34px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ck-gray-600);font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
   .box-more-btn:hover{background:#EDEFF1;}
@@ -872,7 +872,7 @@
   /* 비활성 — 목록 카드(연회색) 배경과 구분되도록 흰 배경 + 점선 테두리 + 흐린 텍스트 */
   .box-actionbtn:disabled{background:#fff!important;color:var(--ck-gray-400)!important;border:1px dashed var(--ck-gray-300)!important;cursor:not-allowed;}
   .dv-btn:disabled{background:var(--ck-secondary-100)!important;color:var(--ck-gray-400)!important;border-color:var(--ck-secondary-200)!important;cursor:not-allowed;}
-  /* 목록 비활성 버튼 안내 — 즉시 뜨는 커스텀 툴팁(문서 수정 툴팁과 동일 스타일, 우측 앵커) */
+  /* 목록 비활성 버튼 안내 — 즉시 뜨는 커스텀 툴팁(글 수정 툴팁과 동일 스타일, 우측 앵커) */
   .box-tip-wrap{position:relative;display:inline-flex;}
   .box-tip-wrap[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);right:0;background:var(--ck-gray-900);color:#fff;font-size:12px;font-weight:600;line-height:1.5;padding:9px 13px;border-radius:9px;white-space:normal;width:max-content;max-width:260px;text-align:left;z-index:200;box-shadow:0 6px 18px rgba(15,23,42,.22);pointer-events:none;}
   .box-tip-wrap[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 3px);right:24px;border:7px solid transparent;border-top-color:var(--ck-gray-900);z-index:200;pointer-events:none;}
@@ -888,7 +888,7 @@
   .box-pagination .pg.is-active{background:var(--ck-primary-50);color:var(--ck-primary-700);font-weight:700;}
   .box-pagination .pg:hover{background:var(--ck-secondary-50);}
 
-  /* ============ '새 문서 작성' 페이지 — 흰 배경, GNB 제거, 페이지 헤더, 카드 진한 테두리, 액션 바 fixed ============ */
+  /* ============ '새 글 작성' 페이지 — 흰 배경, GNB 제거, 페이지 헤더, 카드 진한 테두리, 액션 바 fixed ============ */
   body[data-view="write"]{background:#fff;}
   body[data-view="write"] #header-write{display:none !important;}
   body[data-view="write"] #view-write{padding-top:0;padding-bottom:84px;}
@@ -923,7 +923,7 @@
   body[data-flow="copy"] .doc-actions #btnCopyVerify{display:inline-flex !important;}
   /* 저장 버튼이 '작성 검증 결과 보기' 바로 좌측에 붙도록 primary 자동 여백 해제 */
   body[data-flow="copy"] .doc-actions #btnCopyVerify{margin-left:0 !important;}
-  /* 사본 리포트 — 검증 완료(수정 불가) 문서이므로 '문서 수정' 버튼 숨김 */
+  /* 사본 리포트 — 검증 완료(수정 불가) 글이므로 '글 수정' 버튼 숨김 */
   .report-actions #raEditBtn{display:none !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
@@ -935,7 +935,7 @@
   html:has(body[data-view="write"]){overflow:hidden;height:100vh;}
   body[data-view="write"] #view-write{padding-left:240px;display:flex;flex-direction:column;height:100vh;overflow:hidden;padding-bottom:96px;}
   body[data-view="write"] #write-pageheader{flex-shrink:0;}
-  /* 전체폭 제목·문서유형 바 (에디터 그리드 위) */
+  /* 전체폭 제목·글유형 바 (에디터 그리드 위) */
   body[data-view="write"] .write-titlebar{flex-shrink:0;padding:14px 40px 8px;}
   body[data-view="write"] .write-titlebar .title-in{width:100%;border:none;outline:none;font-size:22px;font-weight:700;color:#0F172A;padding:0;background:transparent;}
   body[data-view="write"] .write-typebar{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 40px 14px;margin-bottom:14px;border-bottom:1px solid var(--ck-secondary-200);}
@@ -959,7 +959,7 @@
      상단(page header 80 + title 56 + stat 39 + toolbar ~90 + margin 60) + 하단 액션바
      96 대략 420px 감안. muhaMount 자체 스크롤이 있으므로 뷰포트 초과 시에도 안전. */
   body[data-view="write"] #muhaMount .ProseMirror{min-height:calc(100vh - 420px) !important;}
-  /* muha 하단 상태바(글자수/문서/저장됨) 숨김 — extra 는 우리 카운터 사용 */
+  /* muha 하단 상태바(글자수/글/저장됨) 숨김 — extra 는 우리 카운터 사용 */
   body[data-write-variant="extra"] #muhaMount .status-bar{display:none !important;}
   /* 결과지에도 LNB 폭만큼 본문 들여쓰기 + 액션바 left */
   body[data-view="report"] #view-report{padding-left:240px;}
@@ -1014,13 +1014,13 @@
   /* ============ EDITOR VIEW ============ */
   .editor-grid{display:grid;grid-template-columns:1fr;gap:20px;height:calc(100vh - 56px - 48px);max-width:1280px;margin:0 auto;padding:24px;}
   @media (max-width:1024px){.editor-grid{height:auto;}}
-  /* 에디터 상단 문서 유형 드롭다운 */
-  /* 제목 행: 문서 유형 드롭다운(좌) + 제목 입력(우) */
+  /* 에디터 상단 글 유형 드롭다운 */
+  /* 제목 행: 글 유형 드롭다운(좌) + 제목 입력(우) */
   .doc-panel-title .dpt-select{flex-shrink:0;height:36px;padding:0 30px 0 12px;border:1px solid var(--ck-secondary-200);border-radius:9px;font-size:14px;font-weight:600;font-family:inherit;color:#334155;background:#fff;cursor:pointer;min-width:150px;outline:none;}
   .doc-panel-title .dpt-select:focus{border-color:#00C2FF;box-shadow:0 0 0 3px rgba(0,194,255,.12);}
   .doc-panel-title .title-in{flex:1;min-width:0;width:auto;}
   /* 카피킬러 AI 어시스턴트 — 콘텐츠 영역(LNB 오른쪽) 중앙 하단 입력 (그래머리 Ask AI 형태) */
-  .ai-bar{display:none;position:fixed;left:240px;right:0;bottom:88px;z-index:70;flex-direction:column;align-items:center;padding:0 40px;pointer-events:none;}
+  .ai-bar{display:none;position:fixed;left:240px;right:0;bottom:152px;z-index:70;flex-direction:column;align-items:center;padding:0 40px;pointer-events:none;}
   body[data-view="write"] .ai-bar{display:flex;}
   body[data-view="write"].lnb-collapsed .ai-bar{left:56px;}
   .ai-bar-box{pointer-events:auto;width:520px;max-width:100%;display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.16);padding:12px 12px 12px 14px;transition:box-shadow .15s, border-color .15s;}
@@ -1035,7 +1035,7 @@
   .ai-bar.is-focused .ai-bar-input{height:92px;}
   .ai-bar.is-focused .ai-bar-send{display:inline-flex;}
   /* 최초 사용 후: 입력 바 숨김 + 좌측 하단 플로팅 버튼 표시 */
-  .ai-draft-fab{display:none;position:fixed;right:40px;bottom:88px;z-index:70;align-items:center;gap:8px;background:#0F172A;color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.28);}
+  .ai-draft-fab{display:none;position:fixed;right:40px;bottom:152px;z-index:70;align-items:center;gap:8px;background:#0F172A;color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.28);}
   .ai-draft-fab:hover{background:#1E293B;}
   .ai-draft-fab svg{color:#11BE8A;flex-shrink:0;}
   body[data-view="write"].ai-collapsed .ai-bar{display:none;}
@@ -1087,7 +1087,7 @@
   .dg-typerow{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-shrink:0;}
   .dg-typelabel{font-size:12.5px;font-weight:600;color:var(--ck-gray-500);flex-shrink:0;}
   .dg-typeselect{flex:1;height:34px;padding:0 10px;border:1px solid var(--ck-gray-300);border-radius:7px;font-size:13px;font-family:inherit;color:var(--ck-gray-800);background:#fff;cursor:pointer;outline:none;}
-  /* 문서 유형 선택 패널 */
+  /* 글 유형 선택 패널 */
   .typesel{display:flex;flex-direction:column;height:100%;overflow-y:auto;}
   .typesel-head{font-size:15px;font-weight:700;color:var(--ck-gray-900);margin-bottom:10px;}
   .typesel-desc{font-size:13px;font-weight:400;color:var(--ck-gray-800);margin-bottom:22px;}
@@ -1133,7 +1133,7 @@
   .title-row{padding:14px 18px 0;display:flex;flex-direction:column;align-items:stretch;gap:12px;}
   .title-in{width:100%;border:none;outline:none;font-size:20px;font-weight:700;color:#0F172A;padding:0;}
   .title-in::placeholder{color:#CBD5E1;font-weight:500;}
-  /* 문서 유형 — 제목 아래 레이블 + 드롭다운(문서 속성 필드) */
+  /* 글 유형 — 제목 아래 레이블 + 드롭다운(글 속성 필드) */
   .doctype-field{display:inline-flex;align-items:center;gap:10px;}
   .doctype-field .doctype-label{font-size:13px;font-weight:600;color:#475569;flex-shrink:0;}
   .doctype-select{height:36px;min-width:160px;padding:0 12px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:inherit;color:#334155;background:#fff;outline:none;cursor:pointer;}
@@ -1213,16 +1213,16 @@
   #view-report .text-xl,
   #view-report .text-lg,
   #sec-02 h2,#sec-replay h2,#sec-compo h2,#sec-metrics h2,#sec-04 h2,#sec-07 h2{font-size:18px !important;}
-  /* → 22px (문서 제목·큰 수치·점수) */
+  /* → 22px (글 제목·큰 수치·점수) */
   #view-report .text-2xl,
   #view-report .text-\[42px\]{font-size:22px !important;}
 </style>
 </head>
 <body data-view="box" data-write-variant="extra" data-report-tab="main">
-<div id="boot-loader">문서 작성 준비 중…</div>
+<div id="boot-loader">글 작성 준비 중…</div>
 
 <!-- ============ WRITE 뷰 헤더 ============ -->
-<!-- ============ LNB (좌측 사이드바) — '새 문서 작성' 화면 한정 ============ -->
+<!-- ============ LNB (좌측 사이드바) — '새 글 작성' 화면 한정 ============ -->
 <aside id="lnb" class="no-print">
   <div class="lnb-brand">
     <div class="lnb-brand-logo">
@@ -1312,7 +1312,7 @@
     </div>
     <div class="min-w-0">
       <div class="text-[11px] text-slate-500 leading-none">카피킬러 문서작성 v2</div>
-      <div class="font-semibold text-slate-900 text-[15px] leading-tight mt-0.5">새 문서 작성</div>
+      <div class="font-semibold text-slate-900 text-[15px] leading-tight mt-0.5">새 글 작성</div>
     </div>
   </div>
   <div class="ml-auto flex items-center gap-2">
@@ -1326,16 +1326,16 @@
 <!-- ============ EDITOR VIEW (FS-001 ~ FS-033) ============ -->
 <section id="view-write">
   <header id="write-pageheader">
-    <h1 class="write-pagetitle">새 문서 작성</h1>
+    <h1 class="write-pagetitle">새 글 작성</h1>
     <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
   </header>
 
   <div class="editor-grid">
-    <!-- 에디터 (전체폭) — 제목 행(문서 유형 드롭다운 좌측 + 제목) + 에디터 -->
+    <!-- 에디터 (전체폭) — 제목 행(글 유형 드롭다운 좌측 + 제목) + 에디터 -->
     <div class="ed-panel doc-panel">
       <div class="doc-panel-title">
-        <select id="docType" required aria-label="문서 유형" class="dpt-select">
-          <option value="" disabled selected>문서 유형 선택</option>
+        <select id="docType" required aria-label="글 유형" class="dpt-select">
+          <option value="" disabled selected>글 유형 선택</option>
           <option>과제물</option>
           <option>자기소개서</option>
           <option>학위논문</option>
@@ -1348,7 +1348,7 @@
           <option>생활기록부</option>
           <option>기타</option>
         </select>
-        <input class="title-in" id="docTitle" placeholder="제목을 입력해 주세요." />
+        <input class="title-in" id="docTitle" maxlength="200" placeholder="제목을 입력해 주세요." />
       </div>
       <div class="stat-row">
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
@@ -1427,11 +1427,10 @@
       <div class="foot-count text-right">총 글자수: <b id="stCount">0</b> / 10,000자 &nbsp;·&nbsp; <span class="text-slate-400">키스트로크 <b id="stKs" class="font-mono">0</b></span></div>
       <div class="doc-actions">
         <button class="btn btn-ghost" id="btnBackToList" type="button" onclick="onBackToListClick()">목록으로 이동</button>
-        <button class="btn btn-ghost" id="btnSaveOnly">내 문서에 저장</button>
+        <button class="btn btn-ghost" id="btnSaveOnly">내 글에 저장</button>
         <button class="btn btn-primary" id="btnComplete" disabled>저장 후 작성 검증 결과 확인</button>
-        <!-- 사본(copy) 플로우 — 저장 + 작성 검증 결과 바로 확인 -->
-        <button class="btn btn-ghost" id="btnCopySave" type="button" onclick="copyFlowSave()">저장</button>
-        <button class="btn btn-primary" id="btnCopyVerify" type="button" onclick="writeFlowVerify()">작성 검증 결과 확인하기</button>
+        <!-- 사본(copy) 플로우 — 자동저장이므로 '저장' 버튼 제거, 작성 검증만 -->
+        <button class="btn btn-primary" id="btnCopyVerify" type="button" onclick="writeFlowVerify()">작성 검증</button>
       </div>
     </div>
   </div>
@@ -1451,7 +1450,7 @@
     </button>
     <button id="raEditBtn" class="ra-btn ra-btn-ghost" type="button" onclick="if(currentDocId){boxOpenDoc(currentDocId);}else{goWrite();}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      문서 수정
+      글 수정
     </button>
   </div>
   <div class="ra-right">
@@ -1480,7 +1479,7 @@
         </div>
         <div class="share-pop-notes">
           <div class="share-pop-note">작성 과정 리플레이를 제외한 모든 콘텐츠가 공유돼요.</div>
-          <div class="share-pop-note" id="sharePopExpireNote">링크 생성 후 48시간이 지나거나 문서를 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.</div>
+          <div class="share-pop-note" id="sharePopExpireNote">링크 생성 후 48시간이 지나거나 글을 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.</div>
         </div>
       </div>
     </div>
@@ -1531,7 +1530,7 @@
 <!-- ============ MAIN CONTENT ============ -->
 <main class="flex-1 min-w-0 px-4 md:px-8 pb-24">
 
-<!-- ===== 리포트 상단 헤더: 문서 제목 + 발급 일시 ===== -->
+<!-- ===== 리포트 상단 헤더: 글 제목 + 발급 일시 ===== -->
 <header class="pt-8 pb-4 mb-2 border-b border-slate-200">
   <h1 class="text-2xl font-extrabold text-slate-900 leading-tight" id="reportDocTitle">제목 없음</h1>
   <p class="text-[13px] text-slate-500 mt-1.5">발급 일시 · <span id="reportIssuedAt" class="font-medium text-slate-600">—</span></p>
@@ -1542,7 +1541,7 @@
   <div class="flex items-end justify-between mb-3">
     <div>
       <h2 class="text-xl font-bold text-slate-900">작성 증명 결과</h2>
-      <p class="text-sm text-slate-600 mt-1 leading-relaxed max-w-2xl">작성한 문서의 타이핑, 붙여넣기, 수정, 사고정지 패턴들을 종합 분석하여 작성 증명 지수를 측정합니다. 세부 분석 결과를 확인해보세요.</p>
+      <p class="text-sm text-slate-600 mt-1 leading-relaxed max-w-2xl">작성한 글의 타이핑, 붙여넣기, 수정, 사고정지 패턴들을 종합 분석하여 작성 증명 지수를 측정합니다. 세부 분석 결과를 확인해보세요.</p>
       <p class="text-xs text-slate-400 mt-1.5" id="summarySubtitle">—</p>
     </div>
     <div class="hidden md:flex items-center gap-1.5 text-xs text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200">
@@ -1595,7 +1594,7 @@
       </div>
       <div class="text-[11px] text-slate-500 mb-1">세션 횟수</div>
       <div class="text-2xl font-bold text-slate-900"><span id="card4Count">1</span><span class="text-base font-semibold text-slate-500 ml-0.5">회</span></div>
-      <div class="text-[11px] text-slate-400 mt-1" id="card4Sub">문서 저장 횟수</div>
+      <div class="text-[11px] text-slate-400 mt-1" id="card4Sub">글 저장 횟수</div>
     </div>
   </div>
 </section>
@@ -1627,7 +1626,7 @@
         </div>
       </div>
 
-      <!-- breakdown — 3그룹 구조 (텍스트 구성 / 행동 패턴 / 문서 성장) -->
+      <!-- breakdown — 3그룹 구조 (텍스트 구성 / 행동 패턴 / 글 성장) -->
       <div class="lg:col-span-7">
         <!-- 입력 증거 (표) -->
         <div class="bd-group">
@@ -1673,9 +1672,9 @@
           </div>
         </div>
 
-        <!-- 그룹 3: 문서 성장 (신규) — extra variant 에서는 hide -->
+        <!-- 그룹 3: 글 성장 (신규) — extra variant 에서는 hide -->
         <div class="bd-group" data-group="growth">
-          <div class="bd-group-head" data-orig-label="📈 문서 성장" data-extra-label="📈 문서 성장 증거">📈 문서 성장</div>
+          <div class="bd-group-head" data-orig-label="📈 글 성장" data-extra-label="📈 글 성장 증거">📈 글 성장</div>
           <div class="bd-grid">
             <div>
               <div class="bd-row"><span>점진적 작성 흐름</span><span><b class="bd-val">62 / 100</b><span class="bd-w">(4%)</span></span></div>
@@ -1811,7 +1810,7 @@
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">작성 과정 리플레이</h2>
-      <p class="text-sm text-slate-500 mt-1" style="display:none;">문서가 작성된 과정을 시간 순서대로 다시 재생합니다. 색상으로 입력 출처(직접 타이핑·AI Draft 생성·붙여넣기 등)를 구분하며, 타임라인을 드래그해 특정 시점으로 이동할 수 있습니다.</p>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">글이 작성된 과정을 시간 순서대로 다시 재생합니다. 색상으로 입력 출처(직접 타이핑·AI Draft 생성·붙여넣기 등)를 구분하며, 타임라인을 드래그해 특정 시점으로 이동할 수 있습니다.</p>
     </div>
     <!-- 색상 범례 -->
     <div class="flex flex-wrap items-center gap-2 text-[12px] mb-3">
@@ -1868,7 +1867,7 @@
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">세부 활동 분석</h2>
-      <p class="text-sm text-slate-500 mt-1" style="display:none;">작성 과정을 <b class="text-slate-700">작성 시간·리듬</b>, <b class="text-slate-700">입력·편집 분량</b>, <b class="text-slate-700">문서 이력</b> 3가지로 나눠 정량 지표로 보여줍니다.</p>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">작성 과정을 <b class="text-slate-700">작성 시간·리듬</b>, <b class="text-slate-700">입력·편집 분량</b>, <b class="text-slate-700">글 이력</b> 3가지로 나눠 정량 지표로 보여줍니다.</p>
     </div>
 
     <!-- ① 작성 시간·리듬 -->
@@ -1919,7 +1918,7 @@
         <tbody class="text-slate-700">
           <tr>
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 글자수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서에 입력된 전체 글자수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 글에 입력된 전체 글자수</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_totalChars">—</span> 자</td>
           </tr>
           <tr class="border-t border-slate-100">
@@ -1939,7 +1938,7 @@
           </tr>
           <tr class="border-t border-slate-100">
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">외부유입 총 비율</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 문서 중 AI 생성·붙여넣기 등 외부에서 유입된 텍스트의 비율</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">최종 글 중 AI 생성·붙여넣기 등 외부에서 유입된 텍스트의 비율</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_inflow">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
@@ -1951,25 +1950,25 @@
       </table>
     </div>
 
-    <!-- ③ 문서 이력 -->
-    <div class="bd-group-head">문서 이력</div>
+    <!-- ③ 글 이력 -->
+    <div class="bd-group-head">글 이력</div>
     <div class="bg-white rounded-xl border border-slate-200" style="overflow:hidden;">
       <table class="w-full text-sm" style="table-layout:fixed;">
         <colgroup><col style="width:23%;"><col><col style="width:26%;"></colgroup>
         <tbody class="text-slate-700">
           <tr>
-            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">문서 최초 작성 시각</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이 문서에 처음 입력이 시작된 시각</td>
+            <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">글 최초 작성 시각</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">이 글에 처음 입력이 시작된 시각</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_firstAuthor">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">마지막 저장 시각</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">가장 최근에 문서를 저장한 시각</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">가장 최근에 글을 저장한 시각</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_lastSave">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
             <td class="px-4 py-2.5 text-[13px] font-medium text-slate-800">총 저장 횟수</td>
-            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">문서를 저장한 총 횟수</td>
+            <td class="px-4 py-2.5 text-slate-500 text-[12.5px] leading-snug">글을 저장한 총 횟수</td>
             <td class="px-4 py-2.5 text-[13px] whitespace-nowrap"><span id="m_saveCount">—</span></td>
           </tr>
           <tr class="border-t border-slate-100">
@@ -2017,7 +2016,7 @@
   <div class="card p-6">
     <div class="mb-4">
       <h2 class="text-xl font-bold text-slate-900">텍스트 유입 분석</h2>
-      <p class="text-sm text-slate-500 mt-1" style="display:none;">최종 문서의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
+      <p class="text-sm text-slate-500 mt-1" style="display:none;">최종 글의 각 블록이 어디로부터 유입되었는지 색상으로 구분해 시각화합니다. 구간을 클릭하면 우측 패널에서 세부 정보를 확인할 수 있습니다.</p>
     </div>
 
     <!-- 텍스트 구성 분포 그래프 → sec-compo(작성 과정 리플레이 아래)로 이동 -->
@@ -2426,10 +2425,10 @@
 </div>
 </section><!-- /view-report -->
 
-<!-- ============ 검사 문서 등록 (SC-04 view-inspect-upload) ============ -->
+<!-- ============ 검사 글 등록 (SC-04 view-inspect-upload) ============ -->
 <section id="view-inspect-upload">
   <div class="inspup-wrap">
-    <input class="inspup-group" placeholder="그룹명을 입력해 주세요. 예) 레포트 관련 문서, 프로젝트 자료 등" id="inspGroup" />
+    <input class="inspup-group" placeholder="그룹명을 입력해 주세요. 예) 레포트 관련 글, 프로젝트 자료 등" id="inspGroup" />
     <div class="inspup-drop" id="inspDrop">
       <div class="inspup-drop-title">파일을 여기에 드래그 &amp; 드롭 하거나</div>
       <div class="inspup-drop-actions">
@@ -2458,12 +2457,12 @@
       <div class="inspup-notice-body">
         <ul>
           <li><b>그룹명은 결과확인서에 출력되므로 한 번 더 확인해 주세요.</b></li>
-          <li>검사 문서 내 이름, 전화번호와 같은 <b>개인정보 포함 여부</b>를 미리 점검해 주세요.</li>
+          <li>검사 글 내 이름, 전화번호와 같은 <b>개인정보 포함 여부</b>를 미리 점검해 주세요.</li>
           <li>업로드하는 파일명에 <b>특수기호가 있으면 검사가 불가</b>하므로 파일명을 수정한 뒤 업로드해주세요.</li>
         </ul>
         <ul style="margin-top:8px;">
           <li>1인 1계정 사용을 원칙으로 하고있습니다. 정확한 표절률 확인을 위해 본인 ID 하나만 사용해주세요.</li>
-          <li>카피킬러 표절검사는 검사 문서와 비교 문서의 문장별 유사성을 표절률로 표시합니다.</li>
+          <li>카피킬러 표절검사는 검사 글과 비교 글의 문장별 유사성을 표절률로 표시합니다.</li>
           <li>GPT킬러는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다.</li>
           <li>분석 정확도를 높이기 위해 최소 300자 이상의 문서 검사를 권장합니다.</li>
         </ul>
@@ -2496,7 +2495,7 @@
           <span class="chk">✓</span> AI생성검사
         </div>
       </div>
-      <label class="isp-section-label">문서 유형 <span class="info-tooltip" data-tip="문서 유형에 따라 검사 기준·비교 대상 문서군이 달라집니다.">i</span></label>
+      <label class="isp-section-label">글 유형 <span class="info-tooltip" data-tip="글 유형에 따라 검사 기준·비교 대상 글군이 달라집니다.">i</span></label>
       <select class="isp-select" id="inspDocType">
         <option>자기소개서</option>
         <option>과제물</option>
@@ -2541,13 +2540,13 @@
   <div id="inspCompanionBanner">📌 이 창은 재검사 참고용입니다. 원래 창의 에디터에서 수정 후 [재검사]를 누르면 이 창이 자동 갱신됩니다.</div>
   <div class="insp-wrap">
     <div class="insp-header">
-      <span class="insp-title" id="inspDocTitle">문서 제목.hwpx</span>
+      <span class="insp-title" id="inspDocTitle">글 제목.hwpx</span>
       <span class="insp-tips"><span class="tip-icon">TIPS</span>카피킬러 AI생성검사, 이렇게 활용해보세요!</span>
     </div>
     <div class="insp-tabs" role="tablist">
       <button class="insp-tab" data-insp-tab="plagiarism" onclick="switchInspTab('plagiarism')"><span class="chk">✓</span> 표절검사</button>
       <button class="insp-tab is-active" data-insp-tab="ai" onclick="switchInspTab('ai')"><span class="chk">✓</span> AI생성검사</button>
-      <div class="insp-tab-ratio"><span class="ratio-dot"></span>문서 AI작성률 <b id="inspRatioValue">0</b>%</div>
+      <div class="insp-tab-ratio"><span class="ratio-dot"></span>글 AI작성률 <b id="inspRatioValue">0</b>%</div>
     </div>
     <div class="insp-body" id="inspBody">
       <div class="insp-content-wrap">
@@ -2557,7 +2556,7 @@
             <div class="insp-legend-top">의심 정도 <span class="lg-info">ⓘ</span> 낮음 <span class="dot"></span><span class="dot on"></span><span class="dot on"></span> 높음</div>
             <div id="inspCards"></div>
           </div>
-          <!-- 사이드바 하단 고정 — 문서 작성 이동 안내+CTA + 검사 안내 -->
+          <!-- 사이드바 하단 고정 — 글 작성 이동 안내+CTA + 검사 안내 -->
           <div class="insp-sidebar-footer">
             <div id="inspCtaBox" class="insp-cta-box">
               <p class="insp-cta-desc">AI생성 특징이 나타나는 영역이 보여요. 본인의 사고와 표현을 담아 직접 수정한 후 다시 한 번 검사해보세요.</p>
@@ -2568,7 +2567,7 @@
             </div>
             <div class="insp-notice">
               <span class="insp-notice-ic">ⓘ</span>
-              <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 문서의 AI 작성 여부 판단은 문서 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
+              <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 글의 AI 작성 여부 판단은 글 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
             </div>
           </div>
         </aside>
@@ -2590,19 +2589,19 @@
   </div>
 </section>
 
-<!-- ============ 내 문서함 ============ -->
+<!-- ============ 내 글함 ============ -->
 <section id="view-box">
   <div class="box-page">
     <header class="box-pageheader">
       <h1>작성 검증</h1>
-      <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 문서 작성</button>
+      <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 글 작성</button>
     </header>
 
     <div class="box-notice" id="boxNoticeBanner">
       <span class="box-notice-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
       <div class="box-notice-text">
-        <p class="box-notice-title">카피킬러 문서 작성은 작성 과정을 기록해 본인이 직접 작성한 문서임을 검증할 수 있는 서비스입니다.</p>
-        <p class="box-notice-sub">키 입력부터 수정 이력까지, 글을 작성하는 모든 순간을 기록하여 내가 작성한 문서임을 증명해보세요.</p>
+        <p class="box-notice-title">카피킬러 글 작성은 작성 과정을 기록해 본인이 직접 작성한 글임을 검증할 수 있는 서비스입니다.</p>
+        <p class="box-notice-sub">키 입력부터 수정 이력까지, 글을 작성하는 모든 순간을 기록하여 내가 작성한 글임을 증명해보세요.</p>
       </div>
       <button class="box-notice-close" type="button" onclick="document.getElementById('boxNoticeBanner').style.display='none';" aria-label="닫기">✕</button>
     </div>
@@ -2628,7 +2627,7 @@
     </div>
 
     <div class="box-list" id="boxList">
-      <div class="box-empty">저장된 문서가 아직 없어요.<br>좌측 상단 「＋ 새 문서 작성」으로 시작해 보세요.</div>
+      <div class="box-empty">저장된 글이 아직 없어요.<br>좌측 상단 「＋ 새 글 작성」으로 시작해 보세요.</div>
     </div>
 
     <div class="box-deleterow"><button class="box-delete" type="button" onclick="boxDeleteSelected()">삭제</button></div>
@@ -2641,7 +2640,7 @@
   </div>
 </section>
 
-<!-- ============ 원문 미리보기 (문서 보기 — 읽기 전용, 사본 플로우 '문서 열기') ============ -->
+<!-- ============ 원문 미리보기 (글 보기 — 읽기 전용, 사본 플로우 '글 열기') ============ -->
 <section id="view-doc">
   <div class="docview-page">
     <h1 class="docview-title" id="docViewTitle">제목 없음</h1>
@@ -2649,7 +2648,7 @@
   </div>
   <div class="docview-actions">
     <button class="dv-btn docview-back" type="button" onclick="document.body.dataset.view='box'; renderBoxList(); window.scrollTo(0,0);">목록으로 이동</button>
-    <span class="dv-tip-wrap" id="docViewEditWrap"><button class="dv-btn" id="docViewEditBtn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">문서 수정</button></span>
+    <span class="dv-tip-wrap" id="docViewEditWrap"><button class="dv-btn" id="docViewEditBtn" type="button" onclick="if(currentDocId) boxOpenDoc(currentDocId);">글 수정</button></span>
     <button class="dv-btn dv-btn-primary" id="docViewResultBtn" type="button" onclick="if(currentDocId) boxScanDoc(currentDocId);">작성 검증 결과 확인하기</button>
   </div>
 </section>
@@ -2697,10 +2696,10 @@
     </header>
 
     <section class="print-sec">
-      <h2>1. 문서 정보</h2>
+      <h2>1. 글 정보</h2>
       <table class="print-kv"><tbody>
         <tr><th>제목</th><td data-print="title">-</td></tr>
-        <tr><th>문서 유형</th><td data-print="type">-</td></tr>
+        <tr><th>글 유형</th><td data-print="type">-</td></tr>
         <tr><th>작성자</th><td data-print="author">-</td></tr>
         <tr><th>작성 일시</th><td data-print="period">-</td></tr>
         <tr><th>총 작성 시간</th><td data-print="duration">-</td></tr>
@@ -2770,7 +2769,7 @@
         <tr><th>총 키스트로크 수</th><td><span data-print="m-keystrokes">-</span></td></tr>
         <tr><th>비활성 시간</th><td><span data-print="m-inactive">-</span></td></tr>
         <tr><th>사고정지 횟수</th><td><span data-print="m-pause">-</span></td></tr>
-        <tr><th>문서 최초 작성 시각</th><td><span data-print="m-firstauthor">-</span></td></tr>
+        <tr><th>글 최초 작성 시각</th><td><span data-print="m-firstauthor">-</span></td></tr>
         <tr><th>마지막 저장 시각</th><td><span data-print="m-lastsave">-</span></td></tr>
         <tr><th>누적 저장 횟수</th><td><span data-print="m-savecount">-</span> <span data-print="m-savehist"></span></td></tr>
       </tbody></table>
@@ -2781,7 +2780,7 @@
       <div class="print-body-text" data-print="body">-</div>
     </section>
 
-    <footer class="print-page-footer">본 작성 검증 결과는 <span data-print="author">-</span> 사용자가 카피킬러에서 작성한 문서 작성 과정에 대한 검증 결과로 카피킬러 시스템이 생성한 자료입니다. 문서 작성과 평가에 대한 기준이 각 학교, 기관마다 다르므로 본 결과와 최종 평가자의 평가는 다를 수 있습니다.</footer>
+    <footer class="print-page-footer">본 작성 검증 결과는 <span data-print="author">-</span> 사용자가 카피킬러에서 작성한 글 작성 과정에 대한 검증 결과로 카피킬러 시스템이 생성한 자료입니다. 글 작성과 평가에 대한 기준이 각 학교, 기관마다 다르므로 본 결과와 최종 평가자의 평가는 다를 수 있습니다.</footer>
   </div>
 </section>
 
@@ -2841,7 +2840,7 @@
       </div>
       <div class="w-row" data-key="growth">
         <div class="flex items-center justify-between mb-1">
-          <span>문서 성장 흔적 <span class="text-[11px] text-slate-400 font-normal ml-1">(점진 누적 + 후반 퇴고)</span></span>
+          <span>글 성장 흔적 <span class="text-[11px] text-slate-400 font-normal ml-1">(점진 누적 + 후반 퇴고)</span></span>
           <span class="font-mono font-semibold text-slate-900"><b class="w-val">12</b>%</span>
         </div>
         <input type="range" min="0" max="100" step="5" value="12" class="w-full w-slider"/>
@@ -2896,12 +2895,12 @@
   </div>
 </div>
 
-<!-- 사본 플로우 — 작성 검증 검사 확인 (검증 시 문서 수정 불가) -->
+<!-- 사본 플로우 — 작성 검증 검사 확인 (검증 시 글 수정 불가) -->
 <div id="copyVerifyModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeCopyVerifyConfirm()"></div>
   <div class="relative max-w-sm w-full bg-white rounded-2xl p-6 shadow-2xl">
     <h3 class="text-lg font-bold text-slate-900">작성 검증 결과를 확인하시겠습니까?</h3>
-    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">결과 발급 시, 이 문서를 더 이상 수정하실 수 없습니다.</p>
+    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">결과 발급 시, 이 글을 더 이상 수정하실 수 없습니다.</p>
     <div class="mt-5 flex flex-col gap-2">
       <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmCopyVerify()">작성 검증 결과 보기</button>
       <button type="button" class="w-full h-11 rounded-lg bg-white text-slate-600 text-sm font-semibold border border-slate-200 hover:bg-slate-50" onclick="closeCopyVerifyConfirm()">취소</button>
@@ -2928,11 +2927,11 @@
   </div>
 </div>
 
-<!-- 문서 삭제 확인 -->
+<!-- 글 삭제 확인 -->
 <div id="boxDeleteModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeBoxDelete()"></div>
   <div class="relative max-w-sm w-full bg-white rounded-2xl p-6 shadow-2xl">
-    <h3 class="text-lg font-bold text-slate-900">선택한 문서를 삭제하시겠습니까?</h3>
+    <h3 class="text-lg font-bold text-slate-900">선택한 글을 삭제하시겠습니까?</h3>
     <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">삭제 후 복구할 수 없습니다.</p>
     <div class="mt-5 flex gap-2">
       <button type="button" class="flex-1 h-11 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50" onclick="closeBoxDelete()">취소</button>
@@ -2947,12 +2946,12 @@
     <h3 class="text-lg font-bold text-slate-900">작성 중인 내용이 있습니다</h3>
     <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">저장하시겠습니까?<br>저장하지 않으면 지금까지 작성한 내용은 사라집니다.</p>
     <div id="leaveTitleWrap" class="hidden mt-4">
-      <label class="block text-[12px] font-semibold text-slate-500 mb-1">문서 제목 <span style="color:#EF4444;">*</span></label>
+      <label class="block text-[12px] font-semibold text-slate-500 mb-1">글 제목 <span style="color:#EF4444;">*</span></label>
       <input id="leaveTitleInput" type="text" maxlength="100" placeholder="제목을 입력해주세요" class="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none focus:border-slate-400" />
       <p id="leaveTitleErr" class="hidden mt-1.5 text-[12px]" style="color:#EF4444;">제목을 입력해야 저장할 수 있어요.</p>
     </div>
     <div id="leaveTypeWrap" class="hidden mt-4">
-      <label class="block text-[12px] font-semibold text-slate-500 mb-1">문서 유형 <span style="color:#EF4444;">*</span></label>
+      <label class="block text-[12px] font-semibold text-slate-500 mb-1">글 유형 <span style="color:#EF4444;">*</span></label>
       <select id="leaveTypeSelect" class="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none focus:border-slate-400 bg-white">
         <option value="" disabled selected>선택해주세요</option>
         <option>과제물</option>
@@ -2967,7 +2966,7 @@
         <option>생활기록부</option>
         <option>기타</option>
       </select>
-      <p id="leaveTypeErr" class="hidden mt-1.5 text-[12px]" style="color:#EF4444;">문서 유형을 선택해야 저장할 수 있어요.</p>
+      <p id="leaveTypeErr" class="hidden mt-1.5 text-[12px]" style="color:#EF4444;">글 유형을 선택해야 저장할 수 있어요.</p>
     </div>
     <div class="mt-5 flex flex-col gap-2">
       <button id="btnSaveAndLeave" type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);">저장하고 나가기</button>
@@ -2988,7 +2987,7 @@ function showToast(msg){
 }
 /* ================= 공유 링크 (목업) =================
    정책: 작성 검증 결과당 링크 1개. 생성 시 영문+숫자 6자리 비번 랜덤 발급.
-   링크·비번은 48시간 유지. 만료 조건: ① 48h 경과 ② 문서 수정으로 버전 변경 ③ 문서 삭제.
+   링크·비번은 48시간 유지. 만료 조건: ① 48h 경과 ② 글 수정으로 버전 변경 ③ 글 삭제.
    ※ 목업은 localStorage 기반. 실제 서버(비번 서버검증·rate limit·스냅샷 저장·자동삭제)는 개발 단계에서 연동. */
 const SHARE_TTL_HOURS = 48;              // ★ 만료 정책 상수 (정책 변경 시 이 값만 수정)
 const SHARE_STORE_PREFIX = 'ksv_share_';
@@ -3002,13 +3001,13 @@ function _genShareToken(){
   let s = ''; for(let i=0;i<16;i++) s += cs[Math.floor(Math.random()*cs.length)];
   return s;
 }
-// 리포트 문서 버전 시그니처 — 문서 수정(재저장)되면 값이 바뀌어 기존 링크가 만료로 판정됨
+// 리포트 글 버전 시그니처 — 글 수정(재저장)되면 값이 바뀌어 기존 링크가 만료로 판정됨
 function _shareDocVersion(){
   if(!currentDocId) return 'session';
   const d = boxLoadDocs().find(x => x.id === currentDocId);
   return d ? String(d.savedAt || d.saveCount || '') : 'deleted';
 }
-// 문서당 링크 1개 — 유효한 게 있으면 재사용, 없거나 만료/버전변경이면 새로 발급
+// 글당 링크 1개 — 유효한 게 있으면 재사용, 없거나 만료/버전변경이면 새로 발급
 function _getOrCreateShareLink(){
   const key = SHARE_STORE_PREFIX + (currentDocId || 'session');
   const ver = _shareDocVersion();
@@ -3031,12 +3030,12 @@ function toggleSharePopover(ev){
   const rec = _getOrCreateShareLink();
   document.getElementById('shareUrl').value = _shareUrlFromToken(rec.token);
   document.getElementById('sharePw').textContent = rec.password;
-  // 플로우별 만료 안내 — 사본은 '생성 시점 90일', 원본은 '48시간·문서 수정'
+  // 플로우별 만료 안내 — 사본은 '생성 시점 90일', 원본은 '48시간·글 수정'
   const expNote = document.getElementById('sharePopExpireNote');
   if(expNote){
     expNote.textContent = (activeFlow === 'copy')
       ? '링크 생성 시점 기준 90일이 지나면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해주세요.'
-      : '링크 생성 후 48시간이 지나거나 문서를 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.';
+      : '링크 생성 후 48시간이 지나거나 글을 수정하면 링크가 만료돼요. 이후 공유가 필요하면 새로 생성해 주세요.';
   }
   pop.classList.add('open');
   setTimeout(() => document.addEventListener('click', _shareOutsideClose), 0);  // 바깥 클릭 닫기
@@ -3067,7 +3066,7 @@ function showExpiredPage(){
 }
 function goCopyKillerHome(ev){
   if(ev) ev.preventDefault();
-  if(typeof openMyDocs === 'function') openMyDocs();   // 목업: 카피킬러 서비스 = 내 문서 랜딩
+  if(typeof openMyDocs === 'function') openMyDocs();   // 목업: 카피킬러 서비스 = 내 글 랜딩
 }
 
 /* ===== 공유용(수신자) 결과 페이지 — 비번 게이트 + 데모 결과지 열람 =====
@@ -3342,7 +3341,7 @@ function renderScore(score){
     icon = '<polyline points="20 6 9 17 4 12"/>';
     interp = hasExt
       ? '주도적인 글쓰기 — 외부 유입 텍스트를 가져왔지만 작성자의 사고 흐름과 퇴고 행동이 충분히 관찰됩니다. 유입 이후 적극적으로 다듬어진 흔적이 뚜렷해, 자율적으로 작성된 글로 판단할 수 있습니다.'
-      : '주도적인 글쓰기 — 외부 유입 없이 처음부터 끝까지 작성자가 직접 입력한 문서입니다. 타이핑 리듬·멈춤·퇴고 패턴이 사람의 자연스러운 작성 흐름과 일치합니다.';
+      : '주도적인 글쓰기 — 외부 유입 없이 처음부터 끝까지 작성자가 직접 입력한 글입니다. 타이핑 리듬·멈춤·퇴고 패턴이 사람의 자연스러운 작성 흐름과 일치합니다.';
   } else if(score >= 40){
     lab = '보통'; bg='#FEF3C7'; fg='#92400E';
     icon = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
@@ -3350,7 +3349,7 @@ function renderScore(score){
       ? (document.body.dataset.writeVariant === 'extra'
           ? '자체 작성과 외부 유입이 함께 나타나는 혼합 패턴입니다. 텍스트 유입 분포·잔존 텍스트·작성 행동 패턴 등 세부 영역을 함께 살펴 작성자의 실제 기여도를 판단해 주세요.'
           : '자체 작성과 외부 유입이 함께 나타나는 혼합 패턴입니다. 텍스트 유입 분포·원본 보존율·작성 행동 패턴 등 세부 영역을 함께 살펴 작성자의 실제 기여도를 판단해 주세요.')
-      : '전부 직접 타이핑된 문서지만 작성 행동 패턴이 완전히 자연스럽다고 보기는 어렵습니다. 타이핑 속도 분포·사고 시간·비선형 커서 이동 등에서 일부 기계적·모방 신호가 감지되니, 세부 영역을 함께 확인해 주세요.';
+      : '전부 직접 타이핑된 글이지만 작성 행동 패턴이 완전히 자연스럽다고 보기는 어렵습니다. 타이핑 속도 분포·사고 시간·비선형 커서 이동 등에서 일부 기계적·모방 신호가 감지되니, 세부 영역을 함께 확인해 주세요.';
   } else {
     lab = '낮음'; bg='#FEE2E2'; fg='#B91C1C';
     icon = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
@@ -3358,7 +3357,7 @@ function renderScore(score){
       ? (document.body.dataset.writeVariant === 'extra'
           ? '자체 작성 흔적이 부족하고 외부 유입에 대한 의존이 높습니다. 능동적인 수정·퇴고 행동이 충분히 관찰되지 않으므로, 외부 유입 로그와 잔존 텍스트를 함께 확인해 추가 검토가 필요합니다.'
           : '자체 작성 흔적이 부족하고 외부 유입에 대한 의존이 높습니다. 능동적인 수정·퇴고 행동이 충분히 관찰되지 않으므로, 외부 유입 로그와 보존율을 함께 확인해 추가 검토가 필요합니다.')
-      : '외부 유입 없이 직접 타이핑된 문서지만 사람의 자연스러운 글쓰기 흐름과 크게 다릅니다. 타이핑 속도 균일성·멈춤 부재·퇴고 흔적 부재 등이 함께 관찰되어 자동 입력 또는 모방 작성이 의심됩니다.';
+      : '외부 유입 없이 직접 타이핑된 글이지만 사람의 자연스러운 글쓰기 흐름과 크게 다릅니다. 타이핑 속도 균일성·멈춤 부재·퇴고 흔적 부재 등이 함께 관찰되어 자동 입력 또는 모방 작성이 의심됩니다.';
   }
   if(labelEl){
     labelEl.style.background = bg;
@@ -3653,7 +3652,7 @@ function renderReplayAt(frameCount){
   frameCount = Math.max(0, Math.min(frameCount, replayFrames.length));
   const visibleChars = [];
   for(let i=0; i<frameCount; i++) visibleChars.push(...replayFrames[i].chars);
-  // 문서 순(idx) 정렬
+  // 글 순(idx) 정렬
   visibleChars.sort((a,b)=> a.idx - b.idx);
 
   // source → 표시 클래스 매핑
@@ -4042,7 +4041,7 @@ function showMainTab(){
    ============================================================= */
 const DOC_TYPES = [
   '과제물','독서감상문','자기소개서','생활기록부 - 창체','생활기록부 - 세특','생활기록부 - 행발',
-  '기획/보고문서','공지문','직무기술서(JD)','경력기술서','이메일','보도자료','블로그','상품리뷰'
+  '기획/보고글','공지문','직무기술서(JD)','경력기술서','이메일','보도자료','블로그','상품리뷰'
 ];
 
 const AI_DEMO_DRAFTS = {
@@ -4061,7 +4060,7 @@ const AI_GUIDES = {
   '생활기록부 - 창체':['동아리·봉사 활동 중심으로 작성해줘','리더십 경험과 성장 포인트 강조해줘'],
   '생활기록부 - 세특':['교과 탐구 활동 중심으로 작성해줘','수업 태도와 발전 가능성 강조해줘'],
   '생활기록부 - 행발':['성격·태도 강점 중심으로 정리해줘','교우 관계와 협업 사례를 포함해줘'],
-  '기획/보고문서':['배경·목적·기대효과로 시작해줘','실행 계획과 일정을 표 형태로 정리해줘'],
+  '기획/보고글':['배경·목적·기대효과로 시작해줘','실행 계획과 일정을 표 형태로 정리해줘'],
   '공지문':['주요 변경 사항을 한 줄로 요약해줘','일정·대상·문의처를 명확히 정리해줘'],
   '직무기술서(JD)':['포지션 요약과 핵심 책임으로 시작해줘','필수·우대 자격을 구분해서 정리해줘'],
   '경력기술서':['주요 프로젝트 성과 중심으로 작성해줘','직무별 책임과 기여도를 정리해줘'],
@@ -4069,7 +4068,7 @@ const AI_GUIDES = {
   '보도자료':['핵심 메시지를 리드 문단에 담아줘','수치와 근거를 포함해서 작성해줘'],
   '블로그':['후킹 도입과 목차 흐름으로 시작해줘','경험 기반의 솔직한 톤으로 작성해줘'],
   '상품리뷰':['장점과 단점을 균형있게 정리해줘','사용 시나리오 중심으로 작성해줘'],
-  'default':['작성할 문서의 유형과 주제를 알려줄게','분량과 톤 가이드를 같이 정해줄래'],
+  'default':['작성할 글의 유형과 주제를 알려줄게','분량과 톤 가이드를 같이 정해줄래'],
 };
 
 let model=[];
@@ -4082,7 +4081,7 @@ let blockSeq=0;
 let lastKeyTs=0;
 let lastParaIdx=0;
 let saveCount=0;
-let currentDocId=null; // 현재 작성 도구 세션이 다루는 문서 id (저장 시 upsert 기준)
+let currentDocId=null; // 현재 작성 도구 세션이 다루는 글 id (저장 시 upsert 기준)
 let sessionFrozen=false; // 작성 완료 후 true → stats.lastTs 갱신 중단
 
 /* ---------- 작성 증명 지수 가중치 (사용자 조정 가능) ---------- */
@@ -4093,7 +4092,7 @@ try{ const saved=localStorage.getItem('ksv_weights'); if(saved) weights = {...DE
 let lastScoreInputs = null;
 
 function normalizeWeights(w){
-  // extra variant: 문서 성장 증거 그룹 미제공 → growth 가중치는 0 으로 강제 후 나머지 5개로 재정규화
+  // extra variant: 글 성장 증거 그룹 미제공 → growth 가중치는 0 으로 강제 후 나머지 5개로 재정규화
   const isExtra = document.body.dataset.writeVariant === 'extra';
   const growthW = isExtra ? 0 : (w.growth||0);
   const total = (w.typing||0)+(w.rewrite||0)+(w.depth||0)+(w.nav||0)+(w.idle||0)+growthW;
@@ -4180,7 +4179,7 @@ function _parseMaxChars(text){
 /* ---------- AI 초안 생성 폼 (대화형 아님, 1회성 초안 생성) ---------- */
 let _dgLastPrompt = '';
 // 초안 생성 버튼 활성 조건: 프롬프트 10자 이상
-// (문서 유형은 초안 생성 옵션이 아니라 문서 단위 속성 → 상단 #docType 으로 분리)
+// (글 유형은 초안 생성 옵션이 아니라 글 단위 속성 → 상단 #docType 으로 분리)
 function _dgSyncGenBtn(){
   const p=document.getElementById('dgPrompt'), b=document.getElementById('dgGenerate');
   if(!p||!b) return;
@@ -4233,7 +4232,7 @@ function initDraftGen(){
 }
 initDraftGen();
 
-/* ---------- 문서 유형 (문서 단위 속성) — 제목 옆 셀렉트, selectedType 단일 출처 ---------- */
+/* ---------- 글 유형 (글 단위 속성) — 제목 옆 셀렉트, selectedType 단일 출처 ---------- */
 function _setDocTypeUI(type){
   const el = document.getElementById('docType');
   if(!el) return;
@@ -4248,7 +4247,7 @@ function _setDocTypeUI(type){
   });
 })();
 
-/* ---------- 좌측 패널 상태 — 문서 유형 선택 ↔ AI 초안 어시스턴트 ---------- */
+/* ---------- 좌측 패널 상태 — 글 유형 선택 ↔ AI 초안 어시스턴트 ---------- */
 function showTypeSelect(){}   // 유형 선택 패널 제거됨(에디터 상단 드롭다운으로 대체) — 하위 호환 no-op
 function showAssistant(){}     // 어시스턴트 패널 제거됨 — 하위 호환 no-op
 function selectDocType(type){
@@ -4655,7 +4654,7 @@ function insertAtCaret(text, source){
 function appendToEditor(text, source, promptHint){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
-    // AI Draft 생성 텍스트를 muha 에디터 문서 끝에 삽입.
+    // AI Draft 생성 텍스트를 muha 에디터 글 끝에 삽입.
     // controller.insertText(auditSource:'ai') → 에디터 audit 에 inputSource:'ai' 로 기록.
     // 삽입 글자수를 _aiCharCount 에 누적 → 'AI생성' 카운터에 표시.
     const controller = window.__muhaController;
@@ -4670,7 +4669,7 @@ function appendToEditor(text, source, promptHint){
         if(typeof _markPendingInsert === 'function') _markPendingInsert('ai', promptHint);
         el && el.focus();
         if(typeof controller.collapseSelectionToEnd === 'function') controller.collapseSelectionToEnd();
-        // 문서 끝에 이미 내용이 있으면 개행으로 문단 분리
+        // 글 끝에 이미 내용이 있으면 개행으로 문단 분리
         const cur = el ? (el.innerText || '') : '';
         const prefix = (cur.trim().length > 0) ? '\n' : '';
         controller.insertText(prefix + text, {auditSource:'ai'});
@@ -4854,11 +4853,11 @@ function counts(){
 
 /* ============================================================
    출처 기반 카운트 엔진 — shadow 소스맵 + diff.
-   muha controller.getSourceRanges() 로 '현재 문서' 위치별 출처를 읽되, 그대로
+   muha controller.getSourceRanges() 로 '현재 글' 위치별 출처를 읽되, 그대로
    쓰지 않는다. muha 는 문단 분리(Enter) 등 구조 편집 시 기존 AI/붙여넣기 텍스트
    의 source 를 typing 으로 재분류(강등)해버려서, 그 값만 믿으면 AI 글자가 통째로
    직접타이핑으로 흡수된다. 그래서 문자 단위 shadow 맵(_srcState)을 유지하고,
-   매 집계마다 이전 문서와 diff(공통 prefix/suffix) 해서:
+   매 집계마다 이전 글과 diff(공통 prefix/suffix) 해서:
      · 변하지 않은 글자 → 이전 출처를 그대로 보존 (muha 재분류 무시)
      · 새로 삽입된 글자 → muha 출처 사용. 단 typing/ime 인데 좌우(보존된) 이웃이
        모두 ai/paste 면 '수정(revised)'(블록 내부 입력), 아니면 직접타이핑.
@@ -4871,7 +4870,7 @@ let _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
 let _srcState = null;   // {chars, origin:['typing'|'ai'|'paste'], block:[id|null]}
 let _eventSize = {};    // 이벤트 id → 유입 당시 '원본 글자수'(잔존율 분모). 현재 남은 수가 아님.
 // 이벤트 id → 유입 이벤트 메타{type, ts, text(원본), size}. 외부 유입 로그를 audit 이 아닌
-// 이 메타 + 최종 문서 잔존 블록 기준으로 구성 → 문서 수정·재오픈 후에도 유입 로그 유지.
+// 이 메타 + 최종 글 잔존 블록 기준으로 구성 → 글 수정·재오픈 후에도 유입 로그 유지.
 let _inflowMeta = {};
 // 비선형 이동 밀도 — 프론티어(최근 입력 위치)·역방향 점프(≥10자) 카운트
 let _navFrontier = 0, _navBackJumps = 0, _navWasBack = false;
@@ -4888,13 +4887,13 @@ function _markPendingInsert(kind, prompt){
 
 function _recountFromAuditLog(){
   const c = window.__muhaController;
-  // IME 조합 중에는 문서가 과도기 상태(음절이 ㅎ→하→한 으로 바뀜)라 shadow 맵을
+  // IME 조합 중에는 글이 과도기 상태(음절이 ㅎ→하→한 으로 바뀜)라 shadow 맵을
   // 저장하면 오염된다. 표시는 하되(아래 계산은 그대로 수행) _srcState 저장만 스킵.
   let composing = false;
   try { composing = !!(c && typeof c.isComposing === 'function' && c.isComposing()); } catch(e){}
   let body = null;
   try { if(c && typeof c.getBody === 'function') body = c.getBody(); } catch(e){ body = null; }
-  // 문서의 비개행 문자를 순서대로 수집
+  // 글의 비개행 문자를 순서대로 수집
   const newChars = [];
   const collect = (nodes) => {
     (nodes || []).forEach(node => {
@@ -4956,10 +4955,10 @@ function _scanCounts(origin, block){
   return { typing: direct, ai, paste, revised, total: len };
 }
 
-// 저장 직전: muha 문서 텍스트 + _srcState 출처로 model 을 재구성한다. extra variant 는
-// model 이 실시간 동기화되지 않으므로(위 카운트는 getBody 로 계산), 저장 스냅샷·문서
-// 열람·문서 수정이 쓰는 model 에 '텍스트 + 글자별 출처(source)'를 채워 넣는다.
-// → 저장 문서에 출처가 함께 남아, 문서 수정으로 다시 열 때 카운터가 리셋되지 않음.
+// 저장 직전: muha 글 텍스트 + _srcState 출처로 model 을 재구성한다. extra variant 는
+// model 이 실시간 동기화되지 않으므로(위 카운트는 getBody 로 계산), 저장 스냅샷·글
+// 열람·글 수정이 쓰는 model 에 '텍스트 + 글자별 출처(source)'를 채워 넣는다.
+// → 저장 글에 출처가 함께 남아, 글 수정으로 다시 열 때 카운터가 리셋되지 않음.
 // origin(ai/paste/typing) 배열 → 결과지용 세분화 source 배열.
 // typing 런이 블록에 둘러싸이면 그 블록 종류에 따라 ai-internal / paste-internal(수정),
 // 아니면 typing(직접). ai/paste 는 그대로. (결과지 '텍스트 유입 분석' 색상 = 이 값)
@@ -4985,7 +4984,7 @@ function _fineSourcePerChar(origin, block){
   return fine;
 }
 
-// muha 문서 텍스트를 '문단 경계 = 개행 1개'로 정규화해 반환. innerText 는 문단 사이를
+// muha 글 텍스트를 '문단 경계 = 개행 1개'로 정규화해 반환. innerText 는 문단 사이를
 // '\n\n'(2개)로 주기 때문에, 그대로 저장하면 재오픈 split 시 빈 문단이 생겨 줄이
 // 늘어나고 매 저장마다 누적됨. getBody 문단을 단일 '\n' 으로 조인해 방지.
 function _muhaDocText(){
@@ -5053,7 +5052,7 @@ function updateStats(){
   const isExtra = document.body.dataset.writeVariant === 'extra';
   let extraTotalNoBreak = null;
   if(isExtra){
-    // muha getSourceRanges() 기반 문서 집계 (replay 없이 정확)
+    // muha getSourceRanges() 기반 글 집계 (replay 없이 정확)
     const cnt = (typeof _recountFromAuditLog === 'function')
       ? _recountFromAuditLog() : {typing:0, ai:0, paste:0, revised:0, total:0};
     document.getElementById('stWrite').textContent   = cnt.typing.toLocaleString();
@@ -5077,7 +5076,7 @@ function updateStats(){
     if(mins>0) speed=Math.round(stats.keystrokes/mins);
   }
   document.getElementById('stSpeed').textContent=speed;
-  // 저장 후 작성 검증 결과 확인 — 본문 10자 이상 + 제목 1자 이상 + 문서 유형 택1일 때만 활성
+  // 저장 후 작성 검증 결과 확인 — 본문 10자 이상 + 제목 1자 이상 + 글 유형 택1일 때만 활성
   const _titleLen = ((document.getElementById('docTitle')||{}).value || '').trim().length;
   const _hasType  = !!((document.getElementById('docType')||{}).value);
   document.getElementById('btnComplete').disabled = totalChars<10 || _titleLen<1 || !_hasType;
@@ -5097,8 +5096,8 @@ document.getElementById('btnDemoAI').onclick=()=>{
   appendToEditor(draft,'ai','데모 AI 초안 요청');
 };
 
-/* ---------- 내 문서함 (view-box) ---------- */
-// LNB '문서 작성' 진입 시 랜딩 — 내 문서 목록. '새 문서 작성' 버튼으로 작성 화면 이동.
+/* ---------- 내 글함 (view-box) ---------- */
+// LNB '글 작성' 진입 시 랜딩 — 내 글 목록. '새 글 작성' 버튼으로 작성 화면 이동.
 function openMyDocs(flow){
   if(flow === 'main' || flow === 'copy') activeFlow = flow;   // 인자 없으면 현재 플로우 유지(리포트→목록 복귀 등)
   document.body.dataset.view = 'box';
@@ -5113,8 +5112,8 @@ function openMyDocs(flow){
   window.scrollTo(0, 0);
 }
 
-/* 플로우 구분 — 'main'(문서 작성 원본) | 'copy'(문서 작성 사본, 격리된 문서함·정책 분기 실험용).
-   UI/스펙은 동일하게 쓰되, 문서함 저장소를 분리하고 정책은 activeFlow 로 분기한다. */
+/* 플로우 구분 — 'main'(글 작성 원본) | 'copy'(글 작성 사본, 격리된 글함·정책 분기 실험용).
+   UI/스펙은 동일하게 쓰되, 글함 저장소를 분리하고 정책은 activeFlow 로 분기한다. */
 let activeFlow = 'copy';
 function _boxStoreKey(){ return activeFlow === 'copy' ? 'ksv_box_docs_copy' : 'ksv_box_docs'; }
 function boxLoadDocs(){
@@ -5129,7 +5128,7 @@ function boxSaveCurrentDoc(){
   // extra: 저장 전 muha 텍스트+출처로 model 재구성 (model 실시간 미동기화 → 텍스트·출처 유실 방지)
   if(document.body.dataset.writeVariant === 'extra' && typeof _syncModelFromMuha === 'function'){
     try { _syncModelFromMuha(); } catch(e){ console.warn('syncModel fail', e); }
-    // events/글자 ts 도 재구성해 문서에 함께 저장 → 재오픈(조회) 시에도 활동/리플레이/유입로그 유지
+    // events/글자 ts 도 재구성해 글에 함께 저장 → 재오픈(조회) 시에도 활동/리플레이/유입로그 유지
     if((window.__auditLog || []).length > 0 && typeof _reconstructFromAudit === 'function'){
       try { _reconstructFromAudit(); } catch(e){ console.warn('reconstruct(save) fail', e); }
     }
@@ -5140,7 +5139,7 @@ function boxSaveCurrentDoc(){
   const now = Date.now();
   const snapshot = {
     title,
-    type: selectedType || '자유',
+    type: selectedType || '없음',
     writeVariant: document.body.dataset.writeVariant || '',
     savedAt: now,
     chars: model.filter(m=>m.ch!=='\n').length,
@@ -5154,7 +5153,7 @@ function boxSaveCurrentDoc(){
   };
   let id;
   if(currentDocId){
-    // 동일 문서 upsert — 첫 번째 행으로 끌어올림 + saveCount 증가 + 검사 이력 유지
+    // 동일 글 upsert — 첫 번째 행으로 끌어올림 + saveCount 증가 + 검사 이력 유지
     const idx = docs.findIndex(d => d.id === currentDocId);
     if(idx >= 0){
       const prev = docs[idx];
@@ -5190,8 +5189,8 @@ function boxSaveCurrentDoc(){
   return id;
 }
 
-/* 검사 결과를 문서 데이터에 push. runInspection 이 currentInspection 을 새로 만든 직후 호출.
-   문서별 회차 이력을 inspHistory 에 append. 회차 제한 없음. */
+/* 검사 결과를 글 데이터에 push. runInspection 이 currentInspection 을 새로 만든 직후 호출.
+   글별 회차 이력을 inspHistory 에 append. 회차 제한 없음. */
 function boxAppendInspectionToDoc(docId){
   if(!docId || !currentInspection) return;
   const docs = boxLoadDocs();
@@ -5207,7 +5206,7 @@ function boxAppendInspectionToDoc(docId){
   boxSaveDocs(docs);
 }
 
-// 새 문서 작성 진입 — 세션 초기화
+// 새 글 작성 진입 — 세션 초기화
 /* =============================================================
    muha-editor (Tiptap v3 기반 vanilla UMD) 통합
    - extra variant 진입 시 mount, onChange 로 model 동기화
@@ -5284,7 +5283,7 @@ function _bindMuhaEvents(){
       if(typeof _markPendingInsert === 'function') _markPendingInsert('paste'); // 이 삽입은 붙여넣기 이벤트
     } catch(e){}
     // muha 는 붙여넣기에 대해 onAudit 을 발화하지 않아(관측), _scheduleRecount 가 안 돈다.
-    // 붙여넣기가 문서에 적용된 직후(다음 tick) 직접 recount 를 트리거 → _pendingInsert('paste')
+    // 붙여넣기가 글에 적용된 직후(다음 tick) 직접 recount 를 트리거 → _pendingInsert('paste')
     // 플래그가 1.5s 자동해제되기 전에 소비되어 '붙여넣기'로 정확히 집계된다.
     setTimeout(() => { try { if(typeof updateStats === 'function') updateStats(); } catch(e){} }, 0);
   }, true);
@@ -5382,13 +5381,13 @@ function newWrite(variant){
   currentDocId = null;
   model.length = 0; events.length = 0; editOps.length = 0;
   Object.assign(stats, {keystrokes:0, inputKeystrokes:0, editChars:0, deleteChars:0, firstTs:0, lastTs:0, deletes:0, typingDeleted:0, aiDeleted:0, pasteDeleted:0});
-  // audit 로그·카운터 초기화 (새 문서 세션)
+  // audit 로그·카운터 초기화 (새 글 세션)
   window.__auditLog = [];
   _auditCounts = {typing:0, ai:0, paste:0, revised:0, total:0};
   if(typeof _resetSrcState === 'function') _resetSrcState();  // 출처 shadow 맵 초기화
-  _inflowMeta = {};                                            // 유입 이벤트 메타 초기화(새 문서)
+  _inflowMeta = {};                                            // 유입 이벤트 메타 초기화(새 글)
   _navFrontier = 0; _navBackJumps = 0; _navWasBack = false;    // 비선형 이동 밀도 초기화
-  // 검사→에디터 AI 의심 음영 초기화 (새 문서엔 음영 없음)
+  // 검사→에디터 AI 의심 음영 초기화 (새 글엔 음영 없음)
   if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
   sessionFrozen = false;
@@ -5396,14 +5395,14 @@ function newWrite(variant){
   selectedType = null;
   if(typeof _aiResetDraft === 'function') _aiResetDraft();          // AI Draft 상태 초기화(중앙 하단 입력 바)
   const t = document.getElementById('docTitle'); if(t) t.value = '';
-  if(typeof _setDocTypeUI === 'function') _setDocTypeUI('');        // 문서 유형 셀렉트 초기화
+  if(typeof _setDocTypeUI === 'function') _setDocTypeUI('');        // 글 유형 셀렉트 초기화
   if(typeof _resetDraftGenUI === 'function') _resetDraftGenUI();   // 초안 생성 폼 초기화
-  if(typeof _syncLeftPanelForType === 'function') _syncLeftPanelForType();   // 새 문서 → 문서 유형 선택 화면
+  if(typeof _syncLeftPanelForType === 'function') _syncLeftPanelForType();   // 새 글 → 글 유형 선택 화면
   if(typeof renderEditor === 'function') renderEditor();
-  // variant 분기 — 상위 '문서 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
+  // variant 분기 — 상위 '글 작성'(extra) / 하위 '초기 기획안'(legacy) 에 따라 페이지 헤더 라벨
   document.body.dataset.writeVariant = variant || '';
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
-  if(ph) ph.textContent = (variant === 'extra') ? '새 문서 작성' : '문서 작성 · 초기 기획안';
+  if(ph) ph.textContent = (variant === 'extra') ? '새 글 작성' : '글 작성 · 초기 기획안';
   // btnComplete 텍스트 — extra 는 저장 겸 리포트 진입 문구
   const bc = document.getElementById('btnComplete');
   if(bc) bc.textContent = (variant === 'extra') ? '저장 후 작성 검증 결과 확인' : '작성 증명 리포트 확인';
@@ -5414,11 +5413,11 @@ function newWrite(variant){
   if(activeEl) activeEl.classList.add('is-active');
   document.body.dataset.view = 'write';
   document.body.dataset.flow = activeFlow;   // 사본 플로우 하단 버튼 분기 유지
-  // extra 변형이면 muha-editor 마운트 (script 로드 완료 후) + 문서 빈 상태로 초기화
+  // extra 변형이면 muha-editor 마운트 (script 로드 완료 후) + 글 빈 상태로 초기화
   if(variant === 'extra' && typeof ensureMuhaEditor === 'function'){
     try {
       ensureMuhaEditor();
-      // 새 문서 — muha 에디터 내용 비우기 (이전 세션 텍스트 잔존 방지)
+      // 새 글 — muha 에디터 내용 비우기 (이전 세션 텍스트 잔존 방지)
       setTimeout(() => {
         try {
           const c = window.__muhaController;
@@ -5453,45 +5452,45 @@ function renderBoxList(){
   if(!list) return;
   const docs = boxLoadDocs();
   if(!docs.length){
-    list.innerHTML = `<div class="box-empty">저장된 문서가 아직 없어요.<br>좌측 상단 「＋ 새 문서 작성」으로 시작해 보세요.</div>`;
+    list.innerHTML = `<div class="box-empty">저장된 글이 아직 없어요.<br>좌측 상단 「＋ 새 글 작성」으로 시작해 보세요.</div>`;
     return;
   }
   list.innerHTML = docs.map(d => {
-    // 문서 수정 → 바로 에디터(boxOpenDoc). 미리보기 화면 제거됨.
+    // 글 수정 → 바로 에디터(boxOpenDoc). 미리보기 화면 제거됨.
     const openCall = `boxOpenDoc('${d.id}')`;
     // 검증 결과를 1회 이상 확인(resultViewed)한 경우에만 '검증 결과 보기' 활성화
     const hasResult = _docHasResult(d);
     const verifyBtn = hasResult
-      ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">검증 결과 보기</button>`
-      : `<span class="box-tip-wrap" data-tip="검증 결과를 1회 이상 확인하면 목록에서 바로 열람할 수 있어요."><button class="box-actionbtn solid" disabled>검증 결과 보기</button></span>`;
+      ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')">검증 결과</button>`
+      : `<span class="box-tip-wrap" data-tip="글을 완성한 뒤 작성 화면에서 '작성 검증'을 진행하면 결과를 확인할 수 있어요."><button class="box-actionbtn solid" disabled>검증 전</button></span>`;
     return `
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>문서 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">문서 수정</button>
+        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">수정</button>
         ${verifyBtn}
         <div class="box-more">
           <button class="box-more-btn" type="button" onclick="boxToggleMore(event,'${d.id}')" aria-label="더보기">⋮</button>
           <div class="box-more-menu" data-more="${d.id}">
-            <button type="button" onclick="boxCopyDoc('${d.id}')">문서 복사</button>
-            <button type="button" class="danger" onclick="boxAskDelete('${d.id}')">문서 삭제</button>
+            <button type="button" onclick="boxCopyDoc('${d.id}')">글 복사</button>
+            <button type="button" class="danger" onclick="boxAskDelete('${d.id}')">글 삭제</button>
           </div>
         </div>
       </div>
     </div>`;
   }).join('');
 }
-/* 목록에서 '작성 검증 결과 확인하기'를 활성화할 수 있는가 — 정책: 저장만 한 문서는 비활성.
-   문서 미리보기에서 '작성 검증 결과 확인하기'를 한 번 확인(boxScanDoc)해 resultViewed=true가
+/* 목록에서 '작성 검증 결과 확인하기'를 활성화할 수 있는가 — 정책: 저장만 한 글은 비활성.
+   글 미리보기에서 '작성 검증 결과 확인하기'를 한 번 확인(boxScanDoc)해 resultViewed=true가
    되면, 이후 목록에서 바로 결과를 볼 수 있다. */
 function _docHasResult(d){
   return !!(d && d.resultViewed);
 }
-/* 문서 미리보기 화면 제거됨 — 남은 호출은 문서 수정(에디터)로 리다이렉트 */
+/* 글 미리보기 화면 제거됨 — 남은 호출은 글 수정(에디터)로 리다이렉트 */
 function boxViewDoc(id){ return boxOpenDoc(id); }
 function _boxViewDoc_removed(id){
   const d = boxLoadDocs().find(x => x.id === id);
@@ -5509,7 +5508,7 @@ function _boxViewDoc_removed(id){
       bodyEl.textContent = (d.model || []).map(m => m.ch).join('');  // 폴백: 순수 텍스트
     }
   }
-  // 정책 변경: 작성 검증 결과 확인 후에도 문서 수정 허용 → '문서 수정' 항상 활성
+  // 정책 변경: 작성 검증 결과 확인 후에도 글 수정 허용 → '글 수정' 항상 활성
   const editBtn = document.getElementById('docViewEditBtn');
   const editWrap = document.getElementById('docViewEditWrap');
   if(editBtn){
@@ -5540,7 +5539,7 @@ function _loadDocIntoSession(d){
   Object.assign(stats, d.stats||{});
   selectedType = d.type || null;
   if(typeof _setDocTypeUI === 'function') _setDocTypeUI(d.type || '');   // 유형 셀렉트 UI 반영
-  currentDocId = d.id; // 동일 문서 upsert를 위해 id 유지
+  currentDocId = d.id; // 동일 글 upsert를 위해 id 유지
   saveCount = d.saveCount || 1;
   document.body.dataset.writeVariant = d.writeVariant || '';
   // 에디터 DOM 갱신
@@ -5575,7 +5574,7 @@ function _loadTextIntoMuha(rawText, done){
   tryLoad();
 }
 
-// '문서 수정' — 저장된 문서를 작성 에디터에서 이어 편집. 제목·본문을 에디터에
+// '글 수정' — 저장된 글을 작성 에디터에서 이어 편집. 제목·본문을 에디터에
 // 로드하고, 우측 상단 카운터는 직전 저장 시점 stats 를 그대로 유지.
 function boxOpenDoc(id){
   const docs = boxLoadDocs();
@@ -5588,9 +5587,9 @@ function boxOpenDoc(id){
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
   document.body.dataset.flow = activeFlow;   // 사본 플로우 하단 버튼 분기 유지
-  // 페이지 헤더·완료 버튼·LNB 를 '문서 작성'(extra) 톤으로
+  // 페이지 헤더·완료 버튼·LNB 를 '글 작성'(extra) 톤으로
   const ph = document.querySelector('#write-pageheader .write-pagetitle');
-  if(ph) ph.textContent = '문서 작성';
+  if(ph) ph.textContent = '글 작성';
   const bc = document.getElementById('btnComplete');
   if(bc) bc.textContent = '저장 후 작성 검증 결과 확인';
   document.querySelectorAll('#lnb [data-menu]').forEach(el => el.classList.remove('is-active'));
@@ -5598,7 +5597,7 @@ function boxOpenDoc(id){
   if(a) a.classList.add('is-active');
   // muha 에디터에 본문 로드 → 로드 후 카운터는 직전 저장 stats 로 복구해 유지
   if(typeof ensureMuhaEditor === 'function'){ try { ensureMuhaEditor(); } catch(e){} }
-  // 저장 문서의 글자별 출처(source)로 _srcState 복원 → 카운터가 리셋되지 않고
+  // 저장 글의 글자별 출처(source)로 _srcState 복원 → 카운터가 리셋되지 않고
   // 원래 직접/AI/붙여넣기/수정 구분이 그대로 유지된다. (source 는 ai/paste/그외=typing)
   const _mdl = d.model || [];
   const _savedChars = [], _savedOrigin = [], _savedBlock = [];
@@ -5659,7 +5658,7 @@ function consumeInspectionCredit(){
   return true;
 }
 
-// '작성 검증 결과 조회' — 저장된 문서의 '작성 증명 결과'(리포트) 화면으로 이동.
+// '작성 검증 결과 조회' — 저장된 글의 '작성 증명 결과'(리포트) 화면으로 이동.
 // (AI생성검사 결과 화면이 아니라 작성 증명 결과 화면)
 function boxScanDoc(id){
   const docs = boxLoadDocs();
@@ -5676,7 +5675,7 @@ function boxScanDoc(id){
   window.scrollTo(0,0);
 }
 
-// '문서 검사하기 ›' — 작성한 문서를 '직접 입력' 형태로 검사 업로드 화면에 등록.
+// '문서 검사하기 ›' — 작성한 글을 '직접 입력' 형태로 검사 업로드 화면에 등록.
 // 그룹명 입력·검사 설정만 하면 되는 상태(파일카드 '검사 가능')로 진입.
 function boxSendToInspect(id){
   const docs = boxLoadDocs();
@@ -5686,14 +5685,14 @@ function boxSendToInspect(id){
   const text = (d.model || []).map(m => m.ch).join('');
   const base = (d.title || '').trim();
   uploadedText = text;
-  uploadedFilename = (base ? base : '직접 입력 문서') + '.txt';
+  uploadedFilename = (base ? base : '직접 입력 글') + '.txt';
   _renderInspFileCard(uploadedFilename, text.length);  // 파일카드 + '검사 가능' + 삭제, 검사 버튼 활성
   window.scrollTo(0, 0);
 }
 function boxDeleteSelected(){
   const checked = Array.from(document.querySelectorAll('#boxList .box-row .box-rowchk:checked'))
     .map(c => c.closest('.box-row')?.dataset?.id).filter(Boolean);
-  if(!checked.length){ showToast('삭제할 문서를 선택하세요'); return; }
+  if(!checked.length){ showToast('삭제할 글을 선택하세요'); return; }
   const docs = boxLoadDocs().filter(d => !checked.includes(d.id));
   boxSaveDocs(docs);
   renderBoxList();
@@ -5704,7 +5703,7 @@ document.getElementById('boxCheckAll')?.addEventListener('change', e=>{
   document.querySelectorAll('#boxList .box-rowchk').forEach(c => c.checked = e.target.checked);
 });
 
-/* ---------- 목록 더보기(⋮) 메뉴 — 문서 복사 / 문서 삭제 ---------- */
+/* ---------- 목록 더보기(⋮) 메뉴 — 글 복사 / 글 삭제 ---------- */
 function boxToggleMore(e, id){
   e.stopPropagation();
   const menu = document.querySelector(`.box-more-menu[data-more="${id}"]`);
@@ -5719,7 +5718,7 @@ document.addEventListener('click', function(e){
   document.querySelectorAll('.box-more-menu.open').forEach(m => m.classList.remove('open'));
 });
 
-// 문서 복사 — 복사 시점의 내용·증적 작성기록·결과를 그대로 유지한 사본 생성. 제목은 '원제목(사본N)'.
+// 글 복사 — 복사 시점의 내용·증적 작성기록·결과를 그대로 유지한 사본 생성. 제목은 '원제목(사본N)'.
 function boxCopyDoc(id){
   const docs = boxLoadDocs();
   const src = docs.find(d => d.id === id);
@@ -5735,10 +5734,10 @@ function boxCopyDoc(id){
   docs.unshift(copy);   // 목록 최상단에 추가
   boxSaveDocs(docs);
   renderBoxList();
-  if(typeof showToast === 'function') showToast('문서 사본이 생성되었습니다');
+  if(typeof showToast === 'function') showToast('글 사본이 생성되었습니다');
 }
 
-// 문서 삭제 — 확인 모달 후 목록에서 제거 (복구 불가)
+// 글 삭제 — 확인 모달 후 목록에서 제거 (복구 불가)
 let _boxPendingDeleteId = null;
 function boxAskDelete(id){
   _boxPendingDeleteId = id;
@@ -5752,7 +5751,7 @@ function boxConfirmDelete(){
   boxSaveDocs(docs);
   closeBoxDelete();
   renderBoxList();
-  if(typeof showToast === 'function') showToast('문서가 삭제되었습니다');
+  if(typeof showToast === 'function') showToast('글이 삭제되었습니다');
 }
 
 /* ---------- 빠른 기간 선택 — 종료일=항상 오늘, 시작일=오늘−{기간} ---------- */
@@ -5796,23 +5795,23 @@ boxApplyPeriod();   // 초기화 (기본 '전체' → 기간 제한 없음, 날�
 // 페이지 진입 시 초기 렌더
 renderBoxList();
 
-/* ---------- '내 문서에 저장' → localStorage 저장 + 내 문서함으로 이동 ---------- */
+/* ---------- '내 글에 저장' → localStorage 저장 + 내 글함으로 이동 ---------- */
 document.getElementById('btnSaveOnly').onclick=()=>{
   if(model.length === 0){ showToast('저장할 내용이 없습니다'); return; }
   const _dt = document.getElementById('docType');
-  if(!(_dt && _dt.value)){ showToast('문서 유형을 선택해주세요'); if(_dt) _dt.focus(); return; }
+  if(!(_dt && _dt.value)){ showToast('글 유형을 선택해주세요'); if(_dt) _dt.focus(); return; }
   const id = boxSaveCurrentDoc();
   saveCount++;
   renderBoxList();
   document.body.dataset.view = 'box';
   window.scrollTo(0,0);
-  showToast('내 문서에 저장되었습니다');
+  showToast('내 글에 저장되었습니다');
 };
 document.getElementById('btnComplete').onclick=()=>{
   // 작성 완료 시점에 lastTs 확정 + freeze (이후 결과지 조회 동안 시간 누적 X)
   if(!stats.firstTs) stats.firstTs=Date.now();
   stats.lastTs=Date.now();
-  // extra variant — 결과 진입 전에 내 문서함에 실제 저장까지 완료
+  // extra variant — 결과 진입 전에 내 글함에 실제 저장까지 완료
   const isExtra = document.body.dataset.writeVariant === 'extra';
   if(isExtra){
     try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('boxSaveCurrentDoc fail', e); }
@@ -5829,14 +5828,14 @@ document.getElementById('btnComplete').onclick=()=>{
 /* ===== 사본(copy) 플로우 전용 하단 액션 ===== */
 // [저장] — 저장만 수행, 작성 화면 유지 (리포트 진입 없음)
 function copyFlowSave(){
-  // 저장 필수 조건 — 제목·내용 최소 1자 + 문서 유형 택1 (미충족 시 안내 후 중단)
+  // 저장 필수 조건 — 제목·내용 최소 1자 + 글 유형 택1 (미충족 시 안내 후 중단)
   const titleEl = document.getElementById('docTitle');
   const typeEl  = document.getElementById('docType');
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const raw = el ? (el.innerText || el.textContent || '') : '';
   if((titleEl?.value || '').trim().length < 1){ showToast('제목을 입력해주세요.'); titleEl?.focus(); return; }
   if(raw.replace(/\s/g,'').length < 1){ showToast('내용을 입력해주세요.'); try{ el?.focus(); }catch(e){} return; }
-  if(!(typeEl && typeEl.value)){ showToast('문서 유형을 선택해주세요.'); typeEl?.focus(); return; }
+  if(!(typeEl && typeEl.value)){ showToast('글 유형을 선택해주세요.'); typeEl?.focus(); return; }
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('copy save fail', e); }
@@ -5848,15 +5847,18 @@ function copyFlowSave(){
   window.scrollTo(0,0);
 }
 // 작성 화면 [작성 검증 결과 확인하기] — 저장 + 결과 열람(resultViewed=true) + 리포트 진입.
-// 이후 목록의 '작성 검증 결과 확인하기' 버튼이 활성화된다. (문서 수정은 계속 가능 — 잠그지 않음)
+// 이후 목록의 '작성 검증 결과 확인하기' 버튼이 활성화된다. (글 수정은 계속 가능 — 잠그지 않음)
 function writeFlowVerify(){
   const titleEl = document.getElementById('docTitle');
   const typeEl  = document.getElementById('docType');
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const raw = el ? (el.innerText || el.textContent || '') : '';
-  if((titleEl?.value || '').trim().length < 1){ showToast('제목을 입력해주세요.'); titleEl?.focus(); return; }
+  const _title = (titleEl?.value || '').trim();
+  // 작성 검증 조건 — 글 유형 택1 + 제목 1~200자 + 내용 1자 이상
+  if(!(typeEl && typeEl.value)){ showToast('글 유형을 선택해주세요.'); typeEl?.focus(); return; }
+  if(_title.length < 1){ showToast('제목을 입력해주세요.'); titleEl?.focus(); return; }
+  if(_title.length > 200){ showToast('제목은 200자 이내로 입력해주세요.'); titleEl?.focus(); return; }
   if(raw.replace(/\s/g,'').length < 1){ showToast('내용을 입력해주세요.'); try{ el?.focus(); }catch(e){} return; }
-  if(!(typeEl && typeEl.value)){ showToast('문서 유형을 선택해주세요.'); typeEl?.focus(); return; }
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('verify save fail', e); }
@@ -5874,7 +5876,7 @@ function writeFlowVerify(){
   document.body.dataset.reportTab = 'main';
   window.scrollTo(0,0);
 }
-// [작성 검증 결과 보기] — 확인 모달 → 검증 시 문서 잠금 + 리포트 진입
+// [작성 검증 결과 보기] — 확인 모달 → 검증 시 글 잠금 + 리포트 진입
 function openCopyVerifyConfirm(){
   const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
   const raw = el ? (el.innerText || el.textContent || '') : '';
@@ -5887,7 +5889,7 @@ function confirmCopyVerify(){
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('copy verify save fail', e); }
-  // 사본 정책 — 검증 시 문서 잠금(더이상 수정 불가)
+  // 사본 정책 — 검증 시 글 잠금(더이상 수정 불가)
   try {
     const docs = boxLoadDocs();
     const idx = docs.findIndex(d => d.id === currentDocId);
@@ -5906,84 +5908,43 @@ function confirmCopyVerify(){
 function closeLeaveConfirm(){ document.getElementById('leaveConfirmModal')?.classList.add('hidden'); }
 function _goToBoxList(){ document.body.dataset.view='box'; if(typeof renderBoxList==='function') renderBoxList(); window.scrollTo(0,0); }
 function onBackToListClick(){
-  const isExtra = document.body.dataset.writeVariant === 'extra';
-  if(!isExtra){ _goToBoxList(); return; }
-  // 작성 중 내용(공백 제외 1자 이상) 이 있을 때만 저장 유도. 없으면 바로 이동.
-  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
-  const raw = el ? ((el.innerText || el.textContent || '')) : '';
-  const nonSpace = raw.replace(/\s/g, '').length;
-  if(nonSpace < 1){ _goToBoxList(); return; }
-
-  const modal   = document.getElementById('leaveConfirmModal');
-  const saveBtn = document.getElementById('btnSaveAndLeave');
-  const leaveBtn= document.getElementById('btnLeaveNoSave');
-  // 폴백 — 모달 요소가 없으면 기본 confirm
-  if(!modal || !saveBtn || !leaveBtn){
-    if(window.confirm('작성 중인 내용이 있습니다. 저장하시겠습니까?')){
-      try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
-    }
-    _goToBoxList(); return;
+  // 자동저장 flush → 안내 → 목록 이동 (확인 모달 없음)
+  if(document.body.dataset.writeVariant === 'extra'){
+    try { if(typeof _autoSave === 'function') _autoSave(); } catch(e){ console.warn('flush save fail', e); }
   }
-  // 제목 필수 — 제목이 없으면 모달에서 반드시 입력받는다.
-  const titleEl    = document.getElementById('docTitle');
-  const titleWrap  = document.getElementById('leaveTitleWrap');
-  const titleInput = document.getElementById('leaveTitleInput');
-  const titleErr   = document.getElementById('leaveTitleErr');
-  const hasTitle   = ((titleEl?.value || '').trim().length > 0);
-  if(titleWrap){
-    if(hasTitle){ titleWrap.classList.add('hidden'); }
-    else {
-      titleWrap.classList.remove('hidden');
-      if(titleInput) titleInput.value = '';
-      if(titleErr) titleErr.classList.add('hidden');
-    }
-  }
-  // 문서 유형 필수 — 유형이 없으면 모달에서 반드시 선택받는다.
-  const typeEl     = document.getElementById('docType');
-  const typeWrap   = document.getElementById('leaveTypeWrap');
-  const typeSelect = document.getElementById('leaveTypeSelect');
-  const typeErr    = document.getElementById('leaveTypeErr');
-  const hasType    = !!((typeEl && typeEl.value) || '');
-  if(typeWrap){
-    if(hasType){ typeWrap.classList.add('hidden'); }
-    else {
-      typeWrap.classList.remove('hidden');
-      if(typeSelect) typeSelect.selectedIndex = 0;
-      if(typeErr) typeErr.classList.add('hidden');
-    }
-  }
-  // [저장하고 나가기] — 제목·유형 확보 후 저장 + 목록 이동
-  saveBtn.onclick = () => {
-    if(!hasTitle){
-      const v = (titleInput?.value || '').trim();
-      if(!v){ if(titleErr) titleErr.classList.remove('hidden'); titleInput?.focus(); return; }  // 제목 없으면 막음
-      if(titleEl){ titleEl.value = v; titleEl.dispatchEvent(new Event('input', {bubbles:true})); }
-    }
-    if(!hasType){
-      const tv = (typeSelect?.value || '');
-      if(!tv){ if(typeErr) typeErr.classList.remove('hidden'); typeSelect?.focus(); return; }  // 유형 없으면 막음
-      if(typeEl){ typeEl.value = tv; }
-      selectedType = tv;
-    }
-    try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
-    closeLeaveConfirm();
-    if(typeof showToast === 'function') showToast('내 문서에 저장되었습니다');
-    _goToBoxList();
-  };
-  // [그냥 나가기] — 저장 없이 목록 이동 (제목·유형 불필요)
-  leaveBtn.onclick = () => { closeLeaveConfirm(); _goToBoxList(); };
-  // 제목 입력 편의 — 입력 시 에러 숨김, Enter 로 저장, 자동 포커스
-  if(titleInput && !hasTitle){
-    titleInput.oninput = () => { if(titleErr) titleErr.classList.add('hidden'); };
-    titleInput.onkeydown = (ev) => { if(ev.key==='Enter'){ ev.preventDefault(); saveBtn.click(); } };
-    setTimeout(()=>{ try{ titleInput.focus(); }catch(e){} }, 50);
-  }
-  // 유형 선택 편의 — 선택 시 에러 숨김
-  if(typeSelect && !hasType){
-    typeSelect.onchange = () => { if(typeErr) typeErr.classList.add('hidden'); };
-  }
-  modal.classList.remove('hidden');
+  const saved = !!currentDocId;
+  _goToBoxList();
+  if(saved && typeof showToast === 'function') showToast('작성하신 내용을 모두 저장했습니다!');
 }
+
+/* ---------- 자동저장 — 유형/제목/내용 중 하나라도 있으면 디바운스 저장. 미입력 기본값: 유형 '없음', 제목 '제목 없음' ---------- */
+let _autoSaveTimer = 0;
+function _scheduleAutoSave(){
+  if(document.body.dataset.view !== 'write' || document.body.dataset.writeVariant !== 'extra') return;
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(_autoSave, 1800);
+}
+function _autoSave(){
+  clearTimeout(_autoSaveTimer);
+  if(document.body.dataset.view !== 'write' || document.body.dataset.writeVariant !== 'extra') return;
+  if(sessionFrozen) return;
+  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+  const raw = el ? (el.innerText || el.textContent || '') : '';
+  const hasContent = raw.replace(/\s/g,'').length >= 1;
+  const hasTitle   = ((document.getElementById('docTitle')?.value)||'').trim().length >= 1;
+  const hasType    = !!(document.getElementById('docType')?.value);
+  if(!hasContent && !hasTitle && !hasType) return;   // 완전히 빈 상태면 저장 안 함(빈 글 생성 방지)
+  try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('autosave fail', e); }
+}
+// 에디터 본문/제목 입력·유형 변경 시 자동저장 예약
+document.addEventListener('input', e=>{
+  if(document.body.dataset.view !== 'write') return;
+  const t = e.target;
+  if(t && (t.id === 'docTitle' || t.isContentEditable)) _scheduleAutoSave();
+});
+document.addEventListener('change', e=>{
+  if(document.body.dataset.view === 'write' && e.target && e.target.id === 'docType') _scheduleAutoSave();
+});
 // 작성 완료 시점에 패널을 빈 상태로 초기화
 function _resetOnReport(){ try{ resetSegPanel(); }catch(e){} }
 
@@ -6133,7 +6094,7 @@ function mockDetectAISuspect(){
   return spans;
 }
 
-/* 원본 텍스트 T 가 현재 문서 raw 안에 남아있는 가장 긴 연속 substring 길이. */
+/* 원본 텍스트 T 가 현재 글 raw 안에 남아있는 가장 긴 연속 substring 길이. */
 function _lcsLen(T, raw){
   const M = T ? T.length : 0, N = raw ? raw.length : 0;
   if(!M || !N) return 0;
@@ -6153,7 +6114,7 @@ function _lcsLen(T, raw){
   return maxLen;
 }
 
-/* 재검사 세그먼트별 수정률 계산. 원본 텍스트가 현재 문서에서 얼마나 남아있는지 LCS 로.
+/* 재검사 세그먼트별 수정률 계산. 원본 텍스트가 현재 글에서 얼마나 남아있는지 LCS 로.
    반환: { ackIds: [수정률 >= 30% 세그먼트], modRates: {spanId: 0~1} } */
 function computeAcknowledgedSpans(prevSpans){
   const ack = [];
@@ -6215,7 +6176,7 @@ function runInspection(opts){
     acknowledgedSpans: ackIds,
     modRates
   };
-  // 이 회차 결과를 문서 이력에 append (문서가 아직 저장 전이면 skip)
+  // 이 회차 결과를 글 이력에 append (글이 아직 저장 전이면 skip)
   if(currentDocId && typeof boxAppendInspectionToDoc === 'function'){
     try { boxAppendInspectionToDoc(currentDocId); } catch(e){ console.warn('inspHistory append fail', e); }
   }
@@ -6242,7 +6203,7 @@ function renderInspectionResult(){
   const info = _getInspectionChunks(rawText);
   const spanByChunkIdx = {};
   suspectSpans.forEach(sp => { if(sp.chunkIdx != null) spanByChunkIdx[sp.chunkIdx] = sp; });
-  // 문서상 먼저 잡히는 의심 영역 1개는 '작성 검증 완료'(사람 작성 검증) 그린 영역으로 표기
+  // 글상 먼저 잡히는 의심 영역 1개는 '작성 검증 완료'(사람 작성 검증) 그린 영역으로 표기
   const verifiedSpanId = suspectSpans.length ? suspectSpans[0].spanId : null;
   const content = document.getElementById('inspContent');
   if(content){
@@ -6270,7 +6231,7 @@ function renderInspectionResult(){
     const cards = document.getElementById('inspCards');
     if(cards) cards.innerHTML = '<div class="susp-empty">AI 의심 영역이 없습니다 ✓<br>직접 작성 흐름이 잘 관찰됩니다.</div>';
   }
-  // 문서 작성 이동 CTA — AI 의심 1개 이상일 때만
+  // 글 작성 이동 CTA — AI 의심 1개 이상일 때만
   const ctaBox = document.getElementById('inspCtaBox');
   if(ctaBox) ctaBox.style.display = activeSuspects.length > 0 ? 'block' : 'none';
 }
@@ -6369,7 +6330,7 @@ function switchInspTab(name){
           </div>
           <div class="insp-notice">
             <span class="insp-notice-ic">ⓘ</span>
-            <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 문서의 AI 작성 여부 판단은 문서 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
+            <p>본 검사는 다양한 AI모델이 생성한 글을 학습한 통계 모델에 의해, AI가 작성했을 가능성이 있는 영역을 탐지합니다. 본 글의 AI 작성 여부 판단은 글 작성자의 책임하에 이루어져야 하며 위 결과로 최종 판정은 하지 않습니다.</p>
           </div>
           </div>
         </aside>
@@ -6389,7 +6350,7 @@ function closeInspection(){
   window.scrollTo(0,0);
 }
 
-/* AI탐지 결과 CTA — 새 탭에서 '새 문서 작성'(완전히 빈 세션)으로 시작. 검사 원문 로드 안 함. */
+/* AI탐지 결과 CTA — 새 탭에서 '새 글 작성'(완전히 빈 세션)으로 시작. 검사 원문 로드 안 함. */
 function openBlankWriteTab(){
   try { window.open(location.pathname + '?new=1', '_blank', 'noopener'); }
   catch(e){ window.open(location.pathname + '?new=1', '_blank'); }
@@ -6398,10 +6359,10 @@ function openBlankWriteTab(){
 /* CTA [수정하러 가기] — 새 탭으로 검사 결과 참고창 열고, 원래 탭은 에디터 100% 폭 유지 */
 /* '의심 영역 수정하러 가기' — 검사 결과에서 진입. AI 판정 원문을 에디터에
    그대로 로드하고 model.source 는 세그먼트별로 'ai' 로 마킹. 사용자는 별도
-   재검사 UI 없이 그냥 문서 작성 화면에서 수정하고 다시 문서 검사하기로
+   재검사 UI 없이 그냥 글 작성 화면에서 수정하고 다시 문서 검사하기로
    재검사 가능. companion 팝업·참고 창 흐름 삭제. */
 function enterReinspect(){
-  // 검사 결과 → 문서 작성 화면 진입. 재검사 모드 구분·companion 팝업 없음.
+  // 검사 결과 → 글 작성 화면 진입. 재검사 모드 구분·companion 팝업 없음.
   // AI 판정 원문이 에디터에 그대로 들어가고, model.source 는 세그먼트별로 'ai'
   // 로 마킹돼 카운터·시각처리에 반영. 사용자는 그냥 이어서 편집 → 재검사만
   // 하면 됨.
@@ -6420,9 +6381,9 @@ function enterReinspect(){
 
   events.length = 0;
   editOps.length = 0;
-  if(typeof _resetSrcState === 'function') _resetSrcState();  // 로드 문서는 새 출처 세션
+  if(typeof _resetSrcState === 'function') _resetSrcState();  // 로드 글은 새 출처 세션
 
-  // 2) 문서 작성 화면 진입
+  // 2) 글 작성 화면 진입
   sessionFrozen = false;
   document.body.dataset.view = 'write';
   document.body.dataset.writeVariant = 'extra';
@@ -6635,7 +6596,7 @@ function submitDirectInput(){
     return;
   }
   uploadedText = text;
-  uploadedFilename = '직접 입력 문서.txt';
+  uploadedFilename = '직접 입력 글.txt';
   _renderInspFileCard(uploadedFilename, text.length);
   closeDirectInputModal();
 }
@@ -6654,7 +6615,7 @@ function toggleInspType(type){
 
 function startInspectionFromUpload(){
   if(!uploadedText){
-    if(typeof showToast === 'function') showToast('등록된 문서가 없습니다');
+    if(typeof showToast === 'function') showToast('등록된 글이 없습니다');
     return;
   }
   const aiSelected = document.querySelector('.isp-type-card[data-insptype="ai"]')?.classList.contains('is-selected');
@@ -6698,7 +6659,7 @@ function startInspectionFromUpload(){
   runInspection();  // view=inspect-result 로 전환
   // 결과 상단 파일명 표시
   const titleEl = document.getElementById('inspDocTitle');
-  if(titleEl) titleEl.textContent = uploadedFilename || '업로드 문서';
+  if(titleEl) titleEl.textContent = uploadedFilename || '업로드 글';
 }
 
 // 파일 input + 드래그앤드롭 이벤트 바인딩 (DOM 로드 이후)
@@ -6745,7 +6706,7 @@ function applyQuoteLabel(){
   const lg = document.getElementById('replayLegendQuote');
   if(lg) lg.style.display = isExtra ? '' : 'none';
   // SEC-02 라벨 swap — '작성 증명 지수' ↔ '작성 증명 요약',
-  // 3그룹 헤더(텍스트 구성/행동 패턴/문서 성장) ↔ 입력 증거/사고 과정 증거/문서 성장 증거
+  // 3그룹 헤더(텍스트 구성/행동 패턴/글 성장) ↔ 입력 증거/사고 과정 증거/글 성장 증거
   document.querySelectorAll('[data-orig-label][data-extra-label]').forEach(el => {
     const target = isExtra ? el.getAttribute('data-extra-label') : el.getAttribute('data-orig-label');
     if(target != null) el.textContent = target;
@@ -6821,8 +6782,8 @@ function _reconstructFromAudit(){
   // 글자별 ts (리플레이용) — '시간순' 재생을 위해 실제 삽입 이벤트 시각 기준으로 부여.
   //  · 붙여넣기/AI 원본 글자 = 유입 시각(_inflowMeta.ts)
   //  · 블록 내부 수정 글자(±internal) = 유입 직후(원본이 모두 재생된 뒤 이어서 재생)
-  //  · 블록 밖 순수 타이핑 = 문서 길이 도달 시각(reachTs) 근사
-  // (표시는 renderReplayAt 이 항상 문서 위치(idx)순으로 정렬하므로, 공개 순서만 시간순이 됨)
+  //  · 블록 밖 순수 타이핑 = 글 길이 도달 시각(reachTs) 근사
+  // (표시는 renderReplayAt 이 항상 글 위치(idx)순으로 정렬하므로, 공개 순서만 시간순이 됨)
   // blockMark → 유입 이벤트 시각 : 위에서 재생성한 events(실제 audit ts)에서 도출.
   // _inflowMeta(라이브 캡처)에 의존하지 않아 재구성 시점에도 안정적. 없으면 _inflowMeta 로 폴백.
   const blockTs = {};
@@ -6857,7 +6818,7 @@ function _reconstructFromAudit(){
   });
 }
 
-// 결과지 '텍스트 유입 분석' 본문을 실제 문서(model.source)로 렌더한다.
+// 결과지 '텍스트 유입 분석' 본문을 실제 글(model.source)로 렌더한다.
 // source 색상: ai(보라)/ai-internal(AI+수정,연파랑)/paste(빨강)/paste-internal(붙여넣기+수정,오렌지)/그외 직접(무색).
 function renderInflowPassage(){
   const host = document.getElementById('originDoc');
@@ -6891,8 +6852,8 @@ async function buildReportFromSession(){
   if(document.body.dataset.writeVariant === 'extra' && (window.__auditLog || []).length > 0){
     try { _reconstructFromAudit(); } catch(e){ console.warn('reconstruct fail', e); }
   }
-  // 외부 유입 로그(ai/paste) 는 audit 이 아니라 '_inflowMeta ∩ 최종 문서에 남아있는 블록'
-  // 기준으로 구성 → 문서 수정·재오픈(편집 세션에 원 삽입 이벤트가 없어도) 유입 로그 유지.
+  // 외부 유입 로그(ai/paste) 는 audit 이 아니라 '_inflowMeta ∩ 최종 글에 남아있는 블록'
+  // 기준으로 구성 → 글 수정·재오픈(편집 세션에 원 삽입 이벤트가 없어도) 유입 로그 유지.
   if(document.body.dataset.writeVariant === 'extra'){
     try {
       const surviving = new Set();
@@ -6900,7 +6861,7 @@ async function buildReportFromSession(){
       const kept = events.filter(e => e.type !== 'ai' && e.type !== 'paste');  // typing/keystroke/delete 유지
       const inflow = [];
       Object.keys(_inflowMeta || {}).forEach(bm => {
-        const id = +bm; if(!surviving.has(id)) return;   // 최종 문서에 남아있는 유입 블록만
+        const id = +bm; if(!surviving.has(id)) return;   // 최종 글에 남아있는 유입 블록만
         const m = _inflowMeta[bm];
         inflow.push({ ts: m.ts || (stats.firstTs||0), type: m.type, srcFamily: m.type, n: m.size || 0, isInsert: true,
                       meta: { blockMark: id, blockSize: m.size || 0, text: m.text || '', prompt: m.prompt || '' } });
@@ -6909,9 +6870,9 @@ async function buildReportFromSession(){
       events.length = 0; events.push(...kept, ...inflow);
     } catch(e){ console.warn('inflow events fail', e); }
   }
-  // 텍스트 유입 분석 본문을 실제 문서로 렌더 (정적 목업 대체)
+  // 텍스트 유입 분석 본문을 실제 글로 렌더 (정적 목업 대체)
   try { renderInflowPassage(); } catch(e){ console.warn('inflow render fail', e); }
-  // 리포트 상단 헤더 — 문서 제목 + 발급 일시(결과 조회 시점)
+  // 리포트 상단 헤더 — 글 제목 + 발급 일시(결과 조회 시점)
   try {
     const _t = (document.getElementById('docTitle')?.value || '').trim() || '제목 없음';
     const _tEl = document.getElementById('reportDocTitle'); if(_tEl) _tEl.textContent = _t;
@@ -6955,7 +6916,7 @@ async function buildReportFromSession(){
   const ksRatio = totalChars>0 ? (stats.keystrokes/totalChars).toFixed(2) : '0.00';
 
   // ---- header / title ----
-  const docTitleVal=document.getElementById('docTitle').value.trim() || '제목 없는 문서';
+  const docTitleVal=document.getElementById('docTitle').value.trim() || '제목 없는 글';
   const _hdt=document.getElementById('hdDocTitle');
   if(_hdt) _hdt.textContent = docTitleVal + ' — 최종본';
   const sessId='sess_'+Math.random().toString(36).slice(2,8);
@@ -6997,7 +6958,7 @@ async function buildReportFromSession(){
     const countEl=document.getElementById('card4Count');
     if(countEl) countEl.textContent=String(saveCount);
     const subEl=document.getElementById('card4Sub');
-    if(subEl) subEl.textContent='문서 저장 횟수';
+    if(subEl) subEl.textContent='글 저장 횟수';
   }
 
   // ---- 텍스트 구성 분포 (5분류, 필터와 동일 범례) ----
@@ -7172,7 +7133,7 @@ async function buildReportFromSession(){
   const _navDstar = 2.0;                                      // 만점 기준 밀도(포화점): 100자당 2회면 100점
   const navScore = Math.min(100, Math.round(navDensity / _navDstar * 100));
   const idleRatio = totalDurationMs>0 ? idleMsTotal/totalDurationMs : 0;   // sec-09(비활성 구간)용 유지
-  // 사고정지 — 3~15초 멈춤(순수 시간)의 문서 분량 대비 밀도. D*=0.5(100자당 0.5회면 만점).
+  // 사고정지 — 3~15초 멈춤(순수 시간)의 글 분량 대비 밀도. D*=0.5(100자당 0.5회면 만점).
   const _idleVolume = Math.max(totalChars || 0, 200);        // 짧은 글 밀도 폭주 방지용 바닥값
   const pauseDensity = pauseCount / (_idleVolume / 100);     // 100자당 3~15초 멈춤 횟수
   const _idleDstar = 0.5;                                    // 만점 기준 밀도(포화점)
@@ -7207,7 +7168,7 @@ async function buildReportFromSession(){
   //    둘 다 상단(C-01)에서 이미 산출됨. tEv 는 아래 '최장 무중단' fallback 에 사용.
   const tEv = events.filter(e=>e.type==='typing').sort((a,b)=>a.ts-b.ts);
   // 3. 수정 글자수 — 프론티어 앞(비선형)에 직접 타이핑으로 삽입한 글자수. _reconstructFromAudit 가 stats 에 기록.
-  //    (데모/구버전 문서는 editOps.inserted 합으로 폴백)
+  //    (데모/구버전 글은 editOps.inserted 합으로 폴백)
   const editsCount = (stats.editChars != null) ? stats.editChars
                      : editOps.reduce((s,o)=> s + (o.inserted || 0), 0);
   // 4. 삭제 글자수 — 지운 글자 전량. _reconstructFromAudit 가 stats 에 기록 (데모/구버전은 editOps.deleted 합 폴백)
@@ -7267,7 +7228,7 @@ async function buildReportFromSession(){
   if(_histEl) _histEl.innerHTML = _hist.length
     ? _hist.map((h,i)=> (i+1)+'회 ' + _fmtSaved(h.ts) + ' (' + Number(h.chars||0).toLocaleString() + '자)').join('<br>')
     : '기록 없음';
-  // 총 글자수(최종 문서 입력 글자수) + 텍스트 유입 분석 헤더 표기
+  // 총 글자수(최종 글 입력 글자수) + 텍스트 유입 분석 헤더 표기
   setText('m_totalChars', (totalChars||0).toLocaleString());
   setText('inflowTotalChars', '(총 ' + (totalChars||0).toLocaleString() + '자)');
   // 작성 과정 리플레이(인라인 섹션) — 결과 페이지 진입 시 프레임 빌드 + 초기 렌더(재생 대기 상태)
@@ -8114,7 +8075,7 @@ function seedDemo(){
   }catch(e){}
 })();
 
-/* URL ?new=1 진입 — 검사 결과 CTA에서 새 탭으로 열림. 완전히 빈 '새 문서 작성'(extra) 세션 시작 */
+/* URL ?new=1 진입 — 검사 결과 CTA에서 새 탭으로 열림. 완전히 빈 '새 글 작성'(extra) 세션 시작 */
 (function autoNewWriteFromUrl(){
   try{
     const params = new URLSearchParams(location.search);
@@ -8124,12 +8085,12 @@ function seedDemo(){
   }catch(e){}
 })();
 
-/* 초기 진입 — LNB '문서 작성'(상위, extra) 이 기본 활성. 랜딩은 '내 문서'(view-box).
-   거기서 '새 문서 작성' 으로 작성 화면 진입 (rs=1 companion / demo·new 진입은 예외) */
+/* 초기 진입 — LNB '글 작성'(상위, extra) 이 기본 활성. 랜딩은 '내 글'(view-box).
+   거기서 '새 글 작성' 으로 작성 화면 진입 (rs=1 companion / demo·new 진입은 예외) */
 (function autoInitLanding(){
   try{
     const params = new URLSearchParams(location.search);
-    if(params.get('demo') || params.get('new')) return;   // 데모/새문서 자동 진입이 처리
+    if(params.get('demo') || params.get('new')) return;   // 데모/새글 자동 진입이 처리
     setTimeout(()=>{
       // 이미 다른 view 로 진입한 경우는 건드리지 않음
       if(document.body.dataset.view && document.body.dataset.view !== 'write') return;
@@ -8143,7 +8104,7 @@ function seedDemo(){
 <script>
   // Tailwind(head, 파서 차단 스크립트)는 이 시점에 이미 로드·실행 완료다. head 의
   // onload 는 <body> 파싱 전에 발화해 document.body 가 null → 실패하므로, 여기서
-  // DOMContentLoaded 에 tw-ready 를 붙여 boot-loader('문서 작성 준비 중…')를 즉시 제거.
+  // DOMContentLoaded 에 tw-ready 를 붙여 boot-loader('글 작성 준비 중…')를 즉시 제거.
   // (Tailwind play-CDN 은 자신의 DOMContentLoaded 핸들러에서 스타일을 주입하며 그
   //  핸들러가 아래보다 먼저 등록돼 먼저 실행되므로 FOUC 없음.)
   (function(){
