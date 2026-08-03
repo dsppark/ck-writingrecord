@@ -929,6 +929,10 @@
   .box-tip-wrap[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 3px);right:24px;border:7px solid transparent;border-top-color:var(--ck-gray-900);z-index:200;pointer-events:none;}
   /* 빈 상태 */
   .box-empty{padding:64px 20px;text-align:center;color:var(--ck-gray-500);font-size:14px;background:#fff;border:1px dashed var(--ck-secondary-200);border-radius:10px;}
+  .box-empty-title{font-size:17px;font-weight:700;color:var(--ck-gray-900);margin:0 0 8px;}
+  .box-empty-desc{font-size:14px;color:var(--ck-gray-500);margin:0 0 22px;line-height:1.6;}
+  .box-empty-btn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:11px 22px;font-size:15px;font-weight:700;border:0;cursor:pointer;}
+  .box-empty-btn:hover{background:var(--ck-primary-600);}
   /* 삭제 버튼 (우측 끝) */
   .box-deleterow{display:flex;justify-content:flex-end;margin-top:16px;}
   .box-delete{background:#FF006B;color:#fff;font-size:14px;font-weight:600;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;}
@@ -2683,7 +2687,11 @@
     </div>
 
     <div class="box-list" id="boxList">
-      <div class="box-empty">저장된 글이 아직 없어요.<br>좌측 상단 「＋ 새 글 작성」으로 시작해 보세요.</div>
+      <div class="box-empty">
+        <p class="box-empty-title">지금 바로 첫 글을 작성하고 검증을 시작해보세요.</p>
+        <p class="box-empty-desc">모든 작성 과정을 기록하여 본인이 직접 썼다는 것을 증명할 수 있어요.</p>
+        <button class="box-empty-btn" type="button" onclick="newWrite('extra')">＋ 새 글 작성</button>
+      </div>
     </div>
 
     <div class="box-deleterow"><button class="box-delete" type="button" onclick="boxDeleteSelected()">삭제</button></div>
@@ -4390,13 +4398,13 @@ function _aiResetDraft(){  // 에디터 진입 초기화 — 첫 에디터 포�
 function aiAssistGenerate(){
   const el=document.getElementById('aiAssistPrompt');
   const prompt=(el?.value||'').trim();
-  if(prompt.length < 1){ if(el) el.focus(); if(typeof showToast==='function') showToast('요청할 내용을 입력해주세요'); return; }
+  if(prompt.length < 5){ if(el) el.focus(); if(typeof showToast==='function') showToast('요청 내용을 5자 이상 입력해주세요'); return; }
   const kind = /자기소개서|자소서/.test(prompt) ? 'cover' : /에세이|essay/i.test(prompt) ? 'essay' : 'free';
   let ok=false;
   try{
     const draft=_genAiDraft(kind, _parseMaxChars(prompt));
     if(typeof appendToEditor==='function') appendToEditor(draft, 'ai', prompt);
-    if(typeof showToast==='function') showToast('AI Draft를 에디터에 추가했어요');
+    if(typeof showToast==='function') showToast('생성된 텍스트는 작성 영역에 추가했어요.');
     ok=true;
   }catch(e){ console.warn('ai draft gen fail', e); if(typeof showToast==='function') showToast('생성에 실패했어요'); }
   if(el) el.value='';
@@ -5610,7 +5618,11 @@ function renderBoxList(){
   if(!list) return;
   const docs = boxLoadDocs();
   if(!docs.length){
-    list.innerHTML = `<div class="box-empty">저장된 글이 아직 없어요.<br>좌측 상단 「＋ 새 글 작성」으로 시작해 보세요.</div>`;
+    list.innerHTML = `<div class="box-empty">
+      <p class="box-empty-title">지금 바로 첫 글을 작성하고 검증을 시작해보세요.</p>
+      <p class="box-empty-desc">모든 작성 과정을 기록하여 본인이 직접 썼다는 것을 증명할 수 있어요.</p>
+      <button class="box-empty-btn" type="button" onclick="newWrite('extra')">＋ 새 글 작성</button>
+    </div>`;
     return;
   }
   list.innerHTML = docs.map(d => {
@@ -5632,7 +5644,7 @@ function renderBoxList(){
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 저장 횟수</b> ${d.saveCount||1}회</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>누적 검증 횟수</b> ${d.verifyCount||0}회</div>
       </div>
       ${verdictCell}
       <div class="box-rowactions">
@@ -5888,7 +5900,14 @@ function boxCopyDoc(id){
   const docs = boxLoadDocs();
   const src = docs.find(d => d.id === id);
   if(!src) return;
-  const copy = JSON.parse(JSON.stringify(src));   // model·events·stats·editOps·inflowMeta·richHTML·resultViewed 등 전부 깊은 복제
+  const copy = JSON.parse(JSON.stringify(src));   // model·events·stats·editOps·inflowMeta·richHTML 등 내용·과정 기록 전부 깊은 복제
+  // 검증 결과가 있는 글을 복사해도 '작성 검증' 이력은 제외 → 내용/과정은 유지하되 '검증 전' 상태로 복사
+  copy.resultViewed = false;
+  copy.verifyCount = 0;
+  copy.verifyHistory = [];
+  delete copy.lastVerifiedAt;
+  delete copy.score;
+  copy.verifiedLocked = false;
   copy.id = 'd_copy_' + Date.now();
   const base = (src.title || '제목 없음').replace(/\(사본\d+\)$/, '');   // 사본의 사본이면 접미사 중첩 방지
   const titles = new Set(docs.map(d => d.title));
