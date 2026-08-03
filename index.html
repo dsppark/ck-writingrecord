@@ -1417,7 +1417,7 @@
         <div class="stat-left">속도: <b id="stSpeed">0</b>타/분</div>
         <div class="stat-right">
           <span class="s s-write"><span class="d"></span>직접 타이핑 <b id="stWrite">0</b></span>
-          <span class="s s-ai"><span class="d"></span>AI생성 <b id="stAi">0</b></span>
+          <span class="s s-ai"><span class="d"></span>AI Draft 생성 <b id="stAi">0</b></span>
           <span class="s s-paste"><span class="d"></span>붙여넣기 <b id="stPaste">0</b></span>
           <span class="s s-revised"><span class="d"></span>수정 <b id="stRevised">0</b></span>
         </div>
@@ -1704,7 +1704,7 @@
               <div class="ev-cell-val"><b id="ev_typing_val">—</b><span class="ev-cell-unit">/100</span></div>
             </div>
             <div class="ev-cell">
-              <div class="ev-cell-label">AI 생성 후 수정</div>
+              <div class="ev-cell-label">AI Draft 생성 후 수정</div>
               <div class="ev-cell-val"><b id="ev_aiedit_val">—</b><span class="ev-cell-unit">/100</span></div>
             </div>
             <div class="ev-cell">
@@ -2291,7 +2291,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="text-xl font-bold text-slate-900">원본 보존율 분석</h2>
-        <p class="text-sm text-slate-500 mt-1">붙여넣기 · AI 생성 텍스트가 얼마나 원형으로 남아있는지</p>
+        <p class="text-sm text-slate-500 mt-1">붙여넣기 · AI Draft 생성 텍스트가 얼마나 원형으로 남아있는지</p>
       </div>
       <span class="text-[11px] text-slate-500">낮을수록 적극적 퇴고</span>
     </div>
@@ -2301,7 +2301,7 @@
       <div class="bg-white rounded-xl border border-slate-200 p-5">
         <div class="flex items-center gap-1.5 mb-3">
           <div class="w-2 h-2 rounded-full" style="background:#7C52F1;"></div>
-          <div class="text-sm font-semibold text-slate-700">AI 생성 텍스트</div>
+          <div class="text-sm font-semibold text-slate-700">AI Draft 생성 텍스트</div>
         </div>
         <div class="flex items-center gap-5">
           <div class="relative w-[140px] h-[140px] shrink-0">
@@ -2780,7 +2780,7 @@
       <table class="print-kv"><tbody>
         <tr><th colspan="2" class="print-subhead">입력 증거</th></tr>
         <tr><th>직접 타이핑 기여</th><td data-print="bd-typing">-</td></tr>
-        <tr><th>AI 생성 후 수정</th><td data-print="bd-aiedit">-</td></tr>
+        <tr><th>AI Draft 생성 후 수정</th><td data-print="bd-aiedit">-</td></tr>
         <tr><th>붙여넣기 후 수정</th><td data-print="bd-pasteedit">-</td></tr>
         <tr><th colspan="2" class="print-subhead">사고 과정 증거</th></tr>
         <tr><th>수정 품질</th><td data-print="bd-depth">-</td></tr>
@@ -3204,7 +3204,7 @@ async function issueCert(){
   const _bdNum = sel => { const t = txt(sel, ''); return t ? t + ' / 100' : '-'; };
   const bdMap = {
     '직접 타이핑 기여':  _bdNum('#ev_typing_val'),
-    'AI 생성 후 수정':   _bdNum('#ev_aiedit_val'),
+    'AI Draft 생성 후 수정':   _bdNum('#ev_aiedit_val'),
     '붙여넣기 후 수정':  _bdNum('#ev_pasteedit_val'),
     '수정 품질':        _bdNum('#ev_rewrite_val'),
     '비선형 이동':      _bdNum('#ev_nav_val'),
@@ -3237,7 +3237,7 @@ async function issueCert(){
     score: txt('#sec02Score'),
     tier: txt('#sec02VerdictName','-'),
     'bd-typing':    bdMap['직접 타이핑 기여']  || '-',
-    'bd-aiedit':    bdMap['AI 생성 후 수정']   || '-',
+    'bd-aiedit':    bdMap['AI Draft 생성 후 수정']   || '-',
     'bd-pasteedit': bdMap['붙여넣기 후 수정']  || '-',
     'bd-depth':     bdMap['수정 품질']        || '-',
     'bd-nav':       bdMap['비선형 이동']      || '-',
