@@ -537,17 +537,24 @@
   /* 사이드바 = flex column: 카드 영역 스크롤 + footer(CTA·안내) 하단 고정 */
   .insp-sidebar-scroll{flex:1;min-height:0;overflow-y:auto;}
   .insp-sidebar-footer{flex-shrink:0;padding-top:14px;margin-top:6px;border-top:1px solid var(--ck-secondary-100);}
-  .insp-cta-box{display:none;margin-top:0;margin-bottom:12px;padding:16px;border-radius:12px;
-    background:linear-gradient(135deg,#F5F3FF,#EAF2FF);border:1px solid #C4B5FD;
-    box-shadow:0 6px 18px rgba(124,58,237,0.14);}
-  .insp-cta-desc{margin:0 0 12px;font-size:13px;line-height:1.65;color:var(--ck-gray-700);font-weight:500;}
-  .insp-cta-desc b{color:#7C3AED;font-weight:800;}
+  /* AI 의심 영역이 있을 때 → '작성 검증' 유도 CTA (작성 검증 메인 컬러=초록) */
+  .insp-cta-box{display:none;margin-top:0;margin-bottom:12px;padding:18px 16px;border-radius:14px;text-align:center;
+    background:linear-gradient(135deg,#E1F8EE,#F1FCF7);border:1px solid #A7E8CB;
+    box-shadow:0 6px 18px rgba(17,190,138,0.16);}
+  .insp-cta-ic{width:42px;height:42px;border-radius:50%;background:#11BE8A;color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;
+    box-shadow:0 4px 12px rgba(17,190,138,0.35);}
+  .insp-cta-title{margin:0 0 6px;font-size:14px;font-weight:800;color:#0E7A5A;line-height:1.45;}
+  .insp-cta-desc{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:#3F6A5A;font-weight:500;}
+  .insp-cta-desc b{color:#0E9F63;font-weight:800;}
   .insp-cta{display:flex;width:100%;
-    background:linear-gradient(90deg,#7C3AED,#00C2FF);color:#fff;
-    padding:14px 18px;border-radius:10px;font-size:14px;font-weight:800;border:none;cursor:pointer;
+    background:linear-gradient(90deg,#11BE8A,#0E9F63);color:#fff;
+    padding:13px 18px;border-radius:11px;font-size:14px;font-weight:800;border:none;cursor:pointer;
     align-items:center;justify-content:center;gap:7px;
-    box-shadow:0 8px 20px rgba(124,58,237,0.30);transition:transform .12s,filter .12s;}
-  .insp-cta:hover{filter:brightness(1.05);transform:translateY(-1px);}
+    box-shadow:0 8px 20px rgba(17,190,138,0.32);transition:transform .12s,filter .12s;
+    animation:inspCtaPulse 2.2s ease-in-out infinite;}
+  .insp-cta:hover{filter:brightness(1.05);transform:translateY(-1px);animation:none;}
+  @keyframes inspCtaPulse{0%,100%{box-shadow:0 8px 20px rgba(17,190,138,0.30);}50%{box-shadow:0 8px 28px rgba(17,190,138,0.55);}}
   .insp-empty{text-align:center;padding:32px 20px;color:var(--ck-gray-500);font-size:13px;}
 
   /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 상단 안내 배너 + 새 탭 참고 ============ */
@@ -1083,16 +1090,19 @@
   .ai-bar-box{pointer-events:auto;position:fixed;top:0;left:0;width:440px;max-width:calc(100vw - 32px);display:none;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.16);padding:11px 12px 12px 14px;transition:box-shadow .15s, border-color .15s;}
   /* 커서가 에디터에 찍힌 뒤(=caret-ready)에만 노출, 축소 상태면 숨김 */
   body[data-view="write"].ai-caret-ready:not(.ai-collapsed) .ai-bar-box{display:flex;}
-  .ai-bar-box:focus-within{border-color:#00C2FF;box-shadow:0 12px 32px rgba(0,194,255,.20);}
+  .ai-bar-box:focus-within{border-color:#7C52F1;box-shadow:0 12px 32px rgba(124,82,241,.22);}
   .ai-bar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .ai-bar-head-r{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .ai-bar-count{font-size:11px;font-weight:600;color:var(--ck-gray-400);font-variant-numeric:tabular-nums;}
+  .ai-bar-count.is-max{color:#FF006B;}
   .ai-bar-collapse{flex-shrink:0;width:24px;height:24px;border:0;background:transparent;color:var(--ck-gray-400);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,color .12s;}
   .ai-bar-collapse:hover{background:var(--ck-gray-100);color:var(--ck-gray-700);}
   .ai-bar-title{font-size:12px;font-weight:700;color:var(--ck-gray-500);letter-spacing:-0.01em;}
   .ai-bar-row{display:flex;align-items:flex-start;gap:9px;}
-  .ai-bar-ico{flex-shrink:0;color:#11BE8A;display:inline-flex;align-items:center;margin-top:2px;}
+  .ai-bar-ico{flex-shrink:0;color:#7C52F1;display:inline-flex;align-items:center;margin-top:2px;}
   .ai-bar-input{flex:1;border:0;outline:none;resize:none;font-family:inherit;font-size:15px;line-height:1.55;color:#0F172A;background:transparent;height:24px;overflow-y:auto;}
-  .ai-bar-send{display:none;flex-shrink:0;align-self:flex-end;width:34px;height:34px;border:0;border-radius:9px;background:#00C2FF;color:#fff;align-items:center;justify-content:center;cursor:pointer;}
-  .ai-bar-send:hover{background:#0097D4;}
+  .ai-bar-send{display:none;flex-shrink:0;align-self:flex-end;width:34px;height:34px;border:0;border-radius:9px;background:#7C52F1;color:#fff;align-items:center;justify-content:center;cursor:pointer;}
+  .ai-bar-send:hover{background:#6A3EED;}
   /* 포커스(커서 위치) 시 — 세로 확장 + 전송 버튼 노출 (textarea height 직접 transition은 스냅 버그라 미적용) */
   .ai-bar.is-focused .ai-bar-input{height:92px;}
   .ai-bar.is-focused .ai-bar-send{display:inline-flex;}
@@ -1100,7 +1110,7 @@
   /* 사용 후 플로팅 버튼 — 에디터(.editor-shell) 우측 하단에 절대배치. 스크롤바(약 15px)를 피하도록 right 여유 */
   .ai-draft-fab{display:none;position:absolute;right:28px;bottom:20px;z-index:30;align-items:center;gap:7px;background:#0F172A;color:#fff;border:0;border-radius:999px;padding:10px 17px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.28);}
   .ai-draft-fab:hover{background:#1E293B;}
-  .ai-draft-fab svg{color:#11BE8A;flex-shrink:0;}
+  .ai-draft-fab svg{color:#7C52F1;flex-shrink:0;}
   body[data-view="write"].ai-collapsed .ai-bar{display:none;}
   body[data-view="write"].ai-collapsed .ai-draft-fab{display:inline-flex;}
   .ed-panel{background:#fff;border:1px solid var(--color-border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
@@ -2619,10 +2629,12 @@
           <!-- 사이드바 하단 고정 — 글 작성 이동 안내+CTA + 검사 안내 -->
           <div class="insp-sidebar-footer">
             <div id="inspCtaBox" class="insp-cta-box">
-              <p class="insp-cta-desc">AI생성 특징이 나타나는 영역이 보여요. 본인의 사고와 표현을 담아 직접 수정한 후 다시 한 번 검사해보세요.</p>
-              <button id="inspCta" class="insp-cta" type="button" onclick="openBlankWriteTab()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                직접 작성하여 내 글 만들기
+              <span class="insp-cta-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+              <p class="insp-cta-title">AI가 작성한 것으로 의심되는 영역이 있어요.</p>
+              <p class="insp-cta-desc">이제, 본인이 작성한 글이라면 <b>작성 검증</b>을 통해 증명해보세요.</p>
+              <button id="inspCta" class="insp-cta" type="button" onclick="openMyDocs('copy')">
+                작성 검증 바로가기
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </button>
             </div>
             <div class="insp-notice">
@@ -2978,13 +2990,16 @@
   <div class="ai-bar-box">
     <div class="ai-bar-head">
       <div class="ai-bar-title">카피킬러 AI Draft 생성</div>
-      <button class="ai-bar-collapse" type="button" onmousedown="event.preventDefault()" onclick="_aiCollapse()" aria-label="AI Draft 버튼으로 축소" title="AI Draft 버튼으로 축소">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+      <div class="ai-bar-head-r">
+        <span class="ai-bar-count" id="aiPromptCount" hidden></span>
+        <button class="ai-bar-collapse" type="button" onmousedown="event.preventDefault()" onclick="_aiCollapse()" aria-label="AI Draft 버튼으로 축소" title="AI Draft 버튼으로 축소">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
     </div>
     <div class="ai-bar-row">
       <span class="ai-bar-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9.5L4 22V5a2 2 0 0 1 2-2z"/></svg></span>
-      <textarea id="aiAssistPrompt" class="ai-bar-input" rows="1" maxlength="3000" placeholder="프로덕트 매니저 자기소개서 초안 500자 내로 작성해줘."></textarea>
+      <textarea id="aiAssistPrompt" class="ai-bar-input" rows="1" maxlength="500" placeholder="프로덕트 매니저 자기소개서 초안 500자 내로 작성해줘."></textarea>
       <button id="aiAssistSend" class="ai-bar-send" type="button" onmousedown="event.preventDefault()" onclick="aiAssistGenerate()" aria-label="전송">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
       </button>
@@ -4373,10 +4388,9 @@ function _aiSummon(focusInput){  // 캐럿 바로 아래에 입력 노출
   if(document.body.dataset.view!=='write') return;
   document.body.classList.remove('ai-collapsed');
   document.body.classList.add('ai-caret-ready');
-  _aiJustSummoned = true; setTimeout(()=>{ _aiJustSummoned=false; }, 400);
+  _aiJustSummoned = true; setTimeout(()=>{ _aiJustSummoned=false; }, 260);   // 소환 직후 즉시 접힘만 방지(따라다님 아님)
   _aiPositionAtCaret();
-  setTimeout(_aiPositionAtCaret, 50);    // 클릭 캐럿/레이아웃 정착 후 재배치(상단 튐 방지)
-  setTimeout(_aiPositionAtCaret, 160);
+  setTimeout(_aiPositionAtCaret, 40);    // 레이아웃 정착 후 1회 보정
   const input=document.getElementById('aiAssistPrompt');
   if(focusInput && input){ setTimeout(()=>{ try{ input.focus(); }catch(e){} _aiPositionAtCaret(); }, 0); }
 }
@@ -4394,6 +4408,23 @@ function _aiResetDraft(){  // 에디터 진입 초기화 — 첫 에디터 포�
   document.body.classList.remove('ai-collapsed');
   document.body.classList.remove('ai-caret-ready');
   const input=document.getElementById('aiAssistPrompt'); if(input) input.value='';
+  _aiUpdatePromptCount();
+}
+/* AI Draft 프롬프트 글자수 카운터 — 최대 500자, 한도의 80%(400자) 이상일 때만 노출 */
+const _AI_PROMPT_MAX = 500;
+function _aiUpdatePromptCount(){
+  const input=document.getElementById('aiAssistPrompt');
+  const c=document.getElementById('aiPromptCount');
+  if(!input || !c) return;
+  const n=input.value.length;
+  if(n >= _AI_PROMPT_MAX * 0.8){
+    c.hidden=false;
+    c.textContent = n + '/' + _AI_PROMPT_MAX;
+    c.classList.toggle('is-max', n >= _AI_PROMPT_MAX);
+  } else {
+    c.hidden=true;
+    c.classList.remove('is-max');
+  }
 }
 function aiAssistGenerate(){
   const el=document.getElementById('aiAssistPrompt');
@@ -4408,6 +4439,7 @@ function aiAssistGenerate(){
     ok=true;
   }catch(e){ console.warn('ai draft gen fail', e); if(typeof showToast==='function') showToast('생성에 실패했어요'); }
   if(el) el.value='';
+  _aiUpdatePromptCount();
   if(ok){ _aiUsed=true; _aiCollapse(); }   // 최초 사용(에디터에 삽입) → 좌측 하단 플로팅 버튼으로 전환
   else if(el) el.blur();
 }
@@ -4424,25 +4456,28 @@ function aiAssistGenerate(){
       if(!_aiOpen()) return;
       const ae=document.activeElement;
       if(ae && ae.closest && ae.closest('#aiAssistBar')) return;   // 박스 안 → 유지
-      if(_inEditor(ae)){ _aiPositionAtCaret(); return; }           // 에디터로 이동 → 커서 아래로 따라감
-      _aiCollapse();                                                // 그 외 위치 → 접힘
+      _aiCollapse();                                                // 그 외(에디터 포함) → 접힘
     }, 130);
   });
   input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); aiAssistGenerate(); } });
-  // 진입 후 첫 에디터 포커스 → 캐럿 바로 아래로 소환(1회, 에디터 포커스 유지)
-  document.addEventListener('focusin', e=>{ if(_inEditor(e.target) && _aiSummonPending){ _aiSummonPending=false; _aiSummon(false); } });
-  // 에디터에 입력 시작 → 접힘
-  document.addEventListener('beforeinput', e=>{ if(_aiOpen() && _inEditor(e.target)) _aiCollapse(); }, true);
-  // 에디터에 캐럿이 있으면 항상 커서 바로 아래로 따라 배치(input에 커서가 있으면 유지)
+  input.addEventListener('input', _aiUpdatePromptCount);   // 한도 임박 시에만 글자수 카운터 노출
+  // 진입 후 '최초 1회 커서 배치'에만 캐럿 아래로 소환. 이후 커서 이동은 재배치 없이 접힘.
   document.addEventListener('selectionchange', ()=>{
-    if(!_aiOpen()) return;
-    if(typeof _muhaCaretOffset==='function' && _muhaCaretOffset()!=null) _aiPositionAtCaret();
+    if(document.body.dataset.view!=='write') return;
+    const inEd = (typeof _muhaCaretOffset==='function' && _muhaCaretOffset()!=null);
+    if(_aiSummonPending){                       // 최초 1회 커서 배치 → 소환(정착된 캐럿 기준)
+      if(inEd){ _aiSummonPending=false; _aiSummon(false); }
+      return;
+    }
+    if(_aiJustSummoned) return;                 // 소환 직후 보호(즉시 접힘 방지)
+    if(_aiOpen() && inEd) _aiCollapse();          // 그 이후 커서 이동 → 접힘(따라다니지 않음)
   });
-  // 에디터 클릭 → 새 커서 아래로 따라 배치 / 에디터·박스 밖 클릭 → 접힘
+  // 에디터에 입력/삭제/수정 시작 → 접힘
+  document.addEventListener('beforeinput', e=>{ if(_aiOpen() && _inEditor(e.target)) _aiCollapse(); }, true);
+  // 박스 밖(에디터 포함) 클릭 → 접힘
   document.addEventListener('mousedown', e=>{
     if(!_aiOpen()) return;
     if(e.target.closest('#aiAssistBar') || e.target.closest('#aiDraftFab')) return;
-    if(_inEditor(e.target)){ setTimeout(_aiPositionAtCaret, 0); return; }
     _aiCollapse();
   }, true);
   // 스크롤/리사이즈 시 위치 갱신
@@ -5714,8 +5749,10 @@ function _loadDocIntoSession(d){
   _inflowMeta = d.inflowMeta ? JSON.parse(JSON.stringify(d.inflowMeta)) : {};   // 유입 이벤트 메타 복원
   _navBackJumps = d.navBackJumps || 0; _navFrontier = 0; _navWasBack = false;   // 비선형 이동 밀도 복원
   Object.assign(stats, d.stats||{});
-  selectedType = d.type || null;
-  if(typeof _setDocTypeUI === 'function') _setDocTypeUI(d.type || '');   // 유형 셀렉트 UI 반영
+  // 유형 미선택 자동저장('없음')이나 빈 값은 셀렉트 옵션에 없어 공백이 되므로 → 플레이스홀더('') 상태로 복원
+  const _loadType = (d.type && d.type !== '없음') ? d.type : '';
+  selectedType = _loadType || null;
+  if(typeof _setDocTypeUI === 'function') _setDocTypeUI(_loadType);   // 유형 셀렉트 UI 반영(빈 값이면 '글 유형 선택')
   currentDocId = d.id; // 동일 글 upsert를 위해 id 유지
   saveCount = d.saveCount || 1;
   document.body.dataset.writeVariant = d.writeVariant || '';
@@ -6627,10 +6664,12 @@ function switchInspTab(name){
           </div>
           <div class="insp-sidebar-footer">
           <div id="inspCtaBox" class="insp-cta-box">
-            <p class="insp-cta-desc">AI생성 특징이 나타나는 영역이 보여요. 본인의 사고와 표현을 담아 직접 수정한 후 다시 한 번 검사해보세요.</p>
-            <button id="inspCta" class="insp-cta" type="button" onclick="openBlankWriteTab()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              직접 작성하여 내 글 만들기
+            <span class="insp-cta-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <p class="insp-cta-title">AI가 작성한 것으로 의심되는 영역이 있어요.</p>
+            <p class="insp-cta-desc">이제, 본인이 작성한 글이라면 <b>작성 검증</b>을 통해 증명해보세요.</p>
+            <button id="inspCta" class="insp-cta" type="button" onclick="openMyDocs('copy')">
+              작성 검증 바로가기
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
           </div>
           <div class="insp-notice">
