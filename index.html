@@ -551,10 +551,8 @@
     background:linear-gradient(90deg,#11BE8A,#0E9F63);color:#fff;
     padding:13px 18px;border-radius:11px;font-size:14px;font-weight:800;border:none;cursor:pointer;
     align-items:center;justify-content:center;gap:7px;
-    box-shadow:0 8px 20px rgba(17,190,138,0.32);transition:transform .12s,filter .12s;
-    animation:inspCtaPulse 2.2s ease-in-out infinite;}
-  .insp-cta:hover{filter:brightness(1.05);transform:translateY(-1px);animation:none;}
-  @keyframes inspCtaPulse{0%,100%{box-shadow:0 8px 20px rgba(17,190,138,0.30);}50%{box-shadow:0 8px 28px rgba(17,190,138,0.55);}}
+    transition:transform .12s,filter .12s;}
+  .insp-cta:hover{filter:brightness(1.05);transform:translateY(-1px);}
   .insp-empty{text-align:center;padding:32px 20px;color:var(--ck-gray-500);font-size:13px;}
 
   /* ============ view-reinspect (SC-07) — 재검사 에디터: view-write 재사용 + 상단 안내 배너 + 새 탭 참고 ============ */
@@ -2631,7 +2629,7 @@
             <div id="inspCtaBox" class="insp-cta-box">
               <span class="insp-cta-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
               <p class="insp-cta-title">AI가 작성한 것으로 의심되는 영역이 있어요.</p>
-              <p class="insp-cta-desc">이제, 본인이 작성한 글이라면 <b>작성 검증</b>을 통해 증명해보세요.</p>
+              <p class="insp-cta-desc">본인이 작성한 글이라면 <b>작성 검증</b>으로 증명해보세요.</p>
               <button id="inspCta" class="insp-cta" type="button" onclick="openMyDocs('copy')">
                 작성 검증 바로가기
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -6666,7 +6664,7 @@ function switchInspTab(name){
           <div id="inspCtaBox" class="insp-cta-box">
             <span class="insp-cta-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
             <p class="insp-cta-title">AI가 작성한 것으로 의심되는 영역이 있어요.</p>
-            <p class="insp-cta-desc">이제, 본인이 작성한 글이라면 <b>작성 검증</b>을 통해 증명해보세요.</p>
+            <p class="insp-cta-desc">본인이 작성한 글이라면 <b>작성 검증</b>으로 증명해보세요.</p>
             <button id="inspCta" class="insp-cta" type="button" onclick="openMyDocs('copy')">
               작성 검증 바로가기
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
