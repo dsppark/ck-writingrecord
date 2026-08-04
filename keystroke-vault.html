@@ -3357,10 +3357,11 @@ function applyWeights(){
   });
   weights=next;
   try{ localStorage.setItem('ksv_weights', JSON.stringify(weights)); }catch(e){}
-  // 현재 결과지가 떠 있으면 score 즉시 재계산
-  if(lastScoreInputs){
-    const score = computeScoreFromInputs(lastScoreInputs, weights);
-    renderScore(score);
+  // 최종 판정은 신규 산식(HA)으로 고정 — 사용자 가중치로 덮어쓰지 않는다.
+  if(lastEvidenceScores){
+    renderScore(lastEvidenceScores.humanAuthorshipDisplayScore);
+  } else if(lastScoreInputs){
+    renderScore(computeScoreFromInputs(lastScoreInputs, weights));
   }
   closeCriteriaModal();
   showToast('가중치가 적용되었습니다');
@@ -3378,9 +3379,9 @@ function _gaugeArc(cx,cy,r,dStart,dEnd,stepDeg){
 function renderScore(score){
   score = Math.max(0, Math.min(100, Math.round(score)));
   // 최종 판정 — 2점 척도(Yes/No). 부연 설명 없이 한 문장으로만 표기.
-  //  PASS(작성 증거 충분, 71~100) → "직접 작성한 글이에요"
-  //  그 외(0~70)                  → "작성 증거가 부족해요"
-  const pass = score >= 71;
+  //  PASS(작성 증거 충분, HA 76~100) → "직접 작성한 글이에요"
+  //  그 외(0~75)                     → "작성 증거가 부족해요"
+  const pass = score >= 76;
   const wrap = document.getElementById('sec02Verdict');
   const vn = document.getElementById('sec02VerdictName');
   if(wrap){
@@ -5564,6 +5565,7 @@ function newWrite(variant){
   if(typeof _resetSrcState === 'function') _resetSrcState();  // 출처 shadow 맵 초기화
   _inflowMeta = {};                                            // 유입 이벤트 메타 초기화(새 글)
   _navFrontier = 0; _navBackJumps = 0; _navWasBack = false;    // 비선형 이동 밀도 초기화
+  lastEvidenceScores = null; window.__evidenceScores = null;   // 작성 검증 점수 상태 초기화(새 글)
   // 검사→에디터 AI 의심 음영 초기화 (새 글엔 음영 없음)
   if(typeof _clearReinspectOverlay === 'function') _clearReinspectOverlay();
   saveCount = 0;
@@ -7179,6 +7181,159 @@ function renderInflowPassage(){
   host.innerHTML = html;
 }
 
+// ============================================================
+//  작성 검증 점수 산식 (2026-07-30) — 6개 세부 지표 → 상위 그룹 → 최종 HA.
+//  실제 에디터 입력/과정 데이터(counts·events·raw __auditLog·navBackJumps)만 사용.
+//  위치 메타데이터가 없는 이벤트는 제외하며 임의 추정 폴백은 두지 않는다.
+//  ctx: { L, c, events, auditLog, backJumps, totalDurationMs, priorEvidence }
+let lastEvidenceScores = null;          // 최근 결과지 그룹/HA 상태(반올림 전)
+function computeEvidenceScores(ctx){
+  const L  = Math.max(0, ctx.L | 0);
+  const eL = Math.max(L, 400);                       // 400자 미만은 분모 400 적용
+  const c  = ctx.c || {};
+  const clamp01  = x => Math.max(0, Math.min(1, x));
+  const clamp100 = x => Math.max(0, Math.min(100, x));
+
+  // ── 1. 직접 타이핑 기여 = T / eL × 100 (인용 붙여넣기 제외) ──
+  const T = c.typing || 0;
+  const TScore = clamp100(T / eL * 100);
+
+  // ── 2. AI 생성 후 수정 = rA × eA × 100 ──
+  const A   = (c.ai || 0) + (c.aiEdited || 0) + (c.aiInternal || 0);   // 최종 남은 AI 구간
+  const Mai = (c.aiInternal || 0);                                     // 구간 내 실질 수정(최종 잔존)
+  let AScore = 0;
+  if(A > 0){
+    const rA = A / eL;
+    const mA = Mai / A;
+    const eA = Math.min(1, mA / 0.6);                // 실질 수정 60% 이상이면 포화
+    AScore = clamp100(rA * eA * 100);
+  }
+
+  // ── 3. 붙여넣기 후 수정 = rP × eP × 100 (인용 붙여넣기 제외) ──
+  const P  = (c.paste || 0) + (c.pasteEdited || 0) + (c.pasteInternal || 0);
+  const Mp = (c.pasteInternal || 0);
+  let PScore = 0;
+  if(P > 0){
+    const rP = P / eL;
+    const mP = Mp / P;
+    const eP = Math.min(1, mP / 0.6);
+    PScore = clamp100(rP * eP * 100);
+  }
+
+  // ── 4. 수정 품질 = min(1, qR/0.12) × 100. qR = ΣeRC / eL ──
+  //   삭제(D≥3)–입력(I≥3) episode 매칭. 위치·시각은 raw audit(from/to/ts)에서만 신뢰.
+  let RevisionScore;
+  const dAdj = Math.min(L * 0.05, 20);               // 인접 거리 한계(상한 20자)
+  const auditEntries = (ctx.auditLog || []).filter(e => e && e.source === 'document-delta' && Array.isArray(e.steps) && e.steps[0]);
+  if(auditEntries.length > 0){
+    const deletes = [], inputs = [];
+    let sumERC = 0;
+    auditEntries.forEach(entry => {
+      const src = entry.inputSource || 'typing';
+      if(src === 'ai' || src === 'paste') return;    // 작성자 직접 입력만
+      const st = entry.steps[0];
+      const from = st.from | 0, to = st.to | 0;
+      let insText = '';
+      const collect = n => { if(n && n.type === 'text') insText += (n.text || ''); else if(n && Array.isArray(n.content)) n.content.forEach(collect); };
+      if(st.slice && Array.isArray(st.slice.content)) st.slice.content.forEach(collect);
+      const I  = insText.replace(/\n/g, '').length;
+      const D  = Math.max(0, to - from);
+      const ts = entry.ts || 0;
+      if(D >= 3 && I >= 3){
+        sumERC += Math.max(D, I);                    // 같은 동작 내 교체(거리0·시간0) → 즉시 episode
+      } else {
+        if(D >= 3) deletes.push({ ts, pos: from, D });
+        if(I >= 3) inputs.push({ ts, pos: from, I, used: false });
+      }
+    });
+    deletes.sort((a, b) => a.ts - b.ts);
+    inputs.sort((a, b) => a.ts - b.ts);
+    deletes.forEach(d => {
+      let best = -1;
+      for(let j = 0; j < inputs.length; j++){
+        const inp = inputs[j];
+        if(inp.used) continue;
+        const dt = inp.ts - d.ts;
+        if(dt < 0 || dt > 30000) continue;            // 0~30초
+        const dist = Math.abs(inp.pos - d.pos);
+        if(dist > dAdj) continue;                     // 인접 거리 내
+        if(best < 0){ best = j; continue; }
+        const b = inputs[best];
+        if(inp.ts < b.ts || (inp.ts === b.ts && dist < Math.abs(b.pos - d.pos))) best = j;
+      }
+      if(best >= 0){ inputs[best].used = true; sumERC += Math.max(d.D, inputs[best].I); }
+    });
+    const qR = sumERC / eL;
+    RevisionScore = clamp100(Math.min(1, qR / 0.12) * 100);
+  } else if(ctx.priorEvidence && ctx.priorEvidence.components && typeof ctx.priorEvidence.components.RevisionScore === 'number'){
+    RevisionScore = clamp100(ctx.priorEvidence.components.RevisionScore);   // 재오픈(위치 데이터 없음) → 저장값 유지
+  } else {
+    RevisionScore = 0;                               // 위치 메타데이터 없음 → 추정 폴백 없이 0
+  }
+
+  // ── 5. 비선형 이동 = min(1, density/10) × 100. density = bJumps / (eL/1000) ──
+  const bJumps  = Math.max(0, ctx.backJumps | 0);
+  const density = bJumps / (eL / 1000);
+  const MovementScore = clamp100(Math.min(1, density / 10) * 100);
+
+  // ── 6. 사고 시간 = (f(p)×0.7 + g(c)×0.3) × 100 ──
+  const S  = Math.max(0, ctx.totalDurationMs | 0);
+  const tl = (ctx.events || []).filter(e => e && e.type !== 'keystroke' && typeof e.ts === 'number').sort((a, b) => a.ts - b.ts);
+  let tP = 0, tA = 0;
+  for(let i = 1; i < tl.length; i++){
+    const gap = tl[i].ts - tl[i - 1].ts;
+    if(gap > 60000) tA += gap;                        // 60초 초과 = 이탈
+    else if(gap >= 2000) tP += gap;                   // 2~60초 = 사고 정지
+  }
+  const denom = S - tA;
+  const p = denom > 0 ? (tP / denom) : 0;
+  let fp;
+  if(p < 0.05)      fp = 0;
+  else if(p < 0.20) fp = (p - 0.05) / 0.15;
+  else if(p <= 0.60) fp = 1;
+  else if(p < 0.85) fp = (0.85 - p) / 0.25;
+  else              fp = 0;
+  fp = clamp01(fp);
+  // pause-burst cycle: 2~60초 pause 직후 자연 직접입력 5자↑ 또는 내용수정이면 1회(유입은 제외, pause당 최대 1)
+  let cPb = 0;
+  for(let i = 1; i < tl.length; i++){
+    const gap = tl[i].ts - tl[i - 1].ts;
+    if(gap < 2000 || gap > 60000) continue;
+    if(tl[i].type === 'ai' || tl[i].type === 'paste') continue;
+    let burstTyping = 0, hasContentRev = false, j = i;
+    while(j < tl.length){
+      const ev = tl[j];
+      if(ev.type === 'typing') burstTyping += (ev.n || 0);
+      else if(ev.type === 'delete' && (ev.n || 0) >= 3) hasContentRev = true;
+      if(j + 1 < tl.length && (tl[j + 1].ts - ev.ts) >= 2000) break;   // 다음 pause 직전까지
+      j++;
+    }
+    if(burstTyping >= 5 || hasContentRev) cPb++;
+  }
+  const cDens = cPb / (eL / 1000);
+  const gc = Math.min(1, cDens / 12);
+  const TimeScore = clamp100((fp * 0.7 + gc * 0.3) * 100);
+
+  // ── 상위 그룹 점수 ──
+  const I  = clamp100(TScore + AScore * 0.4 + PScore * 0.5);
+  const Tp = clamp100(TimeScore * 0.75 + RevisionScore * 0.15 + MovementScore * 0.1);
+  // ── 최종 작성 검증 점수(HA) = 100 × (I/100)^0.6 × (T/100)^0.4 ──
+  const HA = 100 * Math.pow(I / 100, 0.6) * Math.pow(Tp / 100, 0.4);
+
+  const out = {
+    components: { TScore, AScore, PScore, RevisionScore, MovementScore, TimeScore },
+    inputEvidenceScore: I,
+    thinkingProcessScore: Tp,
+    inputEvidenceDisplayScore: Math.round(I),
+    thinkingProcessDisplayScore: Math.round(Tp),
+    humanAuthorshipScore: HA,
+    humanAuthorshipDisplayScore: Math.round(HA)
+  };
+  lastEvidenceScores = out;
+  try { window.__evidenceScores = JSON.parse(JSON.stringify(out)); } catch(e){ window.__evidenceScores = out; }
+  return out;
+}
+
 async function buildReportFromSession(){
   // 결과지 진입 직전 — muha 실제 텍스트 기반으로 model 재구성 (extra 한정)
   _rebuildModelFromMuha();
@@ -7486,16 +7641,22 @@ async function buildReportFromSession(){
   // 인용 붙여넣기(quote-*)는 정직한 인용으로 간주 — 직접 타이핑 비중 산출 시 typing처럼 분자에 포함
   const _q = c.quotePaste + c.quotePasteEdited + c.quotePasteInternal;
   const pctTyping = (c.typing + _q)/Math.max(1, c.typing + c.ai + c.aiEdited + c.aiInternal + c.paste + c.pasteEdited + c.pasteInternal + _q) * 100;
-  // 가중치 적용 점수 (사용자 조정 가능 — ksv_weights localStorage)
-  lastScoreInputs = {pctTyping, rewriteScore, depthScore, navScore, idleScore};
-  const score = computeScoreFromInputs(lastScoreInputs, weights);
+  lastScoreInputs = {pctTyping, rewriteScore, depthScore, navScore, idleScore};   // (legacy 가중치 UI 유지용)
+  // ── 최종 작성 검증 점수 = 신규 산식(HA). 6개 실측 지표 → 상위 그룹 → 가중 기하평균. ──
+  //   사용자 가중치(weights)로 덮어쓰지 않는다.
+  const _priorEv = (currentDocId ? ((boxLoadDocs().find(d => d.id === currentDocId) || {}).evidence || null) : null);
+  const _ev = computeEvidenceScores({
+    L: totalChars, c, events, auditLog: window.__auditLog,
+    backJumps, totalDurationMs, priorEvidence: _priorEv
+  });
+  const score = _ev.humanAuthorshipDisplayScore;
   renderScore(score);
-  // 목록 '검증 결과' 판정 표시용 — 현재 글에 점수 영속화
+  // 목록 '검증 결과' 판정 표시용 — 현재 글에 점수 + 6개 세부 evidence 영속화
   try {
     if(currentDocId){
       const _sdocs = boxLoadDocs();
       const _si = _sdocs.findIndex(d => d.id === currentDocId);
-      if(_si >= 0){ _sdocs[_si].score = Math.round(score); boxSaveDocs(_sdocs); }
+      if(_si >= 0){ _sdocs[_si].score = Math.round(score); _sdocs[_si].evidence = _ev; boxSaveDocs(_sdocs); }
     }
   } catch(e){ console.warn('score persist fail', e); }
 
@@ -7590,20 +7751,15 @@ async function buildReportFromSession(){
   // 구버전 선택자(.font-mono / .h-1.5)는 현재 마크업과 불일치해 하드코딩 목업이
   // 그대로 노출되던 문제 수정. sec-02 안 순서: 직접타이핑/AI수정/붙여넣기수정/
   // 수정품질/비선형커서/사고시간/(점진적/마무리) — 앞 6개가 bdData 와 매칭.
-  // 작성 검증 결과 상단 다크 카드 — 입력 증거 / 사고 과정 증거 바 주입
-  // AI 생성 후 수정 / 붙여넣기 후 수정 — 각 유입 텍스트 중 사용자가 직접 수정(internal)한 비율
-  const _aiBase = c.ai + c.aiEdited + c.aiInternal;
-  const _aiReworkPct = _aiBase > 0 ? (c.aiInternal / _aiBase * 100) : 0;
-  const _pasteBase = c.paste + c.pasteEdited + c.pasteInternal;
-  const _pasteReworkPct = _pasteBase > 0 ? (c.pasteInternal / _pasteBase * 100) : 0;
-  // 선-표 지표 — 숫자만 주입(0~100 정수)
+  // 작성 검증 결과 상단 — 입력 증거(01) / 사고 과정 증거(02) 6개 세부 점수 주입.
+  //  신규 산식(computeEvidenceScores)의 반올림 전 원점수를 화면에서만 반올림해 표기.
   const _setVal = (id, num) => { const v = document.getElementById(id); if(v) v.textContent = String(Math.max(0, Math.min(100, Math.round(num)))); };
-  _setVal('ev_typing_val', pctTyping);
-  _setVal('ev_aiedit_val', _aiReworkPct);
-  _setVal('ev_pasteedit_val', _pasteReworkPct);
-  _setVal('ev_rewrite_val', depthScore);
-  _setVal('ev_nav_val', navScore);
-  _setVal('ev_idle_val', idleScore);
+  _setVal('ev_typing_val',    _ev.components.TScore);         // 직접 타이핑 기여
+  _setVal('ev_aiedit_val',    _ev.components.AScore);         // AI 생성 후 수정
+  _setVal('ev_pasteedit_val', _ev.components.PScore);         // 붙여넣기 후 수정
+  _setVal('ev_rewrite_val',   _ev.components.RevisionScore);  // 수정 품질
+  _setVal('ev_nav_val',       _ev.components.MovementScore);  // 비선형 이동
+  _setVal('ev_idle_val',      _ev.components.TimeScore);      // 사고 시간
 
   // ---- C-04 origin map (1안): 블록 단위 1세그먼트 + 내부에 색깔 paint span 중첩 ----
   const orgDoc=document.getElementById('originDoc');
