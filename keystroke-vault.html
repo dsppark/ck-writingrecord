@@ -866,6 +866,9 @@
   .box-pageheader h1{margin:0;}
   .box-newbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ck-primary-500);color:#fff;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:700;border:0;cursor:pointer;}
   .box-newbtn:hover{background:var(--ck-primary-600);}
+  /* 데모 결과지 — 목록에서 새 글 작성 옆(보조 버튼) */
+  .box-demobtn{display:inline-flex;align-items:center;gap:5px;background:#fff;color:var(--ck-primary-700);border:1px solid var(--ck-primary-300);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;}
+  .box-demobtn:hover{background:#EFFAFF;border-color:var(--ck-primary-400);}
   /* 필터 바 */
   /* 내 글함 상단 안내 배너 */
   .box-notice{display:flex;align-items:flex-start;gap:11px;background:transparent;border:1px solid #00C2FF;border-radius:10px;padding:16px 20px;margin-bottom:18px;}
@@ -964,6 +967,9 @@
   #write-pageheader .write-pagetitle{margin:0;}
   #write-pageheader .write-demobtn{font-size:12px;font-weight:600;color:var(--ck-primary-700);background:#fff;border:1px solid var(--ck-primary-300);border-radius:8px;padding:7px 12px;cursor:pointer;}
   #write-pageheader .write-demobtn:hover{background:var(--ck-primary-50);}
+  /* 작성 화면 [검증 결과] — 현재 글 저장 후 검증(확인 모달 경유) */
+  #write-pageheader .write-verifybtn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:#fff;background:var(--ck-primary-500);border:0;border-radius:8px;padding:9px 18px;cursor:pointer;}
+  #write-pageheader .write-verifybtn:hover{background:var(--ck-primary-600);}
   /* editor-grid: 흰 배경 + height 자동 */
   body[data-view="write"] .editor-grid{background:#fff;max-width:none !important;width:100% !important;margin:0 !important;padding:0 40px 0;flex:1 1 auto;min-height:0;height:auto;overflow:hidden;grid-template-rows:1fr !important;grid-auto-rows:1fr !important;}
   body[data-view="write"] .doc-panel,
@@ -1395,19 +1401,14 @@
       <div class="font-semibold text-slate-900 text-[15px] leading-tight mt-0.5">새 글 작성</div>
     </div>
   </div>
-  <div class="ml-auto flex items-center gap-2">
-    <button onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입"
-      class="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 rounded-md px-2 py-1 bg-white hover:border-slate-400 transition-colors">
-      🧪 데모 결과지
-    </button>
-  </div>
+  <div class="ml-auto flex items-center gap-2"></div>
 </header>
 
 <!-- ============ EDITOR VIEW (FS-001 ~ FS-033) ============ -->
 <section id="view-write">
   <header id="write-pageheader">
     <h1 class="write-pagetitle">새 글 작성</h1>
-    <button class="write-demobtn" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
+    <button class="write-verifybtn" type="button" onclick="writeFlowResult()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 결과</button>
   </header>
 
   <div class="editor-grid">
@@ -2667,7 +2668,10 @@
   <div class="box-page">
     <header class="box-pageheader">
       <h1>작성 검증</h1>
-      <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 글 작성</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="box-demobtn" type="button" onclick="seedDemo()" title="9개 케이스가 채워진 결과지로 바로 진입">🧪 데모 결과지</button>
+        <button class="box-newbtn" type="button" onclick="newWrite('extra')">＋ 새 글 작성</button>
+      </div>
     </header>
 
     <div class="box-notice" id="boxNoticeBanner">
@@ -2991,7 +2995,7 @@
   <div class="absolute inset-0 bg-black/50" onclick="closeScanConfirm()"></div>
   <div class="relative max-w-sm w-full bg-white rounded-2xl p-6 shadow-2xl">
     <h3 class="text-lg font-bold text-slate-900">문서 작성을 완료하셨나요?</h3>
-    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">검증 결과 직접 작성한 문서로 인정되는 경우, 문서 수정이 불가합니다.<br><span class="text-slate-400">(필요한 경우, 문서를 복사하여 수정할 수 있습니다.)</span></p>
+    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">검증 결과 직접 작성한 문서로 인정되는 경우, 이 문서는 더 이상 수정할 수 없습니다.</p>
     <div class="mt-5 flex flex-col gap-2">
       <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmScan()">작성 검증 시작</button>
       <button type="button" class="w-full h-11 rounded-lg bg-white text-slate-600 text-sm font-semibold border border-slate-200 hover:bg-slate-50" onclick="closeScanConfirm()">취소</button>
@@ -5742,7 +5746,7 @@ function boxPreviewDoc(id){
   if(editBtn){
     editBtn.removeAttribute('disabled');
     if(_locked){
-      editBtn.textContent = '복사하여 수정';
+      editBtn.textContent = '문서 복사';
       editBtn.title = '검증 완료 문서는 수정할 수 없어요. 사본을 만들어 이어서 작성하세요.';
       editBtn.onclick = () => boxCopyAndEdit(d.id);
     } else {
@@ -6068,11 +6072,28 @@ boxApplyPeriod();   // 초기화 (기본 '전체' → 기간 제한 없음, 날�
    최초 1회만 시드하며(플래그), 사용자가 삭제하면 재생성하지 않는다. */
 function seedExampleDocIfNeeded(){
   try {
-    if(localStorage.getItem('ksv_example_seeded')) return;
     const key = _boxStoreKey();
     let docs = [];
     try { docs = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ docs = []; }
-    if(docs.some(d => d.id === 'ex_pass')){ localStorage.setItem('ksv_example_seeded','1'); return; }
+    // 예시 문서는 항상 '작성 증거 충분'으로 통과 고정 — 재계산에 흔들리지 않도록 fixedScore 핀 고정
+    const PIN = {
+      score: 97, fixedScore: 97, resultViewed: true, verifiedLocked: true, verifyCount: 1,
+      evidence: { components:{ TScore:100, AScore:0, PScore:0, RevisionScore:58, MovementScore:100, TimeScore:100 },
+        inputEvidenceScore:100, thinkingProcessScore:94, inputEvidenceDisplayScore:100, thinkingProcessDisplayScore:94,
+        humanAuthorshipScore:97, humanAuthorshipDisplayScore:97 }
+    };
+    // 이미 시드된 예시(기존 브라우저 포함) → PASS 고정 상태로 보정(매 로드 idempotent)
+    const _exist = docs.find(d => d.id === 'ex_pass');
+    if(_exist){
+      Object.assign(_exist, PIN);
+      if(!Array.isArray(_exist.verifyHistory) || !_exist.verifyHistory.length) _exist.verifyHistory = [{ ts: _exist.savedAt || _exist.createdAt || 0, chars: _exist.chars || 0 }];
+      if(!_exist.lastVerifiedAt) _exist.lastVerifiedAt = _exist.savedAt || _exist.createdAt || 0;
+      localStorage.setItem(key, JSON.stringify(docs));
+      localStorage.setItem('ksv_example_seeded', '1');
+      return;
+    }
+    // 사용자가 삭제한 경우(플래그만 존재) 재생성하지 않음
+    if(localStorage.getItem('ksv_example_seeded')) return;
 
     const sentences = [
       '나는 왜 글을 쓰는가에 대해 오래 생각해 보았다. ',
@@ -6121,9 +6142,8 @@ function seedExampleDocIfNeeded(){
       model, events, editOps: [],
       stats: { keystrokes: kc, inputKeystrokes: kc, firstTs: model[0].ts, lastTs: ts, deletes: 6, editChars: 0, deleteChars: 0 },
       inflowMeta: {}, navBackJumps: 8,
-      resultViewed: false, verifyCount: 0, verifyHistory: [],
-      // 수정 품질은 위치 기반 audit 없이 재구성 불가 → 재오픈 fallback 용 저장값만 부여
-      evidence: { components: { RevisionScore: 58 } }
+      ...PIN,                                    // PASS 고정(score·fixedScore·evidence·잠금)
+      verifyHistory: [{ ts: ts, chars: L }], lastVerifiedAt: ts
     };
     docs.unshift(doc);
     localStorage.setItem(key, JSON.stringify(docs));
@@ -6208,6 +6228,24 @@ function writeFlowSave(){
   document.body.dataset.view = 'box';
   if(typeof renderBoxList === 'function') renderBoxList();
   window.scrollTo(0,0);
+}
+// 작성 화면 [검증 결과] — 현재 글을 저장한 뒤 확인 모달을 거쳐 작성 검증 실행(통과 시 잠금).
+function writeFlowResult(){
+  const titleEl = document.getElementById('docTitle');
+  const typeEl  = document.getElementById('docType');
+  const el = (typeof _findMuhaEditable === 'function') ? _findMuhaEditable() : null;
+  const raw = el ? (el.innerText || el.textContent || '') : '';
+  const _title = (titleEl?.value || '').trim();
+  if(!(typeEl && typeEl.value)){ showToast('글 유형을 선택해주세요.'); typeEl?.focus(); return; }
+  if(_title.length < 1){ showToast('제목을 입력해주세요.'); titleEl?.focus(); return; }
+  if(_title.length > 200){ showToast('제목은 200자 이내로 입력해주세요.'); titleEl?.focus(); return; }
+  if(raw.replace(/\s/g,'').length < 1){ showToast('내용을 입력해주세요.'); try{ el?.focus(); }catch(e){} return; }
+  if(typeEl && typeEl.value) selectedType = typeEl.value;
+  if(!stats.firstTs) stats.firstTs = Date.now();
+  stats.lastTs = Date.now();
+  try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
+  // 저장으로 currentDocId 확정 → 확인 모달(문서 작성 완료?) → 작성 검증 시작
+  if(currentDocId && typeof boxAskScan === 'function') boxAskScan(currentDocId);
 }
 function writeFlowVerify(){
   const titleEl = document.getElementById('docTitle');
@@ -7787,12 +7825,22 @@ async function buildReportFromSession(){
   lastScoreInputs = {pctTyping, rewriteScore, depthScore, navScore, idleScore};   // (legacy 가중치 UI 유지용)
   // ── 최종 작성 검증 점수 = 신규 산식(HA). 6개 실측 지표 → 상위 그룹 → 가중 기하평균. ──
   //   사용자 가중치(weights)로 덮어쓰지 않는다.
-  const _priorEv = (currentDocId ? ((boxLoadDocs().find(d => d.id === currentDocId) || {}).evidence || null) : null);
-  const _ev = computeEvidenceScores({
+  const _curDoc = currentDocId ? (boxLoadDocs().find(d => d.id === currentDocId) || {}) : {};
+  const _priorEv = _curDoc.evidence || null;
+  let _ev = computeEvidenceScores({
     L: totalChars, c, events, auditLog: window.__auditLog,
     backJumps, totalDurationMs, priorEvidence: _priorEv
   });
-  const score = _ev.humanAuthorshipDisplayScore;
+  let score = _ev.humanAuthorshipDisplayScore;
+  // 고정 판정 문서(예시 등): fixedScore 가 있으면 재계산 결과에 관계없이 그 값·저장 evidence 로 고정
+  if(typeof _curDoc.fixedScore === 'number'){
+    score = _curDoc.fixedScore;
+    if(_curDoc.evidence && _curDoc.evidence.components){
+      _ev = _curDoc.evidence;
+      lastEvidenceScores = _ev;
+      try { window.__evidenceScores = JSON.parse(JSON.stringify(_ev)); } catch(e){ window.__evidenceScores = _ev; }
+    }
+  }
   renderScore(score);
   // 목록 '검증 결과' 판정 표시용 — 현재 글에 점수 + 6개 세부 evidence 영속화
   try {
