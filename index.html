@@ -5662,15 +5662,16 @@ function renderBoxList(){
     const statusHtml = _passed
       ? `<span class="box-verify-done"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 완료</span>`
       : `<span class="box-verify-pre">검증 전</span>`;
+    // 글자수 — 저장된 chars(개행 제외) 사용, 없으면 model 에서 산출
+    const _chars = (d.chars != null) ? d.chars : (Array.isArray(d.model) ? d.model.filter(m=>m.ch!=='\n').length : 0);
     return `
     <div class="box-row" data-id="${d.id}">
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> ${statusHtml}</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>글자수</b> ${Number(_chars).toLocaleString()}자 <span class="box-meta-sep">·</span> ${statusHtml}</div>
       </div>
       <div class="box-rowactions">
-        <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">수정</button>
         ${verifyBtn}
         <div class="box-more">
           <button class="box-more-btn" type="button" onclick="boxToggleMore(event,'${d.id}')" aria-label="더보기">⋮</button>
