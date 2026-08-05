@@ -698,15 +698,20 @@
   .verdict-grid2{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.15fr);gap:30px;align-items:center;}
   @media (max-width:900px){.verdict-grid2{grid-template-columns:1fr;gap:26px;}}
   .verdict-gauge-col{text-align:center;}
-  /* 최종 판정 — 2점 척도(Yes/No): 아이콘 + 한 문장(부연 설명 없음) */
-  .verdict-final{display:flex;flex-direction:column;align-items:center;gap:16px;}
-  .verdict-final .vf-icon{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;}
-  .verdict-final .vf-icon svg{width:34px;height:34px;}
-  .verdict-final .vf-text{font-size:24px;font-weight:800;line-height:1.35;letter-spacing:-0.01em;}
-  .verdict-final[data-pass="1"] .vf-icon{background:#DDF6EE;color:#11BE8A;}
-  .verdict-final[data-pass="1"] .vf-text{color:#0E9F63;}
-  .verdict-final[data-pass="0"] .vf-icon{background:#FEEDE0;color:#F97316;}
-  .verdict-final[data-pass="0"] .vf-text{color:#EA580C;}
+  /* 최종 판정 — 2점 척도(Yes/No): 강조 패널(그라데이션+아이콘 헤일로+큰 헤드라인). 부연 설명 없음 */
+  .verdict-final{display:flex;flex-direction:column;align-items:center;gap:20px;padding:36px 28px;border-radius:22px;border:1px solid;position:relative;overflow:hidden;}
+  .verdict-final::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% -20%, rgba(255,255,255,0.6), transparent 60%);pointer-events:none;}
+  .verdict-final .vf-icon{display:inline-flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:50%;position:relative;z-index:1;}
+  .verdict-final .vf-icon svg{width:42px;height:42px;stroke-width:2.4;}
+  .verdict-final .vf-text{font-size:29px;font-weight:900;line-height:1.28;letter-spacing:-0.025em;position:relative;z-index:1;}
+  /* PASS — 초록: 채운 방패 + 헤일로 + 그림자, 소프트 그린 패널 */
+  .verdict-final[data-pass="1"]{background:linear-gradient(158deg,#F1FBF7 0%,#E1F6EE 100%);border-color:#B2E7D3;}
+  .verdict-final[data-pass="1"] .vf-icon{background:#11BE8A;color:#fff;box-shadow:0 10px 24px rgba(17,190,138,0.38),0 0 0 9px rgba(17,190,138,0.13);}
+  .verdict-final[data-pass="1"] .vf-text{color:#0B8F67;}
+  /* FAIL — 앰버: 소프트 앰버 패널 */
+  .verdict-final[data-pass="0"]{background:linear-gradient(158deg,#FFF8F1 0%,#FDEEDF 100%);border-color:#F8D5B2;}
+  .verdict-final[data-pass="0"] .vf-icon{background:#F97316;color:#fff;box-shadow:0 10px 24px rgba(249,115,22,0.34),0 0 0 9px rgba(249,115,22,0.12);}
+  .verdict-final[data-pass="0"] .vf-text{color:#D9600E;}
   /* 증거 지표 — 선 기반 표(첨부 이미지 참고): 상단 구분선 + 라벨 + 큰 숫자, 테두리/채움 없음 */
   .ev-block + .ev-block{margin-top:26px;}
   .ev-block-head{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:700;color:#0F172A;margin-bottom:2px;}
@@ -3642,7 +3647,9 @@ const REPLAY_BASE_MS = 60; // 1× 기준 프레임 간격
    - internal/typing은 1자 = 1frame */
 function buildReplayFrames(){
   const m = model.map((c,i)=>({...c, idx:i}));
-  m.sort((a,b)=> (a.ts - b.ts) || (a.idx - b.idx));
+  // 시간순(ts) 우선, 동시각·미상(0)은 위치(idx)로 안정 정렬. undefined→NaN 비교로 순서가
+  // 깨지지 않도록 (a.ts||0) 로 보정 — 리플레이는 항상 실제 삽입 시각 순으로 공개된다.
+  m.sort((a,b)=> ((a.ts||0) - (b.ts||0)) || (a.idx - b.idx));
   const blockFamily = src =>
     (src==='ai' || src==='ai-edited')                         ? 'ai'    :
     (src==='quote-paste' || src==='quote-paste-edited')       ? 'quote-paste' :
@@ -5660,7 +5667,7 @@ function renderBoxList(){
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>검증 상태</b> ${statusHtml}</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> ${statusHtml}</div>
       </div>
       <div class="box-rowactions">
         <button class="box-actionbtn ghost" onclick="boxOpenDoc('${d.id}')">수정</button>
@@ -5794,11 +5801,13 @@ function boxOpenDoc(id){
   // 저장 글의 글자별 출처(source)로 _srcState 복원 → 카운터가 리셋되지 않고
   // 원래 직접/AI/붙여넣기/수정 구분이 그대로 유지된다. (source 는 ai/paste/그외=typing)
   const _mdl = d.model || [];
-  const _savedChars = [], _savedOrigin = [], _savedBlock = [];
+  const _savedChars = [], _savedOrigin = [], _savedBlock = [], _savedTs = [];
   let _maxBm = 0;
   for(const m of _mdl){
     if(m.ch === '\n') continue;
     _savedChars.push(m.ch);
+    // 글자별 실제 삽입 시각 복원 → 재편집 후 재저장해도 리플레이 시간순 유지(없으면 0=미상)
+    _savedTs.push(typeof m.ts === 'number' && m.ts > 0 ? m.ts : 0);
     // 결과지 세분화 source → 카운터 origin(ai/paste/typing) 역매핑.
     const s = m.source;
     const isAi = (s === 'ai' || s === 'ai-edited'), isPaste = (s === 'paste' || s === 'paste-edited');
@@ -5812,7 +5821,7 @@ function boxOpenDoc(id){
   // (재편집 후 재저장 시 잔존율 분모가 현재수로 바뀌지 않도록)
   _eventSize = {};
   for(const m of _mdl){ if(m.blockMark != null && m.blockSize != null && _eventSize[m.blockMark] == null) _eventSize[m.blockMark] = m.blockSize; }
-  _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin, block: _savedBlock } : null;
+  _srcState = _savedChars.length ? { chars: _savedChars, origin: _savedOrigin, block: _savedBlock, tsArr: _savedTs } : null;
   const rawText = _mdl.map(m => m.ch).join('');
   _loadTextIntoMuha(rawText, () => {
     Object.assign(stats, d.stats || {});  // replaceBody audit 후에도 저장 시점 값 유지
@@ -5993,6 +6002,76 @@ function boxApplyPeriod(){
 document.getElementById('boxPeriod')?.addEventListener('change', boxApplyPeriod);
 boxApplyPeriod();   // 초기화 (기본 '전체' → 기간 제한 없음, 날짜 비움)
 
+/* ===== '작성 증거 충분(직접 작성한 글이에요)' 예시 문서 시드 =====
+   목록에서 [검증 결과] 클릭 시 실제 산식으로 PASS 판정이 나오도록,
+   전부 직접 타이핑 + 문장 사이 사고 정지 + 되돌아가 고쳐쓰기(비선형) 흐름으로 구성.
+   최초 1회만 시드하며(플래그), 사용자가 삭제하면 재생성하지 않는다. */
+function seedExampleDocIfNeeded(){
+  try {
+    if(localStorage.getItem('ksv_example_seeded')) return;
+    const key = _boxStoreKey();
+    let docs = [];
+    try { docs = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ docs = []; }
+    if(docs.some(d => d.id === 'ex_pass')){ localStorage.setItem('ksv_example_seeded','1'); return; }
+
+    const sentences = [
+      '나는 왜 글을 쓰는가에 대해 오래 생각해 보았다. ',
+      '처음에는 그저 과제를 마치기 위해 자판을 두드렸지만, 어느 순간부터 문장을 고르는 일이 즐거워졌다. ',
+      '한 단어를 지웠다가 다시 쓰고, 앞 문장으로 되돌아가 흐름을 다듬는 동안 내 생각도 함께 정리되었다. ',
+      '좋은 글이 반드시 화려할 필요는 없다는 것을 이제는 안다. ',
+      '중요한 것은 그 글이 정말 내 손끝에서 나왔는가 하는 점이다. ',
+      '오늘도 나는 서두르지 않고 한 문장씩 천천히 나의 언어로 채워 나간다. ',
+      '때로는 한참을 멈춰 서서 다음 문장을 어떻게 이어갈지 고민하기도 했다. ',
+      '그 멈춤의 시간마저도 글쓰기의 한 부분이라는 것을 이제는 안다. ',
+      '완성된 글을 다시 읽으며 나는 조용히 스스로에게 고개를 끄덕였다. ',
+      '누군가는 이런 기록이 무슨 의미가 있느냐고 물을지도 모른다. ',
+      '하지만 과정을 남긴다는 것은 결과보다 더 정직한 증명이 된다고 나는 믿는다. ',
+      '이 글은 분명히 처음부터 끝까지 내가 직접 쓴 나의 기록이다.'
+    ];
+    const model = [], events = [];
+    let ts = Date.now() - 18 * 60 * 1000;          // 18분 전 시작
+    const CHUNK = 6, CHAR_MS = 130, CHUNK_GAP = 900, PAUSE = 6000;
+    sentences.forEach((sent, si) => {
+      if(si > 0) ts += PAUSE;                       // 문장 사이 사고 정지(2~60초)
+      for(let i = 0; i < sent.length; i += CHUNK){
+        const chunk = sent.slice(i, i + CHUNK);
+        const evTs = ts;
+        for(const ch of chunk){ ts += CHAR_MS; model.push({ ch, source:'typing', ts }); }
+        events.push({ ts:evTs, type:'typing', srcFamily:'typing', n:chunk.length, isInsert:true });
+        ts += CHUNK_GAP;                             // 버스트 내 활성 간격(<2초)
+      }
+      if(si % 3 === 2){ model.push({ ch:'\n', source:'typing', ts:++ts }); }   // 문단 구분
+    });
+    // 되돌아가 고쳐쓰기(비선형) — 도입부에 '늦은 시각' 문구 삽입 → 리플레이 시간순 시연
+    const lateClause = '(지금도 그 물음은 내 안에서 살아 있다) ';
+    const lateStart = ts, inserted = [];
+    for(const ch of lateClause){ ts += 150; inserted.push({ ch, source:'typing', ts }); }
+    model.splice(Math.min(24, model.length), 0, ...inserted);
+    events.push({ ts:lateStart, type:'typing', srcFamily:'typing', n:lateClause.length, isInsert:true });
+
+    const kc = events.reduce((a,e)=> a + (e.n || 0), 0);
+    const L = model.filter(m => m.ch !== '\n').length;
+    const doc = {
+      id: 'ex_pass',
+      title: '[예시] 직접 쓴 글 — 작성 증거 충분',
+      type: '자기소개서',
+      writeVariant: 'extra',
+      createdAt: model[0].ts, savedAt: ts,
+      chars: L,
+      model, events, editOps: [],
+      stats: { keystrokes: kc, inputKeystrokes: kc, firstTs: model[0].ts, lastTs: ts, deletes: 6, editChars: 0, deleteChars: 0 },
+      inflowMeta: {}, navBackJumps: 8,
+      resultViewed: false, verifyCount: 0, verifyHistory: [],
+      // 수정 품질은 위치 기반 audit 없이 재구성 불가 → 재오픈 fallback 용 저장값만 부여
+      evidence: { components: { RevisionScore: 58 } }
+    };
+    docs.unshift(doc);
+    localStorage.setItem(key, JSON.stringify(docs));
+    localStorage.setItem('ksv_example_seeded', '1');
+  } catch(e){ console.warn('example seed fail', e); }
+}
+seedExampleDocIfNeeded();
+
 // 페이지 진입 시 초기 렌더
 renderBoxList();
 
@@ -6065,6 +6144,10 @@ function writeFlowSave(){
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
   if(typeof showToast === 'function') showToast('저장되었습니다.');
+  // 저장 후 목록 페이지로 이동
+  document.body.dataset.view = 'box';
+  if(typeof renderBoxList === 'function') renderBoxList();
+  window.scrollTo(0,0);
 }
 function writeFlowVerify(){
   const titleEl = document.getElementById('docTitle');
