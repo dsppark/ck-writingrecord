@@ -901,6 +901,8 @@
   .box-verify-done{display:inline-flex;align-items:center;gap:3px;color:#0E9F63;font-weight:700;vertical-align:-2px;}
   .box-verify-done svg{flex-shrink:0;}
   .box-verify-pre{color:var(--ck-gray-400);font-weight:600;}
+  /* 문서 수정중 — 검증 FAIL(작성 증거 불충분): 아직 수정 가능, 주의 톤(앰버) */
+  .box-verify-edit{color:#EA580C;font-weight:600;}
   .box-row .box-rowverdict{flex-shrink:0;width:150px;text-align:center;}
   .box-rowverdict-title{font-size:13px;color:var(--ck-gray-500);margin-bottom:6px;}
   .box-rowverdict-label{font-size:17px;font-weight:800;line-height:1.2;}
@@ -2988,10 +2990,10 @@
 <div id="scanConfirmModal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeScanConfirm()"></div>
   <div class="relative max-w-sm w-full bg-white rounded-2xl p-6 shadow-2xl">
-    <h3 class="text-lg font-bold text-slate-900">이 문서, 작성을 끝내셨나요?</h3>
-    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">작성 검증 결과 본인 작성 문서로 인정되는 경우, 문서 수정이 불가합니다.<br><span class="text-slate-400">(단, 검증 완료 문서를 복사하여 수정할 수 있습니다.)</span></p>
+    <h3 class="text-lg font-bold text-slate-900">문서 작성을 완료하셨나요?</h3>
+    <p class="mt-2 text-[13px] text-slate-600 leading-relaxed">검증 결과 직접 작성한 문서로 인정되는 경우, 문서 수정이 불가합니다.<br><span class="text-slate-400">(필요한 경우, 문서를 복사하여 수정할 수 있습니다.)</span></p>
     <div class="mt-5 flex flex-col gap-2">
-      <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmScan()">검증 결과 확인</button>
+      <button type="button" class="w-full h-11 rounded-lg text-white text-sm font-semibold hover:opacity-90" style="background:var(--ck-primary-500);" onclick="confirmScan()">작성 검증 시작</button>
       <button type="button" class="w-full h-11 rounded-lg bg-white text-slate-600 text-sm font-semibold border border-slate-200 hover:bg-slate-50" onclick="closeScanConfirm()">취소</button>
     </div>
   </div>
@@ -5680,9 +5682,13 @@ function renderBoxList(){
     const verifyBtn = _passed
       ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 결과</button>`
       : `<button class="box-actionbtn start" onclick="boxAskScan('${d.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>검증 시작</button>`;
+    // 상태 3단계: 검증 전(이력 없음) / 문서 수정중(검증 FAIL=작성 증거 불충분) / 검증 완료(PASS)
+    const _hasScore = (typeof d.score === 'number');
     const statusHtml = _passed
       ? `<span class="box-verify-done"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 완료</span>`
-      : `<span class="box-verify-pre">검증 전</span>`;
+      : (_hasScore
+          ? `<span class="box-verify-edit">문서 수정중</span>`
+          : `<span class="box-verify-pre">검증 전</span>`);
     // 글자수 — 저장된 chars(개행 제외) 사용, 없으면 model 에서 산출
     const _chars = (d.chars != null) ? d.chars : (Array.isArray(d.model) ? d.model.filter(m=>m.ch!=='\n').length : 0);
     return `
