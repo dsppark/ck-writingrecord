@@ -5707,7 +5707,7 @@ function renderBoxList(){
         <div class="box-more">
           <button class="box-more-btn" type="button" onclick="boxToggleMore(event,'${d.id}')" aria-label="더보기">⋮</button>
           <div class="box-more-menu" data-more="${d.id}">
-            <button type="button" onclick="boxCopyDoc('${d.id}')">글 복사</button>
+            <button type="button" onclick="boxCopyDoc('${d.id}')">사본 생성</button>
             <button type="button" class="danger" onclick="boxAskDelete('${d.id}')">글 삭제</button>
           </div>
         </div>
@@ -5746,7 +5746,7 @@ function boxPreviewDoc(id){
   if(editBtn){
     editBtn.removeAttribute('disabled');
     if(_locked){
-      editBtn.textContent = '글 복사';
+      editBtn.textContent = '사본 생성';
       editBtn.title = '검증 완료 글은 수정할 수 없어요. 사본을 만들어 이어서 작성하세요.';
       editBtn.onclick = () => boxCopyAndEdit(d.id);
     } else {
