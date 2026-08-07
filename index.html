@@ -880,12 +880,13 @@
   .box-notice-close:hover{opacity:0.7;}
   .box-filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:6px 0;}
   .box-filterbar .box-checkall{display:inline-flex;align-items:center;gap:8px;font-size:16px;color:var(--ck-gray-700);font-weight:600;margin-right:auto;}
+  /* 필터 바 컨트롤 — 셀렉/데이트피커/검색 input/조회 버튼 높이 40px 통일(들쭉날쭉 방지) */
   .box-filterbar select,
   .box-filterbar input[type="text"],
-  .box-filterbar input[type="date"]{font-size:16px;padding:7px 10px;border:1px solid var(--ck-gray-300);border-radius:6px;color:var(--ck-gray-700);background:#fff;font-family:inherit;}
+  .box-filterbar input[type="date"]{height:40px;box-sizing:border-box;font-size:16px;padding:0 10px;border:1px solid var(--ck-gray-300);border-radius:8px;color:var(--ck-gray-700);background:#fff;font-family:inherit;}
   .box-filterbar select{min-width:80px;}
   .box-filterbar input[type="text"]{min-width:200px;}
-  .box-filterbar .box-search{font-size:14px;font-weight:600;color:#00C2FF;background:#fff;border:1px solid #00C2FF;border-radius:8px;padding:7px 16px;cursor:pointer;}
+  .box-filterbar .box-search{height:40px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#00C2FF;background:#fff;border:1px solid #00C2FF;border-radius:8px;padding:0 16px;cursor:pointer;}
   .box-filterbar .box-search:hover{background:var(--ck-primary-50);}
   .box-filterbar .box-range{display:inline-flex;align-items:center;gap:4px;}
   /* 글 리스트 */
@@ -4412,11 +4413,11 @@ function _aiCollapse(){ // 입력 숨김 → '카피킬러 AI' 작은 버튼으�
   const input=document.getElementById('aiAssistPrompt'); if(input){ try{ input.blur(); }catch(e){} }
   document.body.classList.add('ai-collapsed');
 }
-function _aiResetDraft(){  // 에디터 진입 초기화 — 첫 에디터 포커스 때 캐럿 아래로 소환(대기)
+function _aiResetDraft(){  // 에디터 진입 초기화 — 자동 소환 없음. 우측 하단 '카피킬러 AI' 버튼으로만 오픈
   _aiUsed=false;
   _aiCaretRect=null;
-  _aiSummonPending=true;
-  document.body.classList.remove('ai-collapsed');
+  _aiSummonPending=false;                       // 에디터 클릭 시 프롬프트 자동으로 열지 않음
+  document.body.classList.add('ai-collapsed');  // 초기 = 접힘(우측 하단 '카피킬러 AI' 버튼만 노출)
   document.body.classList.remove('ai-caret-ready');
   const input=document.getElementById('aiAssistPrompt'); if(input) input.value='';
   _aiUpdatePromptCount();
@@ -4446,7 +4447,7 @@ function aiAssistGenerate(){
   try{
     const draft=_genAiDraft(kind, _parseMaxChars(prompt));
     if(typeof appendToEditor==='function') appendToEditor(draft, 'ai', prompt);
-    if(typeof showToast==='function') showToast('생성된 텍스트는 작성 영역에 추가했어요.');
+    if(typeof showToast==='function') showToast('생성한 텍스트를 작성 영역에 추가했어요.');
     ok=true;
   }catch(e){ console.warn('ai draft gen fail', e); if(typeof showToast==='function') showToast('생성에 실패했어요'); }
   if(el) el.value='';
@@ -4476,12 +4477,8 @@ function aiAssistGenerate(){
   document.addEventListener('selectionchange', ()=>{
     if(document.body.dataset.view!=='write') return;
     const inEd = (typeof _muhaCaretOffset==='function' && _muhaCaretOffset()!=null);
-    if(_aiSummonPending){                       // 최초 1회 커서 배치 → 소환(정착된 캐럿 기준)
-      if(inEd){ _aiSummonPending=false; _aiSummon(false); }
-      return;
-    }
     if(_aiJustSummoned) return;                 // 소환 직후 보호(즉시 접힘 방지)
-    if(_aiOpen() && inEd) _aiCollapse();          // 그 이후 커서 이동 → 접힘(따라다니지 않음)
+    if(_aiOpen() && inEd) _aiCollapse();          // 열려있는 상태에서 커서 이동 → 접힘(따라다니지 않음)
   });
   // 에디터에 입력/삭제/수정 시작 → 접힘
   document.addEventListener('beforeinput', e=>{ if(_aiOpen() && _inEditor(e.target)) _aiCollapse(); }, true);
@@ -6216,7 +6213,7 @@ function writeFlowSave(){
   if(!stats.firstTs) stats.firstTs = Date.now();
   stats.lastTs = Date.now();
   try { if(typeof boxSaveCurrentDoc === 'function') boxSaveCurrentDoc(); } catch(e){ console.warn('save fail', e); }
-  if(typeof showToast === 'function') showToast('저장되었습니다.');
+  if(typeof showToast === 'function') showToast('문서를 저장했습니다.');
   // 저장 후 목록 페이지로 이동
   document.body.dataset.view = 'box';
   if(typeof renderBoxList === 'function') renderBoxList();
