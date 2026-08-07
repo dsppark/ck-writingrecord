@@ -911,16 +911,17 @@
   .box-rowverdict-label{font-size:17px;font-weight:800;line-height:1.2;}
   .box-rowverdict-none{font-size:15px;font-weight:700;color:var(--ck-gray-400);line-height:1.2;}
   .box-row .box-rowactions{display:flex;gap:8px;flex-shrink:0;}
-  .box-actionbtn{font-size:14px;font-weight:600;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid transparent;text-align:center;box-sizing:border-box;}
+  /* 행 액션 버튼 — 높이 통일(38px), 아이콘/텍스트 중앙 정렬 */
+  .box-actionbtn{height:38px;padding:0 16px;font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid transparent;text-align:center;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
   .box-actionbtn.ghost{background:#fff;color:#00C2FF;border-color:#00C2FF;}
   .box-actionbtn.ghost:hover{background:var(--ck-primary-100);}
-  .box-actionbtn.solid{background:var(--ck-primary-500);color:#fff;min-width:86px;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+  .box-actionbtn.solid{background:var(--ck-primary-500);color:#fff;min-width:96px;}
   .box-actionbtn.solid:hover{background:var(--ck-primary-600);}
   .box-actionbtn.solid svg{width:14px;height:14px;flex-shrink:0;}
-  /* 검증 시작 — 아직 수정 가능한(미검증/미통과) 글의 CTA. 남색 채움 + 방패 아이콘(흰색) */
-  .box-actionbtn.start{background:#1E3A8A;color:#fff;border-color:#1E3A8A;min-width:86px;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
-  .box-actionbtn.start:hover{background:#172E6E;border-color:#172E6E;}
-  .box-actionbtn.start svg{width:13px;height:13px;flex-shrink:0;}
+  /* 수정하기 — 미통과/검증 전 글: 에디터 진입. [조회] 버튼과 동일한 아웃라인(시안) + 연필 아이콘 */
+  .box-actionbtn.edit{background:#fff;color:#00C2FF;border-color:#00C2FF;min-width:96px;}
+  .box-actionbtn.edit:hover{background:var(--ck-primary-50);}
+  .box-actionbtn.edit svg{width:14px;height:14px;flex-shrink:0;}
   /* 작성 검증 검사하기 — 아직 결과 없는 글(검사 전). '결과 확인하기'(시안 솔리드)와 구분: 네이비 솔리드 */
   .box-actionbtn.scan{background:#314158;color:#fff;border-color:#314158;}
   .box-actionbtn.scan:hover{background:#26303F;}
@@ -928,7 +929,7 @@
   /* 버튼 폭은 텍스트+여백에 맞춤(고정폭 해제) */
   /* 더보기(⋮) 메뉴 — 글 복사 / 글 삭제 */
   .box-more{position:relative;flex-shrink:0;display:inline-flex;}
-  .box-more-btn{width:34px;height:34px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ck-gray-600);font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+  .box-more-btn{width:38px;height:38px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ck-gray-600);font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
   .box-more-btn:hover{background:#EDEFF1;}
   .box-more-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:132px;background:#fff;border:1px solid var(--ck-secondary-200);border-radius:10px;box-shadow:0 8px 22px rgba(15,23,42,.14);padding:5px;z-index:200;}
   .box-more-menu.open{display:block;}
@@ -996,8 +997,8 @@
   body[data-flow="copy"] .doc-actions #btnCopyVerify{display:inline-flex !important;}
   /* 저장 버튼이 '작성 검증 결과 보기' 바로 좌측에 붙도록 primary 자동 여백 해제 */
   body[data-flow="copy"] .doc-actions #btnCopyVerify{margin-left:0 !important;}
-  /* 사본 리포트 — 검증 완료(수정 불가) 글이므로 '글 수정' 버튼 숨김 */
-  .report-actions #raEditBtn{display:none !important;}
+  /* 리포트 하단 [수정하기] — '목록으로 이동' 우측에 노출, 클릭 시 에디터로 복귀(잠금 글은 미리보기) */
+  .report-actions #raEditBtn{display:inline-flex !important;}
 
   /* ============ LNB (좌측 사이드바) — view-write 한정, 접기 토글 지원 ============ */
   body[data-view="write"] #lnb,
@@ -1408,7 +1409,7 @@
 <section id="view-write">
   <header id="write-pageheader">
     <h1 class="write-pagetitle">새 글 작성</h1>
-    <button class="write-verifybtn" type="button" onclick="writeFlowResult()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 결과</button>
+    <button class="write-verifybtn" type="button" onclick="writeFlowResult()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>작성 검증</button>
   </header>
 
   <div class="editor-grid">
@@ -1537,7 +1538,7 @@
     </button>
     <button id="raEditBtn" class="ra-btn ra-btn-ghost" type="button" onclick="if(currentDocId){boxOpenDoc(currentDocId);}else{goWrite();}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      글 수정
+      수정하기
     </button>
   </div>
   <div class="ra-right">
@@ -5679,20 +5680,12 @@ function renderBoxList(){
   list.innerHTML = docs.map(d => {
     // 글 수정 → 바로 에디터(boxOpenDoc). 미리보기 화면 제거됨.
     const openCall = `boxOpenDoc('${d.id}')`;
-    // 검증 통과(작성 증거 충분, HA 76~100) 여부 — 버튼/상태 분기 공용
+    // 통과(작성 증거 충분, HA 76~100) 여부 — 버튼 분기용
     const _passed = (typeof d.score === 'number') && (d.score >= 76);
-    // 통과(잠금)한 글만 '검증 결과'(바로 조회) 유지. 그 외(검증 전/미통과=수정 가능)는
-    // '검증 시작'(다른 UI) — 클릭 시 확인 모달(boxAskScan) 경유해 검증 실행.
+    // 통과한 글: [검증 결과](바로 조회 유지) / 그 외(검증 전·미통과): [수정하기](에디터 진입)
     const verifyBtn = _passed
       ? `<button class="box-actionbtn solid" onclick="boxScanDoc('${d.id}')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 결과</button>`
-      : `<button class="box-actionbtn start" onclick="boxAskScan('${d.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>검증 시작</button>`;
-    // 상태 3단계: 검증 전(이력 없음) / 문서 수정중(검증 FAIL=작성 증거 불충분) / 검증 완료(PASS)
-    const _hasScore = (typeof d.score === 'number');
-    const statusHtml = _passed
-      ? `<span class="box-verify-done"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>검증 완료</span>`
-      : (_hasScore
-          ? `<span class="box-verify-edit">수정중</span>`
-          : `<span class="box-verify-pre">검증 전</span>`);
+      : `<button class="box-actionbtn edit" onclick="boxOpenDoc('${d.id}')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정하기</button>`;
     // 글자수 — 저장된 chars(개행 제외) 사용, 없으면 model 에서 산출
     const _chars = (d.chars != null) ? d.chars : (Array.isArray(d.model) ? d.model.filter(m=>m.ch!=='\n').length : 0);
     return `
@@ -5700,7 +5693,7 @@ function renderBoxList(){
       <input type="checkbox" class="box-rowchk" />
       <div class="box-rowmain">
         <div class="box-rowtitle" role="button" tabindex="0" onclick="${openCall}">${(d.title||'').replace(/[<>]/g,'')}</div>
-        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>글자수</b> ${Number(_chars).toLocaleString()}자 <span class="box-meta-sep">·</span> ${statusHtml}</div>
+        <div class="box-rowmeta"><b>최근 저장일</b> ${_fmtSaved(d.savedAt)} <span class="box-meta-sep">·</span> <b>글 유형</b> ${(d.type||'-').replace(/[<>]/g,'')} <span class="box-meta-sep">·</span> <b>글자수</b> ${Number(_chars).toLocaleString()}자</div>
       </div>
       <div class="box-rowactions">
         ${verifyBtn}
