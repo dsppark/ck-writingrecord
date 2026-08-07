@@ -208,7 +208,7 @@
   tr.is-open .ext-toggle .chev{transform:rotate(180deg);}
 
   /* 인라인 info 아이콘 + 툴팁 */
-  .info-tooltip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#CBD5E1;color:#fff;font-size:9px;font-weight:700;cursor:help;font-family:Georgia,serif;font-style:italic;line-height:1;}
+  .info-tooltip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#CBD5E1;color:#fff;font-size:12px;font-weight:700;cursor:help;font-family:Georgia,serif;font-style:italic;line-height:1;}
   .info-tooltip:hover{background:#64748B;}
   .info-tooltip::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:9px 12px;border-radius:8px;font-size:11.5px;font-weight:400;font-style:normal;font-family:'Pretendard','Arial',sans-serif;line-height:1.55;width:260px;text-align:left;pointer-events:none;opacity:0;transition:opacity .15s;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,0.25);white-space:normal;}
   .info-tooltip::after{content:'';position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#0F172A;opacity:0;transition:opacity .15s;}
@@ -715,11 +715,11 @@
   /* 증거 지표 — 선 기반 표(첨부 이미지 참고): 상단 구분선 + 라벨 + 큰 숫자, 테두리/채움 없음 */
   .ev-block + .ev-block{margin-top:26px;}
   .ev-block-head{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:700;color:#0F172A;margin-bottom:2px;}
-  .ev-block-no{font-size:10px;font-weight:800;color:#94A3B8;letter-spacing:0.06em;}
+  .ev-block-no{font-size:12px;font-weight:800;color:#94A3B8;letter-spacing:0.06em;}
   .ev-tbl{display:grid;border-top:1px solid #E5E7EB;}
   .ev-tbl-3{grid-template-columns:repeat(3,minmax(0,1fr));}
   .ev-cell{padding:16px 2px 2px;}
-  .ev-cell-label{font-size:12px;color:#64748B;margin-bottom:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ev-cell-label{font-size:13px;color:#64748B;margin-bottom:9px;line-height:1.3;min-height:2.6em;display:flex;flex-direction:column;justify-content:flex-end;}
   .ev-cell-val{font-size:22px;font-weight:800;color:#1E293B;line-height:1;}
   .ev-cell-unit{font-size:12px;font-weight:600;color:#94A3B8;margin-left:2px;}
 
@@ -1348,13 +1348,13 @@
     </div>
     <div class="lnb-item" data-menu="write-extra" style="display:none;" onclick="openMyDocs('main')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      <span>글 작성</span>
+      <span>문서 작성</span>
       <span class="lnb-chevron">›</span>
     </div>
     <div class="lnb-sub" data-menu="write-legacy" style="display:none;" onclick="newWrite()">초기 기획안</div>
     <div class="lnb-item is-active" data-menu="write-copy" onclick="openMyDocs('copy')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      <span>글 작성 (사본)</span>
+      <span>문서 작성 (사본)</span>
       <span class="lnb-chevron">›</span>
     </div>
     <div class="lnb-item" data-menu="shared-gate" onclick="openSharedGate()" style="display:none;">
